@@ -2,13 +2,9 @@
 import { changePassword } from "@/lib/api/auth.api";
 import { useState } from "react";
 import { toast } from "react-hot-toast";
-
+import useAuthStore from "@/stores/authStore";
 const ChangePasswordForm = () => {
-  const [email, setEmail] = useState("");
-  const [currentPassword, setCurrentPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmNewPassword, setConfirmNewPassword] = useState("");
-  const [loading, setLoading] = useState(false);
+  const { email, setEmail, currentPassword, setCurrentPassword, newPassword, setNewPassword, confirmNewPassword, setConfirmNewPassword, loading, setLoading } = useAuthStore();
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !currentPassword || !newPassword || !confirmNewPassword) {

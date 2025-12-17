@@ -5,10 +5,10 @@ import { useState } from "react";
 import { toast } from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import { verifyEmail } from "../../lib/api/auth.api";
+import useAuthStore from "@/stores/authStore";
 
 const VerifyEmailForm = () => {
-  const [otp, setOtp] = useState("");
-  const [loading, setLoading] = useState(false);
+  const { otp, setOtp, loading, setLoading } = useAuthStore();
   const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get("token") || "";

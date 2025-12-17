@@ -5,12 +5,10 @@ import { useState } from "react";
 import { toast } from "react-hot-toast";
 import { useRouter } from "next/router";
 import { useSearchParams } from "next/navigation";
+import useAuthStore from "@/stores/authStore";
 
 const ResetPasswordForm = () => {
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmNewPassword, setConfirmNewPassword] = useState("");
-  const [otp, setOtp] = useState("");
-  const [loading, setLoading] = useState(false);
+  const { newPassword, setNewPassword, confirmNewPassword, setConfirmNewPassword, loading, setLoading, otp, setOtp } = useAuthStore();
   const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get("token") || "";

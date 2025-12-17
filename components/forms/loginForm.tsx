@@ -3,12 +3,12 @@ import { login } from "@/lib/api/auth.api";
 import { useState } from "react";
 import { toast } from "react-hot-toast";
 import { useRouter } from "next/navigation";
+import useAuthStore from "@/stores/authStore";
+
 
 const LoginForm = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
-  const router = useRouter();
+  const { email, setEmail, password, setPassword, loading, setLoading } = useAuthStore();
+  const router = useRouter();  
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password) {
