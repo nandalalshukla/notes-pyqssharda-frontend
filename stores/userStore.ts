@@ -10,12 +10,31 @@ interface UserStore {
     setPassword: (password: string) => void;
     confirmPassword: string;
     setConfirmPassword: (confirmPassword: string) => void;
-    otp: string;
-    setOtp: (otp: string) => void;
+    newPassword: string;
+    setNewPassword: (newPassword: string) => void;
     currentPassword: string;
     setCurrentPassword: (currentPassword: string) => void;
+    confirmNewPassword: string;
+    setConfirmNewPassword: (confirmNewPassword: string) => void;
+    otp: string;
+    setOtp: (otp: string) => void;
  }
    
-const useUserStore = create((set) => ({
- 
+const useUserStore = create<UserStore>((set) => ({
+    name: "",
+    setName: (name: string) => set({ name }),
+    email: "",
+    setEmail:(email:string) => set({ email }),
+    password: "",
+    setPassword: (password: string) => set({ password }),
+    confirmPassword: "",
+    setConfirmPassword: (confirmPassword: string) => set({ confirmPassword }),
+    newPassword: "",
+    setNewPassword: (newPassword: string) => set({ newPassword }),
+    currentPassword: "",
+    setCurrentPassword: (currentPassword: string) => set({ currentPassword }),
+    confirmNewPassword: "",
+    setConfirmNewPassword: (confirmNewPassword: string) => set({ confirmNewPassword }),
+    otp: "",
+    setOtp: (otp: string) => set({ otp }),
 }));
