@@ -1,5 +1,7 @@
-//create a simple dashboard page that says welcome to dashboard
+"use client";
+
 import AuthGuard from "@/components/AuthGuard";
+
 export default function DashboardPage() {
   return (
     <AuthGuard>

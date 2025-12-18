@@ -1,20 +1,35 @@
 "use client";
 
-import { useEffect } from "react";
-import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 import useAuthStore from "@/stores/authStore";
 
-const AUTH_ROUTES = ["/login", "/register", "/verify-email"];
-
-export default function Providers({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname();
-  const fetchMe = useAuthStore((s) => s.fetchMe);
+export default function AuthProviders({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
-    if (!AUTH_ROUTES.includes(pathname)) {
-      fetchMe();
+    // Wait for Zustand to finish hydrating from localStorage
+    const unsubscribe = useAuthStore.persist.onFinishHydration(() => {
+      setHydrated(true);
+    });
+
+    // If already hydrated, set immediately
+    if (useAuthStore.persist.hasHydrated()) {
+      setHydrated(true);
     }
-  }, [pathname, fetchMe]);
+
+    return () => {
+      unsubscribe();
+    };
+  }, []);
+
+  // Wait for Zustand to hydrate from localStorage
+  if (!hydrated) {
+    return null;
+  }
 
   return <>{children}</>;
 }

@@ -4,9 +4,11 @@ import { useState } from "react";
 import { toast } from "react-hot-toast";
 import { changePassword } from "@/lib/api/auth.api";
 import { useRouter } from "next/navigation";
+import useAuthStore from "@/stores/authStore";
 
 const ChangePasswordForm = () => {
   const router = useRouter();
+  const user = useAuthStore((s) => s.user);
 
   const [formData, setFormData] = useState({
     currentPassword: "",
@@ -52,10 +54,16 @@ const ChangePasswordForm = () => {
       return;
     }
 
+    if (!user?.email) {
+      toast.error("User not found. Please log in again.");
+      return;
+    }
+
     setLoading(true);
 
     try {
       await changePassword({
+        email: user.email,
         currentPassword,
         newPassword,
       });

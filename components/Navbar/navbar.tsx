@@ -3,15 +3,18 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "react-hot-toast";
-import { logout } from "@/lib/api/auth.api";
+import useAuthStore from "@/stores/authStore";
 
 const Navbar = () => {
   const router = useRouter();
+  const logout = useAuthStore((s) => s.logout);
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+
   const handleLogout = async () => {
     try {
       await logout();
       toast.success("Logged out successfully");
-      router.push("/login");
+      router.push("/api/v1/auth/login");
     } catch (error: unknown) {
       const message =
         error instanceof Error && "response" in error
