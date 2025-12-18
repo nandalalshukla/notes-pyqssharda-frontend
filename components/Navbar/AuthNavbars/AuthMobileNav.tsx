@@ -18,7 +18,7 @@ const AuthMobileNav = () => {
   };
 
   return (
-    <div className="w-full bg-white text-black border-b-2 border-black p-4">
+    <div className="w-full text-black p-4">
       <div className="flex justify-between items-center">
         <Link href="/dashboard" className="text-xl font-black tracking-tighter">
           Sharda Online Library

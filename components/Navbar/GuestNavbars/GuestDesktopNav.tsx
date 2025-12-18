@@ -2,7 +2,7 @@ import Link from "next/link";
 
 const GuestDesktopNav = () => {
   return (
-    <div className="flex items-center justify-between w-full py-4 px-8 bg-white text-black border-b-2 border-black">
+    <div className="flex items-center justify-between w-full py-4 px-8 text-black">
       <Link
         href="/"
         className="text-2xl font-black tracking-tighter hover:scale-105 transition-transform"
