@@ -1,133 +1,138 @@
 "use client";
 
-import { register } from "@/lib/api/auth.api";
 import { useState } from "react";
-import { toast } from "react-hot-toast";
 import { useRouter } from "next/navigation";
-import useAuthStore from "@/stores/authStore";
+import { toast } from "react-hot-toast";
+import { register } from "@/lib/api/auth.api";
 
 const RegisterForm = () => {
   const router = useRouter();
 
-  const {
-    name,
-    setName,
-    email,
-    setEmail,
-    password,
-    setPassword,
-    confirmPassword,
-    setConfirmPassword,
-    loading,
-    setLoading,
-  } = useAuthStore();
+  // ✅ LOCAL form state (correct)
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+  });
+
+  const [loading, setLoading] = useState(false);
+
+  // ✅ Generic change handler
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    const { name, email, password, confirmPassword } = formData;
+
+    // ✅ Validations
     if (!name || !email || !password || !confirmPassword) {
-      toast.error("Please fill all the fields");
+      toast.error("Please fill all fields");
       return;
     }
+
+    if (!email.endsWith("@ug.sharda.ac.in")) {
+      toast.error("Please use your Sharda email");
+      return;
+    }
+
     if (password.length < 6) {
-      toast.error("Password must be at least 6 characters long");
+      toast.error("Password must be at least 6 characters");
       return;
     }
-    if (email.indexOf("@ug.sharda.ac.in") === -1) {
-      toast.error("Please use your sharda email");
-      return;
-    }
+
     if (password !== confirmPassword) {
       toast.error("Passwords do not match");
       return;
     }
-    setLoading(true);
-    try {
-      const res = await register({ name, email, password, confirmPassword });
-      const verifyToken = res.data.verifyToken;
-      toast.success("Registered successfully. Please verify your email.");
-      setName("");
-      setEmail("");
-      setPassword("");
-      setConfirmPassword("");
-      toast.success(
-        "Please verify your email. Enter the OTP sent to your sharda email."
-      );
 
-      router.push(`/api/v1/auth/verify-email?token=${verifyToken}`);
+    setLoading(true);
+
+    try {
+      await register({ name, email, password });
+      sessionStorage.setItem("verifyEmail", email);
+      toast.success("Registration successful!");
+      toast.success("Please verify the OTP sent to your email.");
+
+      // ✅ Clear form
+      setFormData({
+        name: "",
+        email: "",
+        password: "",
+        confirmPassword: "",
+      });
+
+      // ✅ Navigate to FRONTEND verify page
+      router.push("/api/v1/auth/verify-email");
     } catch (error: unknown) {
-      const message =
-        error instanceof Error && "response" in error
-          ? (error as { response: { data: { message: string } } }).response
-              ?.data?.message
-          : undefined;
-      toast.error(message || "Registration failed");
+      const errorMessage = error instanceof Error ? error.message : "Registration failed";
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-5 max-w-md mx-auto">
       <div>
-        <label htmlFor="name" className="block mb-1 font-medium">
-          Name
-        </label>
+        <label className="block mb-1 font-medium">Name</label>
         <input
-          type="text"
-          id="name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          className="w-full px-3 py-2 border rounded"
+          name="name"
+          value={formData.name}
+          onChange={handleChange}
+          className="w-full px-3 py-2 border rounded-md"
           placeholder="Your full name"
-          required
         />
       </div>
+
       <div>
-        <label htmlFor="email" className="block mb-1 font-medium">
-          Email
-        </label>
+        <label className="block mb-1 font-medium">Email</label>
         <input
+          name="email"
           type="email"
-          id="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className="w-full px-3 py-2 border rounded"
-          placeholder="Enter your sharda email"
-          required
+          value={formData.email}
+          onChange={handleChange}
+          className="w-full px-3 py-2 border rounded-md"
+          placeholder="yourname@ug.sharda.ac.in"
         />
       </div>
+
       <div>
-        <label htmlFor="password" className="block mb-1 font-medium">
-          Password
-        </label>
+        <label className="block mb-1 font-medium">Password</label>
         <input
+          name="password"
           type="password"
-          id="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          className="w-full px-3 py-2 border rounded"
-          placeholder="Enter password"
-          required
+          value={formData.password}
+          onChange={handleChange}
+          className="w-full px-3 py-2 border rounded-md"
+          placeholder="Minimum 6 characters"
         />
       </div>
+
       <div>
-        <label htmlFor="confirmPassword" className="block mb-1 font-medium">
-          Confirm Password
-        </label>
+        <label className="block mb-1 font-medium">Confirm Password</label>
         <input
+          name="confirmPassword"
           type="password"
-          id="confirmPassword"
-          value={confirmPassword}
-          onChange={(e) => setConfirmPassword(e.target.value)}
-          className="w-full px-3 py-2 border rounded"
-          placeholder="Confirm your password"
-          required
+          value={formData.confirmPassword}
+          onChange={handleChange}
+          className="w-full px-3 py-2 border rounded-md"
+          placeholder="Re-enter password"
         />
       </div>
+
       <button
         type="submit"
         disabled={loading}
-        className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 disabled:opacity-50"
+        className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 disabled:opacity-50"
       >
         {loading ? "Registering..." : "Register"}
       </button>

@@ -1,46 +1,67 @@
 import { create } from "zustand";
+import {
+  login as loginApi,
+  logout as logoutApi,
+  getMe,
+} from "@/lib/api/auth.api";
 
-interface AuthStore {
-  loading: boolean;
-  setLoading: (loading: boolean) => void;
+interface User {
+  id: string;
   name: string;
-  setName: (name: string) => void;
   email: string;
-  setEmail: (email: string) => void;
-  password: string;
-  setPassword: (password: string) => void;
-  confirmPassword: string;
-  setConfirmPassword: (confirmPassword: string) => void;
-  newPassword: string;
-  setNewPassword: (newPassword: string) => void;
-  currentPassword: string;
-  setCurrentPassword: (currentPassword: string) => void;
-  confirmNewPassword: string;
-  setConfirmNewPassword: (confirmNewPassword: string) => void;
-  otp: string;
-  setOtp: (otp: string) => void;
+  role: string;
+  isEmailVerified: boolean;
 }
 
-const useAuthStore = create<AuthStore>((set) => ({
-  loading: false,
-  setLoading: (loading: boolean) => set({ loading: true }),
-  name: "",
-  setName: (name: string) => set({ name }),
-  email: "",
-  setEmail: (email: string) => set({ email }),
-  password: "",
-  setPassword: (password: string) => set({ password }),
-  confirmPassword: "",
-  setConfirmPassword: (confirmPassword: string) => set({ confirmPassword }),
-  newPassword: "",
-  setNewPassword: (newPassword: string) => set({ newPassword }),
-  currentPassword: "",
-  setCurrentPassword: (currentPassword: string) => set({ currentPassword }),
-  confirmNewPassword: "",
-  setConfirmNewPassword: (confirmNewPassword: string) =>
-    set({ confirmNewPassword }),
-  otp: "",
-  setOtp: (otp: string) => set({ otp }),
+interface AuthState {
+  user: User | null;
+  isAuthenticated: boolean;
+  authLoading: boolean;
+
+  login: (data: { email: string; password: string }) => Promise<void>;
+  logout: () => Promise<void>;
+  fetchMe: () => Promise<void>;
+}
+
+const useAuthStore = create<AuthState>((set) => ({
+  user: null,
+  isAuthenticated: false,
+  authLoading: true, // important
+
+  login: async (data) => {
+    const res = await loginApi(data);
+    set({
+      user: res.data.user,
+      isAuthenticated: true,
+      authLoading: false,
+    });
+  },
+
+  logout: async () => {
+    await logoutApi();
+    set({
+      user: null,
+      isAuthenticated: false,
+      authLoading: false,
+    });
+  },
+
+  fetchMe: async () => {
+    try {
+      const res = await getMe();
+      set({
+        user: res.data.user,
+        isAuthenticated: true,
+        authLoading: false,
+      });
+    } catch {
+      set({
+        user: null,
+        isAuthenticated: false,
+        authLoading: false,
+      });
+    }
+  },
 }));
 
 export default useAuthStore;

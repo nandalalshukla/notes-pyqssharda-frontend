@@ -4,29 +4,29 @@ import { forgotPassword } from "@/lib/api/auth.api";
 import { useState } from "react";
 import { toast } from "react-hot-toast";
 import { useRouter } from "next/navigation";
-import useAuthStore from "@/stores/authStore";
-
 
 const ForgotPasswordForm = () => {
-  const {email, setEmail, loading, setLoading} = useAuthStore();
+  const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email) {
+    if (!email.trim()) {
       toast.error("Please enter your email");
       return;
     }
-    if (email.indexOf("@ug.sharda.ac.in") === -1) {
+    if (!email.endsWith("@ug.sharda.ac.in")) {
       toast.error("Please use your sharda email");
       return;
     }
     setLoading(true);
     try {
-      const res = await forgotPassword({ email });
-      const resetToken = res.data.forgetPswdToken;
-      toast.success("Password reset link sent to your email");
-      setEmail("");
-      router.push(`/api/v1/auth/reset-password?token=${resetToken}`);
+      await forgotPassword({ email });
+      sessionStorage.setItem("resetEmail", email);
+      toast.success("If an account exists, an OTP has been sent to your email");
+      setEmail("")
+      router.push("/reset-password");
     } catch (error: unknown) {
       const message =
         error instanceof Error && "response" in error
@@ -39,30 +39,48 @@ const ForgotPasswordForm = () => {
     }
   };
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div>
-        <label htmlFor="email" className="block mb-1 font-medium">
-          Email
-        </label>
-        <input
-          type="email"
-          id="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          placeholder="Enter your sharda email"
-          required
-        />
-      </div>
-      <button
-        type="submit"
-        className="w-full px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:bg-gray-400"
-        disabled={loading}
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+      <form
+        onSubmit={handleSubmit}
+        className="w-full max-w-md bg-white rounded-xl shadow-md p-6 space-y-5"
       >
-        {loading ? "Sending..." : "Send Reset Link"}
-      </button>
-    </form>
+        <div className="text-center">
+          <h1 className="text-2xl font-semibold text-gray-800">
+            Forgot Password
+          </h1>
+          <p className="text-sm text-gray-500 mt-1">
+            Enter your registered email to receive an OTP
+          </p>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Email
+          </label>
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="yourname@ug.sharda.ac.in"
+          />
+        </div>
+
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition disabled:opacity-50"
+        >
+          {loading ? "Sending..." : "Send OTP"}
+        </button>
+
+        <p className="text-xs text-center text-gray-400">
+          Make sure to check your spam folder as well
+        </p>
+      </form>
+    </div>
   );
+
 };
 
 export default ForgotPasswordForm;

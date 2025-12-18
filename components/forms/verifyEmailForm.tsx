@@ -1,74 +1,101 @@
 "use client";
 
-import { useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "react-hot-toast";
 import { useRouter } from "next/navigation";
-import { verifyEmail } from "../../lib/api/auth.api";
-import useAuthStore from "@/stores/authStore";
+import { verifyEmail } from "@/lib/api/auth.api";
 
 const VerifyEmailForm = () => {
-  const { otp, setOtp, loading, setLoading } = useAuthStore();
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const token = searchParams.get("token") || "";
+  const [otp, setOtp] = useState("");
+  const [email, setEmail] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  // ✅ Read email safely on client
+  useEffect(() => {
+    const storedEmail = sessionStorage.getItem("verifyEmail");
+
+    if (!storedEmail) {
+      router.push("/register");
+      return;
+    }
+
+    setEmail(storedEmail);
+  }, [router]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!otp) {
+
+    if (!otp.trim()) {
       toast.error("Please enter the OTP");
       return;
     }
-    if (!token) {
-      toast.error("Invalid verification link. Please register again.");
-      return;
-    }
+
+    if (!email) return;
+
     setLoading(true);
+
     try {
-      console.log({ otp, token });
-      await verifyEmail({ otp, token });
-      toast.success("Email verified successfully");
+      await verifyEmail({ email, otp });
+
+      toast.success("Email verified successfully 🎉");
+
+      // ✅ cleanup
+      sessionStorage.removeItem("verifyEmail");
       setOtp("");
-      router.push("/dashboard");
+
+      router.push("/api/v1/auth/login");
     } catch (error: unknown) {
-      console.log("Full error:", error);
-      console.log(
-        "Error response:",
-        (error as { response?: { data?: unknown } })?.response?.data
-      );
-      const message =
-        error instanceof Error && "response" in error
-          ? (error as { response: { data: { message: string } } }).response
-              ?.data?.message
-          : undefined;
-      toast.error(message || "Email verification failed");
+      const message = "Email verification failed";
+      toast.error(message);
     } finally {
       setLoading(false);
     }
   };
+
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div>
-        <label htmlFor="otp" className="block mb-1 font-medium">
-          OTP
-        </label>
-        <input
-          type="text"
-          id="otp"
-          value={otp}
-          onChange={(e) => setOtp(e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          placeholder="Enter the OTP sent to your email"
-          required
-        />
-      </div>
-      <button
-        type="submit"
-        className="w-full px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:bg-gray-400"
-        disabled={loading}
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+      <form
+        onSubmit={handleSubmit}
+        className="w-full max-w-md bg-white rounded-xl shadow-md p-6 space-y-5"
       >
-        {loading ? "Verifying..." : "Verify Email"}
-      </button>
-    </form>
+        <div className="text-center">
+          <h1 className="text-2xl font-semibold text-gray-800">
+            Verify Your Email
+          </h1>
+          <p className="text-sm text-gray-500 mt-1">
+            Enter the 6-digit OTP sent to your email
+          </p>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            OTP
+          </label>
+          <input
+            type="text"
+            value={otp}
+            onChange={(e) => setOtp(e.target.value)}
+            maxLength={6}
+            className="w-full px-3 py-2 text-center tracking-widest border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="••••••"
+          />
+        </div>
+
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition disabled:opacity-50"
+        >
+          {loading ? "Verifying..." : "Verify Email"}
+        </button>
+
+        <p className="text-xs text-center text-gray-400">
+          Didn’t receive the OTP? Check your spam folder.
+        </p>
+      </form>
+    </div>
   );
 };
+
 export default VerifyEmailForm;

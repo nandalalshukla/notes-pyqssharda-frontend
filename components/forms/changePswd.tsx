@@ -1,114 +1,149 @@
 "use client";
-import { changePassword } from "@/lib/api/auth.api";
+
 import { useState } from "react";
 import { toast } from "react-hot-toast";
-import useAuthStore from "@/stores/authStore";
+import { changePassword } from "@/lib/api/auth.api";
+import { useRouter } from "next/navigation";
+
 const ChangePasswordForm = () => {
-  const { email, setEmail, currentPassword, setCurrentPassword, newPassword, setNewPassword, confirmNewPassword, setConfirmNewPassword, loading, setLoading } = useAuthStore();
+  const router = useRouter();
+
+  const [formData, setFormData] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmNewPassword: "",
+  });
+
+  const [loading, setLoading] = useState(false);
+
+  // ✅ FIXED handleChange
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || !currentPassword || !newPassword || !confirmNewPassword) {
-      toast.error("Please fill all the fields");
+
+    const { currentPassword, newPassword, confirmNewPassword } = formData;
+
+    // ✅ Validations
+    if (!currentPassword || !newPassword || !confirmNewPassword) {
+      toast.error("Please fill all fields");
       return;
     }
+
     if (newPassword.length < 6) {
-      toast.error("Password must be at least 6 characters long");
+      toast.error("Password must be at least 6 characters");
       return;
     }
+
     if (currentPassword === newPassword) {
       toast.error("New password must be different from current password");
       return;
     }
-    if (email.indexOf("@ug.sharda.ac.in") === -1) {
-      toast.error("Please use your sharda email");
+
+    if (newPassword !== confirmNewPassword) {
+      toast.error("Passwords do not match");
       return;
     }
 
-    if (newPassword !== confirmNewPassword) {
-      toast.error("New passwords do not match");
-      return;
-    }
     setLoading(true);
+
     try {
       await changePassword({
-        email,
         currentPassword,
         newPassword,
-        confirmNewPassword,
       });
+
       toast.success("Password changed successfully");
-      setCurrentPassword("");
-      setNewPassword("");
-      setConfirmNewPassword("");
+
+      setFormData({
+        currentPassword: "",
+        newPassword: "",
+        confirmNewPassword: "",
+      });
+
+      // optional: redirect
+      router.push("/dashboard");
     } catch (error: unknown) {
-      const message =
-        error instanceof Error && "response" in error
-          ? (error as { response: { data: { message: string } } }).response
-              ?.data?.message
-          : undefined;
-      toast.error(message || "Failed to change password");
+      toast.error("Failed to change password");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div>
-        <label className="block text-sm font-medium text-gray-700">Email</label>
-        <input
-          type="password"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="abc.xyz@ug.sharda.ac.in"
-          required
-          className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
-        />
-      </div>
-      <div>
-        <label className="block text-sm font-medium text-gray-700">
-          Current Password
-        </label>
-        <input
-          type="password"
-          value={currentPassword}
-          onChange={(e) => setCurrentPassword(e.target.value)}
-          required
-          className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
-        />
-      </div>
-      <div>
-        <label className="block text-sm font-medium text-gray-700">
-          New Password
-        </label>
-        <input
-          type="password"
-          value={newPassword}
-          onChange={(e) => setNewPassword(e.target.value)}
-          required
-          className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
-        />
-      </div>
-      <div>
-        <label className="block text-sm font-medium text-gray-700">
-          Confirm New Password
-        </label>
-        <input
-          type="password"
-          value={confirmNewPassword}
-          onChange={(e) => setConfirmNewPassword(e.target.value)}
-          required
-          className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
-        />
-      </div>
-      <button
-        type="submit"
-        disabled={loading}
-        className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 disabled:opacity-50"
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+      <form
+        onSubmit={handleSubmit}
+        className="w-full max-w-md bg-white p-6 rounded-xl shadow-md space-y-5"
       >
-        {loading ? "Changing..." : "Change Password"}
-      </button>
-    </form>
+        <div className="text-center">
+          <h2 className="text-2xl font-semibold text-gray-800">
+            Change Password
+          </h2>
+          <p className="text-sm text-gray-500 mt-1">
+            Update your account password
+          </p>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Current Password
+          </label>
+          <input
+            type="password"
+            name="currentPassword"
+            value={formData.currentPassword}
+            onChange={handleChange}
+            className="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500"
+            placeholder="Enter current password"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            New Password
+          </label>
+          <input
+            type="password"
+            name="newPassword"
+            value={formData.newPassword}
+            onChange={handleChange}
+            className="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500"
+            placeholder="Enter new password"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Confirm New Password
+          </label>
+          <input
+            type="password"
+            name="confirmNewPassword"
+            value={formData.confirmNewPassword}
+            onChange={handleChange}
+            className="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500"
+            placeholder="Re-enter new password"
+          />
+        </div>
+
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition disabled:opacity-50"
+        >
+          {loading ? "Changing..." : "Change Password"}
+        </button>
+      </form>
+    </div>
   );
 };
+
 export default ChangePasswordForm;
