@@ -10,17 +10,17 @@ const GuestDesktopNav = () => {
         Sharda Online Library
       </Link>
       <div className="flex items-center gap-8 font-bold text-sm">
-        <Link href="/" className="hover:text-blue-600 transition-colors">
-          Home
+        <Link href="/explore" className="hover:text-blue-600 transition-colors">
+          Explore
         </Link>
-        <Link href="/about" className="hover:text-blue-600 transition-colors">
-          About
+        <Link href="/dashboard" className="hover:text-blue-600 transition-colors">
+          Contribute
         </Link>
         <Link
-          href="/features"
+          href="/about-us"
           className="hover:text-blue-600 transition-colors"
         >
-          Features
+          About Us
         </Link>
         <div className="flex items-center gap-4">
           <Link

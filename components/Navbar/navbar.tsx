@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import useAuthStore from "@/stores/authStore";
 import AuthDesktopNav from "./AuthNavbars/AuthDesktopNav";
 import AuthMobileNav from "./AuthNavbars/AuthMobileNav";
-import GuestDesktopNav from "./GuestNavbars/GuestDesktopNav.tsx";
+import GuestDesktopNav from "./GuestNavbars/GuestDesktopNav";
 import GuestMobileNav from "./GuestNavbars/GuestMobileNav";
 
 const Navbar = () => {
