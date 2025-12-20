@@ -4,6 +4,14 @@ import React from "react";
 import Link from "next/link";
 
 export default function ExplorePage() {
+  const [activeDropdown, setActiveDropdown] = React.useState<string | null>(
+    null
+  );
+
+  const toggleDropdown = (name: string) => {
+    setActiveDropdown(activeDropdown === name ? null : name);
+  };
+
   const categories = [
     { name: "Notes", color: "bg-blue-300", icon: <FileTextIcon /> },
     { name: "PYQs", color: "bg-red-300", icon: <FileQuestionIcon /> },
@@ -41,33 +49,176 @@ export default function ExplorePage() {
   ];
 
   return (
-    <div className="min-h-screen bg-white text-black p-8 pb-20">
+    <div className="min-h-screen bg-gradient-to-b from-blue-100 via-purple-100 to-white text-black p-8 pb-20">
       {/* Hero Section */}
       <div className="max-w-6xl mx-auto flex flex-col items-center mt-10 mb-16">
         <h1 className="text-4xl md:text-6xl font-black tracking-tight text-center mb-8">
-          What will you{" "}
+          <span className="text-[#4E54C8]">What will you</span>{" "}
           <span className="inline-flex">
-            <span className="text-blue-600">l</span>
-            <span className="text-red-500">e</span>
-            <span className="text-yellow-500">a</span>
-            <span className="text-green-600">r</span>
-            <span className="text-purple-600">n</span>
+            <span className="inline-block transition-transform duration-200 hover:-translate-y-2 text-[#00C4CC] cursor-default">
+              l
+            </span>
+            <span className="inline-block transition-transform duration-200 hover:-translate-y-2 text-[#FF6B00] cursor-default">
+              e
+            </span>
+            <span className="inline-block transition-transform duration-200 hover:-translate-y-2 text-[#0073E6] cursor-default">
+              a
+            </span>
+            <span className="inline-block transition-transform duration-200 hover:-translate-y-2 text-[#D939CD] cursor-default">
+              r
+            </span>
+            <span className="inline-block transition-transform duration-200 hover:-translate-y-2 text-[#FF3366] cursor-default">
+              n
+            </span>
           </span>{" "}
-          today?
+          <span className="text-[#8C52FF]">today?</span>
         </h1>
 
+        {/* Pill Buttons */}
+        <div className="flex flex-wrap justify-center gap-4 mb-8">
+          <button className="px-5 py-2.5 rounded-full border border-purple-300 bg-purple-100 text-purple-700 font-semibold flex items-center gap-2 hover:bg-purple-200 transition-colors">
+            <FolderIcon className="w-5 h-5" /> Your Notes
+          </button>
+          <button className="px-5 py-2.5 rounded-full border border-gray-300 bg-white text-gray-700 font-semibold flex items-center gap-2 hover:bg-gray-50 transition-colors">
+            <LayoutIcon className="w-5 h-5" /> Templates
+          </button>
+          <button className="px-5 py-2.5 rounded-full border border-gray-300 bg-white text-gray-700 font-semibold flex items-center gap-2 hover:bg-gray-50 transition-colors">
+            <SparklesIcon className="w-5 h-5" /> AI Help
+          </button>
+        </div>
+
         {/* Search Bar */}
-        <div className="w-full max-w-3xl relative group">
-          <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
-            <SearchIcon className="w-6 h-6 text-gray-500" />
+        <div className="w-full max-w-5xl bg-white rounded-2xl shadow-lg border border-purple-200 overflow-visible transition-all hover:shadow-xl z-20">
+          {/* Top Section: Search Input */}
+          <div className="flex items-center px-6 py-4 bg-white rounded-t-2xl">
+            <SearchIcon className="w-6 h-6 text-gray-400 mr-4" />
+            <input
+              type="text"
+              placeholder="Search notes, pyqs, topics..."
+              className="w-full text-lg text-gray-700 placeholder-gray-400 outline-none bg-transparent"
+            />
+            <FilterIcon className="w-6 h-6 text-gray-400 cursor-pointer hover:text-purple-600 transition-colors" />
           </div>
-          <input
-            type="text"
-            placeholder="Search for notes, pyqs, topics..."
-            className="w-full py-4 pl-14 pr-12 text-lg font-bold rounded-full border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] focus:outline-none focus:translate-x-[2px] focus:translate-y-[2px] focus:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all placeholder:font-normal"
-          />
-          <div className="absolute inset-y-0 right-4 flex items-center cursor-pointer">
-            <FilterIcon className="w-6 h-6 text-black" />
+
+          {/* Bottom Section: Filters */}
+          <div className="bg-purple-50 px-6 py-3 flex flex-wrap items-center gap-3 border-t border-purple-100 rounded-b-2xl">
+            {/* Type Dropdown */}
+            <div className="relative">
+              <button
+                onClick={() => toggleDropdown("type")}
+                className="flex items-center gap-2 px-4 py-1.5 bg-white rounded-full border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+              >
+                Type <ChevronDownIcon className="w-4 h-4" />
+              </button>
+              {activeDropdown === "type" && (
+                <div className="absolute top-full left-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-50">
+                  {["Notes", "Syllabus", "PYQs"].map((opt) => (
+                    <div
+                      key={opt}
+                      className="px-4 py-2 hover:bg-purple-50 cursor-pointer text-sm text-gray-700"
+                    >
+                      {opt}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Program Dropdown */}
+            <div className="relative">
+              <button
+                onClick={() => toggleDropdown("program")}
+                className="flex items-center gap-2 px-4 py-1.5 bg-white rounded-full border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+              >
+                Program <ChevronDownIcon className="w-4 h-4" />
+              </button>
+              {activeDropdown === "program" && (
+                <div className="absolute top-full left-0 mt-2 w-64 bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-50 max-h-60 overflow-y-auto">
+                  {[
+                    "Computer Science",
+                    "Law",
+                    "Business",
+                    "Agriculture",
+                    "Medical",
+                    "Biotech",
+                    "Civil",
+                    "Mechanical",
+                    "Electrical",
+                    "Architecture",
+                    "Design",
+                    "Pharmacy",
+                  ].map((opt) => (
+                    <div
+                      key={opt}
+                      className="px-4 py-2 hover:bg-purple-50 cursor-pointer text-sm text-gray-700"
+                    >
+                      {opt}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Course Code Input */}
+            <div className="flex items-center gap-2 px-4 py-1.5 bg-white rounded-full border border-gray-200 text-sm font-medium text-gray-700 focus-within:border-purple-400 transition-colors">
+              <span className="text-gray-500">Code:</span>
+              <input
+                type="text"
+                placeholder="e.g. CSE101"
+                className="w-24 outline-none text-gray-700 bg-transparent uppercase placeholder:normal-case"
+              />
+            </div>
+
+            {/* Year Dropdown */}
+            <div className="relative">
+              <button
+                onClick={() => toggleDropdown("year")}
+                className="flex items-center gap-2 px-4 py-1.5 bg-white rounded-full border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+              >
+                Year <ChevronDownIcon className="w-4 h-4" />
+              </button>
+              {activeDropdown === "year" && (
+                <div className="absolute top-full left-0 mt-2 w-40 bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-50">
+                  {[
+                    "2025-26",
+                    "2024-25",
+                    "2023-24",
+                    "2022-23",
+                    "2021-22",
+                    "2020-21",
+                  ].map((opt) => (
+                    <div
+                      key={opt}
+                      className="px-4 py-2 hover:bg-purple-50 cursor-pointer text-sm text-gray-700"
+                    >
+                      {opt}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Semester Dropdown */}
+            <div className="relative">
+              <button
+                onClick={() => toggleDropdown("semester")}
+                className="flex items-center gap-2 px-4 py-1.5 bg-white rounded-full border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+              >
+                Semester <ChevronDownIcon className="w-4 h-4" />
+              </button>
+              {activeDropdown === "semester" && (
+                <div className="absolute top-full left-0 mt-2 w-32 bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-50 max-h-60 overflow-y-auto">
+                  {Array.from({ length: 12 }, (_, i) => i + 1).map((opt) => (
+                    <div
+                      key={opt}
+                      className="px-4 py-2 hover:bg-purple-50 cursor-pointer text-sm text-gray-700"
+                    >
+                      Semester {opt}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -284,5 +435,67 @@ const ArrowRightIcon = ({ className }: { className?: string }) => (
   >
     <line x1="5" y1="12" x2="19" y2="12"></line>
     <polyline points="12 5 19 12 12 19"></polyline>
+  </svg>
+);
+
+const ChevronDownIcon = ({ className }: { className?: string }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+  >
+    <polyline points="6 9 12 15 18 9"></polyline>
+  </svg>
+);
+
+const FolderIcon = ({ className }: { className?: string }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+  >
+    <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+  </svg>
+);
+
+const LayoutIcon = ({ className }: { className?: string }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+  >
+    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+    <line x1="3" y1="9" x2="21" y2="9"></line>
+    <line x1="9" y1="21" x2="9" y2="9"></line>
+  </svg>
+);
+
+const SparklesIcon = ({ className }: { className?: string }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+  >
+    <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"></path>
   </svg>
 );
