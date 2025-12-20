@@ -1,14 +1,32 @@
 "use client";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import useAuthStore from "@/stores/authStore";
 import { useRouter } from "next/navigation";
 import { toast } from "react-hot-toast";
 
 const AuthDesktopNav = () => {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const wrapperRef = useRef<HTMLDivElement>(null);
   const logout = useAuthStore((s) => s.logout);
   const router = useRouter();
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        isProfileOpen &&
+        wrapperRef.current &&
+        !wrapperRef.current.contains(event.target as Node)
+      ) {
+        setIsProfileOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isProfileOpen]);
 
   const handleLogout = async () => {
     await logout();
@@ -25,27 +43,30 @@ const AuthDesktopNav = () => {
         Sharda Online Library
       </Link>
       <div className="flex items-center gap-8 font-bold text-sm">
-        <Link
-          href="/explore"
-          className="hover:text-blue-600 transition-colors"
-        >
+        <Link href="/explore" className="hover:text-blue-600 transition-colors">
           Explore
         </Link>
-        <Link href="/dashboard" className="hover:text-blue-600 transition-colors">
+        <Link
+          href="/dashboard"
+          className="hover:text-blue-600 transition-colors"
+        >
           Dashboard
         </Link>
-        <Link href="/about-us" className="hover:text-blue-600 transition-colors">
+        <Link
+          href="/about-us"
+          className="hover:text-blue-600 transition-colors"
+        >
           About Us
         </Link>
-        <div className="relative">
+        <div className="relative" ref={wrapperRef}>
           <button
             onClick={() => setIsProfileOpen(!isProfileOpen)}
-            className="w-12 h-12 flex items-center justify-center bg-[#FF6666] border-2 border-black rounded-full shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all"
+            className="w-8 h-8 flex items-center justify-center bg-[#FF6666] border-2 border-black rounded-full shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              width="24"
-              height="24"
+              width="20"
+              height="20"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"

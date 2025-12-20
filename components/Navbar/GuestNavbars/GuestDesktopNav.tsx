@@ -24,13 +24,13 @@ const GuestDesktopNav = () => {
         </Link>
         <div className="flex items-center gap-4">
           <Link
-            href="/api/v1/auth/login"
+            href="/auth/login"
             className="px-6 py-2 border-2 border-black rounded-full hover:bg-gray-100 transition-colors"
           >
             Login
           </Link>
           <Link
-            href="/api/v1/auth/register"
+            href="/auth/register"
             className="px-6 py-2 bg-[#FF9F66] border-2 border-black rounded-full shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all"
           >
             Register

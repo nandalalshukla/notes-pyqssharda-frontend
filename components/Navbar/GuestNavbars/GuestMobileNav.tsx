@@ -73,14 +73,14 @@ const GuestMobileNav = () => {
           </Link>
           <div className="flex flex-col gap-3 mt-2">
             <Link
-              href="/api/v1/auth/login"
+              href="/auth/login"
               className="text-center px-6 py-2 border-2 border-black rounded-full hover:bg-gray-100"
               onClick={() => setIsOpen(false)}
             >
               Login
             </Link>
             <Link
-              href="/api/v1/auth/register"
+              href="/auth/register"
               className="text-center px-6 py-2 bg-[#FF9F66] border-2 border-black rounded-full shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
               onClick={() => setIsOpen(false)}
             >

@@ -9,15 +9,24 @@ export default function HomePage() {
 
       {/* Three Colored Buttons */}
       <div className="flex flex-wrap justify-center gap-4 mb-8 animate-fade-in-up">
-        <div className="px-8 py-3 rounded-full bg-[#FF9F66] border-2 border-black ring-2 ring-white/30 ring-inset font-bold text-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all cursor-default">
+        <Link
+          className="px-8 py-3 rounded-full bg-[#FF9F66] border-2 border-black ring-2 ring-white/30 ring-inset font-bold text-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all cursor-default hover:cursor-pointer"
+          href="/pyqs"
+        >
           PYQs
-        </div>
-        <div className="px-8 py-3 rounded-full bg-[#4ADE80] border-2 border-black ring-2 ring-white/30 ring-inset font-bold text-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all cursor-default">
+        </Link>
+        <Link
+          className="px-8 py-3 rounded-full bg-[#4ADE80] border-2 border-black ring-2 ring-white/30 ring-inset font-bold text-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all cursor-default hover:cursor-pointer"
+          href="/notes"
+        >
           Notes
-        </div>
-        <div className="px-8 py-3 rounded-full bg-[#C084FC] border-2 border-black ring-2 ring-white/30 ring-inset font-bold text-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all cursor-default">
+        </Link>
+        <Link
+          className="px-8 py-3 rounded-full bg-[#C084FC] border-2 border-black ring-2 ring-white/30 ring-inset font-bold text-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all cursor-default hover:cursor-pointer"
+          href="/syllabus"
+        >
           Syllabus
-        </div>
+        </Link>
       </div>
 
       {/* Main Headline */}
@@ -44,7 +53,7 @@ export default function HomePage() {
           href="/dashboard"
           className="px-8 py-4 bg-[#3B82F6] text-white font-bold rounded-lg border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all"
         >
-          Go to Dashboard
+          Explore
         </Link>
         <Link
           href="/dashboard"

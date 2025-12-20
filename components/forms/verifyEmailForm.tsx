@@ -44,7 +44,7 @@ const VerifyEmailForm = () => {
       sessionStorage.removeItem("verifyEmail");
       setOtp("");
 
-      router.push("/api/v1/auth/login");
+      router.push("/auth/login");
     } catch (error: unknown) {
       const message = "Email verification failed";
       toast.error(message);

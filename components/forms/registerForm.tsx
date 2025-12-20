@@ -71,7 +71,7 @@ const RegisterForm = () => {
       });
 
       // ✅ Navigate to FRONTEND verify page
-      router.push("/api/v1/auth/verify-email");
+      router.push("/auth/verify-email");
     } catch (error: unknown) {
       const errorMessage =
         error instanceof Error ? error.message : "Registration failed";
