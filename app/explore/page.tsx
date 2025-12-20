@@ -1,15 +1,75 @@
 "use client";
 
-import React from "react";
+import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
+import { toast } from "react-hot-toast";
 
 export default function ExplorePage() {
-  const [activeDropdown, setActiveDropdown] = React.useState<string | null>(
-    null
-  );
+  const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedType, setSelectedType] = useState<string | null>(null);
+  const [selectedProgram, setSelectedProgram] = useState<string | null>(null);
+  const [courseCode, setCourseCode] = useState("");
+  const [selectedYear, setSelectedYear] = useState<string | null>(null);
+  const [selectedSemester, setSelectedSemester] = useState<string | null>(null);
+
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setActiveDropdown(null);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   const toggleDropdown = (name: string) => {
     setActiveDropdown(activeDropdown === name ? null : name);
+  };
+
+  const handleSelect = (
+    type: "type" | "program" | "year" | "semester",
+    value: string
+  ) => {
+    if (type === "type") setSelectedType(value);
+    if (type === "program") setSelectedProgram(value);
+    if (type === "year") setSelectedYear(value);
+    if (type === "semester") setSelectedSemester(value);
+    setActiveDropdown(null);
+  };
+
+  const handleSearch = (e?: React.FormEvent) => {
+    e?.preventDefault();
+
+    if (
+      !searchQuery ||
+      !selectedType ||
+      !selectedProgram ||
+      !courseCode ||
+      !selectedYear ||
+      !selectedSemester
+    ) {
+      toast.error("Please fill all fields to search");
+      return;
+    }
+
+    console.log("Searching with:", {
+      searchQuery,
+      selectedType,
+      selectedProgram,
+      courseCode,
+      selectedYear,
+      selectedSemester,
+    });
+    toast.success("Search submitted!");
   };
 
   const categories = [
@@ -88,33 +148,52 @@ export default function ExplorePage() {
         </div>
 
         {/* Search Bar */}
-        <div className="w-full max-w-5xl bg-white rounded-2xl shadow-lg border border-purple-200 overflow-visible transition-all hover:shadow-xl z-20">
+        <form
+          onSubmit={handleSearch}
+          className="w-full max-w-5xl bg-white rounded-2xl shadow-lg border border-purple-200 overflow-visible transition-all hover:shadow-xl z-20"
+        >
           {/* Top Section: Search Input */}
           <div className="flex items-center px-6 py-4 bg-white rounded-t-2xl">
             <SearchIcon className="w-6 h-6 text-gray-400 mr-4" />
             <input
               type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search notes, pyqs, topics..."
               className="w-full text-lg text-gray-700 placeholder-gray-400 outline-none bg-transparent"
             />
-            <FilterIcon className="w-6 h-6 text-gray-400 cursor-pointer hover:text-purple-600 transition-colors" />
+            <button
+              type="submit"
+              className="p-2 bg-purple-600 rounded-full text-white hover:bg-purple-700 transition-colors"
+            >
+              <SearchIcon className="w-5 h-5" />
+            </button>
           </div>
 
           {/* Bottom Section: Filters */}
-          <div className="bg-purple-50 px-6 py-3 flex flex-wrap items-center gap-3 border-t border-purple-100 rounded-b-2xl">
+          <div
+            ref={dropdownRef}
+            className="bg-purple-50 px-6 py-3 flex flex-wrap items-center gap-3 border-t border-purple-100 rounded-b-2xl"
+          >
             {/* Type Dropdown */}
             <div className="relative">
               <button
+                type="button"
                 onClick={() => toggleDropdown("type")}
-                className="flex items-center gap-2 px-4 py-1.5 bg-white rounded-full border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                className={`flex items-center gap-2 px-4 py-1.5 bg-white rounded-full border ${
+                  selectedType
+                    ? "border-purple-400 bg-purple-50"
+                    : "border-gray-200"
+                } text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors`}
               >
-                Type <ChevronDownIcon className="w-4 h-4" />
+                {selectedType || "Type"} <ChevronDownIcon className="w-4 h-4" />
               </button>
               {activeDropdown === "type" && (
                 <div className="absolute top-full left-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-50">
                   {["Notes", "Syllabus", "PYQs"].map((opt) => (
                     <div
                       key={opt}
+                      onClick={() => handleSelect("type", opt)}
                       className="px-4 py-2 hover:bg-purple-50 cursor-pointer text-sm text-gray-700"
                     >
                       {opt}
@@ -127,10 +206,16 @@ export default function ExplorePage() {
             {/* Program Dropdown */}
             <div className="relative">
               <button
+                type="button"
                 onClick={() => toggleDropdown("program")}
-                className="flex items-center gap-2 px-4 py-1.5 bg-white rounded-full border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                className={`flex items-center gap-2 px-4 py-1.5 bg-white rounded-full border ${
+                  selectedProgram
+                    ? "border-purple-400 bg-purple-50"
+                    : "border-gray-200"
+                } text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors`}
               >
-                Program <ChevronDownIcon className="w-4 h-4" />
+                {selectedProgram || "Program"}{" "}
+                <ChevronDownIcon className="w-4 h-4" />
               </button>
               {activeDropdown === "program" && (
                 <div className="absolute top-full left-0 mt-2 w-64 bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-50 max-h-60 overflow-y-auto">
@@ -150,6 +235,7 @@ export default function ExplorePage() {
                   ].map((opt) => (
                     <div
                       key={opt}
+                      onClick={() => handleSelect("program", opt)}
                       className="px-4 py-2 hover:bg-purple-50 cursor-pointer text-sm text-gray-700"
                     >
                       {opt}
@@ -164,6 +250,8 @@ export default function ExplorePage() {
               <span className="text-gray-500">Code:</span>
               <input
                 type="text"
+                value={courseCode}
+                onChange={(e) => setCourseCode(e.target.value)}
                 placeholder="e.g. CSE101"
                 className="w-24 outline-none text-gray-700 bg-transparent uppercase placeholder:normal-case"
               />
@@ -172,10 +260,15 @@ export default function ExplorePage() {
             {/* Year Dropdown */}
             <div className="relative">
               <button
+                type="button"
                 onClick={() => toggleDropdown("year")}
-                className="flex items-center gap-2 px-4 py-1.5 bg-white rounded-full border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                className={`flex items-center gap-2 px-4 py-1.5 bg-white rounded-full border ${
+                  selectedYear
+                    ? "border-purple-400 bg-purple-50"
+                    : "border-gray-200"
+                } text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors`}
               >
-                Year <ChevronDownIcon className="w-4 h-4" />
+                {selectedYear || "Year"} <ChevronDownIcon className="w-4 h-4" />
               </button>
               {activeDropdown === "year" && (
                 <div className="absolute top-full left-0 mt-2 w-40 bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-50">
@@ -189,6 +282,7 @@ export default function ExplorePage() {
                   ].map((opt) => (
                     <div
                       key={opt}
+                      onClick={() => handleSelect("year", opt)}
                       className="px-4 py-2 hover:bg-purple-50 cursor-pointer text-sm text-gray-700"
                     >
                       {opt}
@@ -201,16 +295,25 @@ export default function ExplorePage() {
             {/* Semester Dropdown */}
             <div className="relative">
               <button
+                type="button"
                 onClick={() => toggleDropdown("semester")}
-                className="flex items-center gap-2 px-4 py-1.5 bg-white rounded-full border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                className={`flex items-center gap-2 px-4 py-1.5 bg-white rounded-full border ${
+                  selectedSemester
+                    ? "border-purple-400 bg-purple-50"
+                    : "border-gray-200"
+                } text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors`}
               >
-                Semester <ChevronDownIcon className="w-4 h-4" />
+                {selectedSemester || "Semester"}{" "}
+                <ChevronDownIcon className="w-4 h-4" />
               </button>
               {activeDropdown === "semester" && (
                 <div className="absolute top-full left-0 mt-2 w-32 bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-50 max-h-60 overflow-y-auto">
                   {Array.from({ length: 12 }, (_, i) => i + 1).map((opt) => (
                     <div
                       key={opt}
+                      onClick={() =>
+                        handleSelect("semester", `Semester ${opt}`)
+                      }
                       className="px-4 py-2 hover:bg-purple-50 cursor-pointer text-sm text-gray-700"
                     >
                       Semester {opt}
@@ -220,7 +323,7 @@ export default function ExplorePage() {
               )}
             </div>
           </div>
-        </div>
+        </form>
       </div>
 
       {/* Categories Icons */}
@@ -244,7 +347,7 @@ export default function ExplorePage() {
 
       {/* "See what's new" Section */}
       <div className="max-w-7xl mx-auto">
-        <h2 className="text-2xl font-black mb-6">See what's new</h2>
+        <h2 className="text-2xl font-black mb-6">See what&apos;s new</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {newItems.map((item, index) => (
             <div
