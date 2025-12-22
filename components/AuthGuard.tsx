@@ -13,7 +13,7 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
     if (!isAuthenticated && !hasRedirected.current) {
       hasRedirected.current = true;
       toast.error("Please log in to access this page");
-      router.replace("/api/v1/auth/login");
+      router.replace("/auth/login");
     }
   }, [isAuthenticated, router]);
 

@@ -1,3 +1,4 @@
+import { stringify } from "querystring";
 import api from "./axios";
 
 export interface Note {
@@ -43,7 +44,7 @@ export const getAllNotes = async () => {
   return response.data;
 };
 
-export const getNotes = async () => {
+export const getMyNotes = async () => {
   const response = await api.get("/notes/my-notes");
   return response.data;
 };
@@ -57,13 +58,10 @@ export const createNote = async (data: FormData) => {
   return response.data;
 };
 
-export const updateNote = async (
-  id: string,
-  data: FormData
-) => {
+export const updateNote = async (id: string, data: FormData) => {
   const response = await api.put(`/notes/edit-notes/${id}`, data, {
     headers: {
-      "Content-Type":"multipart/form-data",
+      "Content-Type": "multipart/form-data",
     },
   });
   return response.data;
@@ -74,8 +72,10 @@ export const deleteNote = async (id: string) => {
   return response.data;
 };
 
-export const searchNotes = async (date: Note) => {
-  const response = await api.get("/notes/search-notes", { params: date });
+export const searchNotes = async (query: string) => {
+  const response = await api.get("/notes/search-notes", {
+    params: stringify({ q: query }),
+  });
   return response.data;
 };
 
@@ -115,6 +115,13 @@ export const deletePyq = async (id: string) => {
   return response.data;
 };
 
+export const searchPyqs = async (query: string) => {
+  const response = await api.get("/pyqs/search-pyqs", {
+    params: stringify({ q: query }),
+  });
+  return response.data;
+};
+
 // Syllabus
 export const getAllSyllabus = async () => {
   const response = await api.get("/syllabus/all-syllabus");
@@ -151,5 +158,12 @@ export const updateSyllabus = async (
 
 export const deleteSyllabus = async (id: string) => {
   const response = await api.delete(`/syllabus/delete-syllabus/${id}`);
+  return response.data;
+};
+
+export const searchSyllabus = async (query: string) => {
+  const response = await api.get("/syllabus/search-syllabus", {
+    params: stringify({ q: query }),
+  });
   return response.data;
 };

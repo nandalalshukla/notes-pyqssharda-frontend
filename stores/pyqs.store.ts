@@ -1,6 +1,8 @@
 import { create } from "zustand";
 import {
   Pyq,
+  getAllPyqs,
+  searchPyqs,
   getPyqs,
   createPyq,
   updatePyq,
@@ -8,7 +10,8 @@ import {
 } from "@/lib/api/crud.api";
 
 interface PYQsStore {
-  pyqs: Pyq[];
+  myPyqs: Pyq[];
+  allPyqs: Pyq[];
   isLoading: boolean;
   error: string | null;
 
@@ -19,21 +22,30 @@ interface PYQsStore {
 }
 
 export const usePYQsStore = create<PYQsStore>((set) => ({
-  pyqs: [],
+  myPyqs: [],
+  allPyqs: [],
   isLoading: false,
   error: null,
 
   fetchPYQs: async () => {
     set({ isLoading: true, error: null });
     try {
-      const response = await getPyqs();
-      // Handle both array response and wrapped response
-      const pyqs = Array.isArray(response)
-        ? response
-        : response.pyqs || response.data || [];
-      set({ pyqs, isLoading: false });
+      const res = await getPyqs();
+      const pyqs = res.pyqs || [];
+      set({ myPyqs: pyqs, isLoading: false });
     } catch (error) {
-      set({ error: (error as Error).message, isLoading: false, pyqs: [] });
+      set({ error: (error as Error).message, isLoading: false, myPyqs: [] });
+    }
+  },
+
+  fetchAllPyqs: async () => {
+    set({ isLoading: true, error: null });
+    try {
+      const res = await getAllPyqs();
+      const pyqs = res.pyqs || [];
+      set({ allPyqs: pyqs, isLoading: false });
+    } catch (err) {
+      set({ allPyqs: [], isLoading: false, error: String(err) });
     }
   },
 
@@ -42,7 +54,8 @@ export const usePYQsStore = create<PYQsStore>((set) => ({
     try {
       const newPYQ = await createPyq(data);
       set((state) => ({
-        pyqs: [newPYQ, ...state.pyqs],
+        allPyqs: [newPYQ, ...state.myPyqs],
+        myPyqs: [newPYQ, ...state.myPyqs],
         isLoading: false,
       }));
     } catch (error) {
@@ -56,7 +69,7 @@ export const usePYQsStore = create<PYQsStore>((set) => ({
     try {
       const updatedPYQ = await updatePyq(id, data);
       set((state) => ({
-        pyqs: state.pyqs.map((p) => (p._id === id ? updatedPYQ : p)),
+        myPyqs: state.myPyqs.map((p) => (p._id === id ? updatedPYQ : p)),
         isLoading: false,
       }));
     } catch (error) {
@@ -70,7 +83,7 @@ export const usePYQsStore = create<PYQsStore>((set) => ({
     try {
       await deletePyq(id);
       set((state) => ({
-        pyqs: state.pyqs.filter((p) => p._id !== id),
+        myPyqs: state.myPyqs.filter((p) => p._id !== id),
         isLoading: false,
       }));
     } catch (error) {

@@ -1,6 +1,8 @@
 import { create } from "zustand";
 import {
   Syllabus,
+  getAllSyllabus,
+  searchSyllabus,
   getSyllabus,
   createSyllabus,
   updateSyllabus,
@@ -8,7 +10,8 @@ import {
 } from "@/lib/api/crud.api";
 
 interface SyllabusStore {
-  syllabusList: Syllabus[];
+  mySyllabus: Syllabus[];
+  allSyllabus: Syllabus[];
   isLoading: boolean;
   error: string | null;
 
@@ -22,24 +25,22 @@ interface SyllabusStore {
 }
 
 export const useSyllabusStore = create<SyllabusStore>((set) => ({
-  syllabusList: [],
+  mySyllabus: [],
+  allSyllabus: [],
   isLoading: false,
   error: null,
 
   fetchSyllabus: async () => {
     set({ isLoading: true, error: null });
     try {
-      const response = await getSyllabus();
-      // Handle both array response and wrapped response
-      const list = Array.isArray(response)
-        ? response
-        : response.syllabus || response.data || [];
-      set({ syllabusList: list, isLoading: false });
+      const res = await getSyllabus();
+      const syllabus = res.syllabus || [];
+      set({ mySyllabus: syllabus, isLoading: false });
     } catch (error) {
       set({
         error: (error as Error).message,
         isLoading: false,
-        syllabusList: [],
+        mySyllabus: [],
       });
     }
   },
@@ -49,7 +50,8 @@ export const useSyllabusStore = create<SyllabusStore>((set) => ({
     try {
       const newSyllabus = await createSyllabus(data);
       set((state) => ({
-        syllabusList: [newSyllabus, ...state.syllabusList],
+        mySyllabus: [newSyllabus, ...state.mySyllabus],
+        allSyllabus: [newSyllabus, ...state.allSyllabus],
         isLoading: false,
       }));
     } catch (error) {
@@ -63,7 +65,7 @@ export const useSyllabusStore = create<SyllabusStore>((set) => ({
     try {
       const updatedSyllabus = await updateSyllabus(id, data);
       set((state) => ({
-        syllabusList: state.syllabusList.map((s) =>
+        mySyllabus: state.mySyllabus.map((s) =>
           s._id === id ? updatedSyllabus : s
         ),
         isLoading: false,
@@ -79,7 +81,7 @@ export const useSyllabusStore = create<SyllabusStore>((set) => ({
     try {
       await deleteSyllabus(id);
       set((state) => ({
-        syllabusList: state.syllabusList.filter((s) => s._id !== id),
+        mySyllabus: state.mySyllabus.filter((s) => s._id !== id),
         isLoading: false,
       }));
     } catch (error) {
