@@ -35,7 +35,8 @@ export const useNotesStore = create<NotesStore>((set) => ({
     set({ isLoading: true, error: null });
     try {
       const res = await getMyNotes();
-      const notes = res.notes || [];
+      const notes = res.notes;
+      console.log("notes",notes);
       set({ myNotes: notes, isLoading: false });
     } catch (err) {
       set({ myNotes: [], isLoading: false, error: String(err) });

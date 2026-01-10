@@ -34,7 +34,8 @@ export const useSyllabusStore = create<SyllabusStore>((set) => ({
     set({ isLoading: true, error: null });
     try {
       const res = await getSyllabus();
-      const syllabus = res.syllabus || [];
+      const syllabus = res.syllabus;
+      console.log("syllabus:",syllabus);
       set({ mySyllabus: syllabus, isLoading: false });
     } catch (error) {
       set({

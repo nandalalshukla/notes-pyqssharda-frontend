@@ -26,7 +26,7 @@ const ForgotPasswordForm = () => {
       sessionStorage.setItem("resetEmail", email);
       toast.success("If an account exists, an OTP has been sent to your email");
       setEmail("");
-      router.push("/reset-password");
+      router.push("/auth/reset-password");
     } catch (error: unknown) {
       const message =
         error instanceof Error && "response" in error

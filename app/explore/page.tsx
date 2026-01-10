@@ -136,14 +136,20 @@ export default function ExplorePage() {
 
         {/* Pill Buttons */}
         <div className="flex flex-wrap justify-center gap-4 mb-8">
-          <button className="px-5 py-2.5 rounded-full border border-purple-300 bg-purple-100 text-purple-700 font-semibold flex items-center gap-2 hover:bg-purple-200 transition-colors">
-            <FolderIcon className="w-5 h-5" /> Your Notes
+          <button className="px-5 py-2.5 rounded-full border border-purple-300 bg-white text-gray-700 hover:bg-purple-100 hover:text-purple-700 font-semibold flex items-center gap-2 hover:bg-purple-200 transition-colors hover:cursor-pointer">
+            <NotesIcon className="w-5 h-5" />
+            Notes
           </button>
-          <button className="px-5 py-2.5 rounded-full border border-gray-300 bg-white text-gray-700 font-semibold flex items-center gap-2 hover:bg-gray-50 transition-colors">
-            <LayoutIcon className="w-5 h-5" /> Templates
+          <button className="px-5 py-2.5 rounded-full border border-gray-300 bg-white text-gray-700 font-semibold flex items-center gap-2 hover:bg-gray-50 transition-colors hover:bg-purple-100 hover:text-purple-700 hover:cursor-pointer ">
+            <FolderIcon className="w-5 h-5" />
+            Syllabus
           </button>
-          <button className="px-5 py-2.5 rounded-full border border-gray-300 bg-white text-gray-700 font-semibold flex items-center gap-2 hover:bg-gray-50 transition-colors">
-            <SparklesIcon className="w-5 h-5" /> AI Help
+          <button className="px-5 py-2.5 rounded-full border border-gray-300 bg-white text-gray-700 font-semibold flex items-center gap-2 hover:bg-gray-50 transition-colors hover:bg-purple-100 hover:text-purple-700 hover:cursor-pointer ">
+            <PreviousYearQuestionsIcon className="w-5 h-5" />
+            PYQs
+          </button>
+          <button className="px-5 py-2.5 rounded-full border border-gray-300 bg-white text-gray-700 font-semibold flex items-center gap-2 hover:bg-gray-50 transition-colors hover:bg-purple-100 hover:text-purple-700 hover:cursor-pointer ">
+            <SparklesIcon className="w-5 h-5" /> Ask AI
           </button>
         </div>
 
@@ -568,6 +574,42 @@ const FolderIcon = ({ className }: { className?: string }) => (
     className={className}
   >
     <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+  </svg>
+);
+
+const NotesIcon = ({ className }: { className?: string }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+  >
+    <path d="M4 3h12a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H4z" />
+    <path d="M8 7h8" />
+    <path d="M8 11h8" />
+    <path d="M8 15h6" />
+  </svg>
+);
+
+const PreviousYearQuestionsIcon = ({ className }: { className?: string }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+  >
+    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+    <polyline points="14 2 14 8 20 8" />
+    <path d="M10 10.3c.2-.4.5-.8.9-1a2.1 2.1 0 0 1 2.6.4c.3.4.5.8.5 1.3 0 1.3-2 2-2 2" />
+    <path d="M12 17h.01" />
   </svg>
 );
 

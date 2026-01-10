@@ -10,7 +10,7 @@ import { useNotesStore } from "@/stores/notes.store";
 import { usePYQsStore } from "@/stores/pyqs.store";
 import { useSyllabusStore } from "@/stores/syllabus.store";
 
-export default function DashboardPage() {
+export default function DashboardPage(){
   const { user } = useAuthStore();
   const {
     myNotes,
@@ -242,7 +242,7 @@ function Section({
         </h2>
         <button
           onClick={onAdd}
-          className="bg-black text-white px-4 py-2 rounded-lg text-sm font-bold border-2 border-transparent hover:bg-white hover:text-black hover:border-black transition-all shadow-sm"
+          className="bg-black text-white px-4 py-2 rounded-lg text-sm font-bold border-2 border-transparent hover:bg-white hover:text-black hover:border-black hover:cursor-pointer transition-all shadow-sm"
         >
           + Add New
         </button>

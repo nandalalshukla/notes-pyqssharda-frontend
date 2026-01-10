@@ -31,7 +31,8 @@ export const usePYQsStore = create<PYQsStore>((set) => ({
     set({ isLoading: true, error: null });
     try {
       const res = await getPyqs();
-      const pyqs = res.pyqs || [];
+      const pyqs = res.pyqs;
+      console.log("pyqs",pyqs);
       set({ myPyqs: pyqs, isLoading: false });
     } catch (error) {
       set({ error: (error as Error).message, isLoading: false, myPyqs: [] });

@@ -174,7 +174,7 @@ export default function SyllabusForm({
               type="file"
               onChange={handleFileChange}
               accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
-              className="w-full px-4 py-2 rounded-lg border-2 border-black focus:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] outline-none transition-all text-sm font-medium file:mr-4 file:py-1 file:px-3 file:rounded-full file:border-2 file:border-black file:text-xs file:font-bold file:bg-[#C084FC] file:text-black hover:file:bg-[#a855f7] cursor-pointer"
+              className="w-full px-4 py-2 rounded-lg border-2 border-black focus:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] outline-none transition-all text-sm font-medium text-black placeholder:text-gray-500 file:mr-4 file:py-1 file:px-3 file:rounded-full file:border-2 file:border-black file:text-xs file:font-bold file:bg-[#C084FC] file:text-black hover:file:bg-[#a855f7] cursor-pointer"
               required={!initialData}
             />
           </div>

@@ -187,11 +187,22 @@ export default function PyqsForm({
           <div className="relative">
             <input
               type="file"
+              id="pyq-file-upload"
               onChange={handleFileChange}
               accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
-              className="w-full px-4 py-2 rounded-lg border-2 border-black focus:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] outline-none transition-all text-sm font-medium file:mr-4 file:py-1 file:px-3 file:rounded-full file:border-2 file:border-black file:text-xs file:font-bold file:bg-[#FF9F66] file:text-black hover:file:bg-[#ff8533] cursor-pointer"
-              required={!initialData}
+              className="hidden"
             />
+            <label
+              htmlFor="pyq-file-upload"
+              className="w-full px-4 py-2 rounded-lg border-2 border-black cursor-pointer bg-white flex items-center focus-within:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all"
+            >
+              <span className="mr-4 py-1 px-3 rounded-full border-2 border-black text-xs font-bold bg-[#FF9F66] text-black whitespace-nowrap">
+                Choose File
+              </span>
+              <span className="text-sm font-medium text-gray-500 truncate">
+                {file ? file.name : "No file chosen"}
+              </span>
+            </label>
           </div>
           {initialData && initialData.fileUrl && (
             <div className="mt-1 text-xs">
