@@ -3,21 +3,31 @@ import { persist } from "zustand/middleware";
 import { login, logout, getMe } from "@/lib/api/auth.api";
 
 interface User {
-  id: string;
+  _id: string;
   name: string;
   email: string;
-  role: string;
+  role: "user" | "mod" | "admin";
+  isActive: boolean;
   isEmailVerified: boolean;
+  contributions: number;
+  modRequest?: "pending" | "approved" | "rejected" | null;
+  contactNo?: string;
+  modRequestAt?: string;
+  modMotivation?: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 interface AuthState {
   user: User | null;
   isAuthenticated: boolean;
   authLoading: boolean;
+  lastLoginTime: number | null;
 
   login: (data: { email: string; password: string }) => Promise<void>;
   logout: () => Promise<void>;
   fetchMe: () => Promise<void>;
+  setAuthLoading: (loading: boolean) => void;
 }
 
 const useAuthStore = create<AuthState>()(
@@ -26,6 +36,9 @@ const useAuthStore = create<AuthState>()(
       user: null,
       isAuthenticated: false,
       authLoading: false,
+      lastLoginTime: null,
+
+      setAuthLoading: (loading) => set({ authLoading: loading }),
 
       login: async (data) => {
         const res = await login(data);
@@ -33,6 +46,7 @@ const useAuthStore = create<AuthState>()(
           user: res.data.data.user,
           isAuthenticated: true,
           authLoading: false,
+          lastLoginTime: Date.now(),
         });
       },
 
@@ -49,6 +63,7 @@ const useAuthStore = create<AuthState>()(
           user: null,
           isAuthenticated: false,
           authLoading: false,
+          lastLoginTime: null,
         });
       },
 
@@ -61,11 +76,14 @@ const useAuthStore = create<AuthState>()(
             authLoading: false,
           });
         } catch (error) {
-          set({
-            user: null,
-            isAuthenticated: false,
-            authLoading: false,
-          });
+          // Silent failure - don't clear auth state on page load verification
+          // Let the axios interceptor handle actual auth failures during user actions
+          console.log(
+            "Auth verification failed (cookies may need refresh):",
+            error
+          );
+          set({ authLoading: false });
+          // Auth state is preserved - will be cleared only if refresh token also fails
         }
       },
     }),

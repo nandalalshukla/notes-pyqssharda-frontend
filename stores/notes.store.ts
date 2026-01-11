@@ -1,13 +1,14 @@
 import { create } from "zustand";
 import {
   Note,
-  getMyNotes,
   getAllNotes,
-  searchNotes as searchNotesApi,
+  getMyNotes,
+  searchNotes,
   createNote,
   updateNote,
   deleteNote,
-} from "@/lib/api/crud.api";
+} from "../lib/api/notes.api";
+import { getErrorMessage } from "../lib/utils/errorHandler";
 
 interface NotesStore {
   myNotes: Note[];
@@ -15,13 +16,14 @@ interface NotesStore {
   isLoading: boolean;
   error: string | null;
 
-  fetchNotes: () => Promise<void>; // user-specific notes
-  fetchAllNotes: () => Promise<void>; // public/admin notes
+  fetchAllNotes: () => Promise<void>;
+  fetchMyNotes: () => Promise<void>;
   searchNotes: (query: string) => Promise<void>;
-
   addNote: (data: FormData) => Promise<void>;
   editNote: (id: string, data: FormData) => Promise<void>;
   removeNote: (id: string) => Promise<void>;
+  clearError: () => void;
+  resetStore: () => void;
 }
 
 export const useNotesStore = create<NotesStore>((set) => ({
@@ -30,85 +32,67 @@ export const useNotesStore = create<NotesStore>((set) => ({
   isLoading: false,
   error: null,
 
-  /* ---------------- FETCH MY NOTES ---------------- */
-  fetchNotes: async () => {
-    set({ isLoading: true, error: null });
-    try {
-      const res = await getMyNotes();
-      const notes = res.notes;
-      console.log("notes",notes);
-      set({ myNotes: notes, isLoading: false });
-    } catch (err) {
-      set({ myNotes: [], isLoading: false, error: String(err) });
-    }
-  },
-
-  /* ---------------- FETCH ALL NOTES ---------------- */
   fetchAllNotes: async () => {
     set({ isLoading: true, error: null });
     try {
       const res = await getAllNotes();
       const notes = res.notes || [];
       set({ allNotes: notes, isLoading: false });
-    } catch (err) {
-      set({ allNotes: [], isLoading: false, error: String(err) });
+    } catch (error: unknown) {
+      set({ error: getErrorMessage(error) || "Failed to fetch notes", isLoading: false });
     }
   },
 
-  /* ---------------- SEARCH NOTES ---------------- */
-  searchNotes: async (query: string) => {
-    if (!query.trim()) return;
-
+  fetchMyNotes: async () => {
     set({ isLoading: true, error: null });
     try {
-      const res = await searchNotesApi(query);
+      const res = await getMyNotes();
       const notes = res.notes || [];
-
-      set({
-        allNotes: notes,
-        isLoading: false,
-      });
-    } catch (err) {
-      set({ isLoading: false, error: String(err) });
+      set({ myNotes: notes, isLoading: false });
+    } catch (error: unknown) {
+      set({ error: getErrorMessage(error) || "Failed to fetch my notes", isLoading: false });
     }
   },
 
-  /* ---------------- ADD NOTE ---------------- */
+  searchNotes: async (query: string) => {
+    set({ isLoading: true, error: null });
+    try {
+      const res = await searchNotes(query);
+      const notes = res.notes || [];
+      set({ allNotes: notes, isLoading: false });
+    } catch (error: unknown) {
+      set({ error: getErrorMessage(error) || "Search failed", isLoading: false });
+    }
+  },
+
   addNote: async (data: FormData) => {
     set({ isLoading: true, error: null });
     try {
       const res = await createNote(data);
-      const note = res.note;
-
-      set((state) => ({
-        myNotes: [note, ...state.myNotes],
-        isLoading: false,
-        allNotes: [note, ...state.allNotes],
-      }));
-    } catch (err) {
-      set({ isLoading: false, error: String(err) });
-      throw err;
+      const newNote = res.note;
+      set((state) => ({ myNotes: [newNote, ...state.myNotes], isLoading: false }));
+    } catch (error: unknown) {
+      set({ error: getErrorMessage(error) || "Failed to add note", isLoading: false });
+      throw error;
     }
   },
 
-  /* ---------------- EDIT NOTE ---------------- */
   editNote: async (id: string, data: FormData) => {
     set({ isLoading: true, error: null });
     try {
       const res = await updateNote(id, data);
       const updatedNote = res.note;
-
       set((state) => ({
         myNotes: state.myNotes.map((n) => (n._id === id ? updatedNote : n)),
+        allNotes: state.allNotes.map((n) => (n._id === id ? updatedNote : n)),
         isLoading: false,
       }));
-    } catch (err) {
-      set({ isLoading: false, error: String(err) });
-      throw err;
+    } catch (error: unknown) {
+      set({ error: getErrorMessage(error) || "Failed to update note", isLoading: false });
+      throw error;
     }
   },
 
-  /* ---------------- DELETE NOTE ---------------- */
   removeNote: async (id: string) => {
     set({ isLoading: true, error: null });
     try {
@@ -118,9 +102,13 @@ export const useNotesStore = create<NotesStore>((set) => ({
         allNotes: state.allNotes.filter((n) => n._id !== id),
         isLoading: false,
       }));
-    } catch (err) {
-      set({ isLoading: false, error: String(err) });
-      throw err;
+    } catch (error: unknown) {
+      set({ error: getErrorMessage(error) || "Failed to delete note", isLoading: false });
+      throw error;
     }
   },
+
+  clearError: () => set({ error: null }),
+  resetStore: () => set({ myNotes: [], allNotes: [], isLoading: false, error: null }),
 }));
+

@@ -8,7 +8,6 @@ import useAuthStore from "@/stores/authStore";
 const LoginForm = () => {
   const router = useRouter();
   const login = useAuthStore((s) => s.login);
-  const { isAuthenticated } = useAuthStore();
 
   const [formData, setFormData] = useState({
     email: "",
@@ -44,11 +43,8 @@ const LoginForm = () => {
     setLoading(true);
 
     try {
-      console.log(isAuthenticated);
       await login({ email, password });
-
       toast.success("Logged in successfully 🎉");
-      console.log(isAuthenticated);
       setFormData({ email: "", password: "" });
       router.push("/dashboard");
     } catch (error: unknown) {

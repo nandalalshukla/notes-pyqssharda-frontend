@@ -10,11 +10,11 @@ import { useNotesStore } from "@/stores/notes.store";
 import { usePYQsStore } from "@/stores/pyqs.store";
 import { useSyllabusStore } from "@/stores/syllabus.store";
 
-export default function DashboardPage(){
+export default function DashboardPage() {
   const { user } = useAuthStore();
   const {
     myNotes,
-    fetchNotes,
+    fetchMyNotes,
     removeNote,
     isLoading: isNotesLoading,
   } = useNotesStore();
@@ -37,7 +37,7 @@ export default function DashboardPage(){
   const [editingItem, setEditingItem] = useState<any>(null);
 
   const fetchData = async () => {
-    await Promise.all([fetchNotes(), fetchPYQs(), fetchSyllabus()]);
+    await Promise.all([fetchMyNotes(), fetchPYQs(), fetchSyllabus()]);
   };
 
   useEffect(() => {

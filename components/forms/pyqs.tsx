@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { toast } from "react-hot-toast";
-import { Pyq } from "@/lib/api/crud.api";
+// import { Pyq } from "@/lib/api/crud.api";
 import { usePYQsStore } from "@/stores/pyqs.store";
 
 interface PyqsFormProps {
@@ -111,14 +111,22 @@ export default function PyqsForm({
       return;
     }
 
+    // Validate semester
+    const sem = parseInt(formData.semester);
+    if (isNaN(sem) || sem < 1 || sem > 12) {
+      toast.error("Semester must be between 1 and 12");
+      setLoading(false);
+      return;
+    }
+
     try {
       console.log(formData.courseCode, file);
       const data = new FormData();
-      data.append("title", formData.title);
+      data.append("title", formData.title.trim());
       data.append("program", formData.program);
-      data.append("courseCode", formData.courseCode);
-      data.append("courseName", formData.courseName);
-      data.append("semester", formData.semester);
+      data.append("courseCode", formData.courseCode.trim().toUpperCase());
+      data.append("courseName", formData.courseName.trim());
+      data.append("semester", formData.semester); // Send as string, backend handles conversion
       data.append("year", formData.year);
 
       if (file) {
@@ -130,7 +138,7 @@ export default function PyqsForm({
         toast.success("PYQ updated successfully!");
       } else {
         await addPYQ(data);
-        toast.success("PYQ uploaded successfully!");
+        toast.success("PYQ uploaded successfully! Pending approval.");
       }
 
       if (onSuccess) onSuccess();

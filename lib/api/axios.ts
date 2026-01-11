@@ -18,7 +18,12 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    // Don't retry if it's already a retry, or if it's the refresh token endpoint itself
+    if (
+      error.response?.status === 401 &&
+      !originalRequest._retry &&
+      !originalRequest.url?.includes("/auth/refresh-token")
+    ) {
       originalRequest._retry = true;
 
       if (!isRefreshing) {
@@ -32,8 +37,14 @@ api.interceptors.response.use(
       try {
         await refreshPromise;
         return api(originalRequest);
-      } catch {
-        return Promise.reject(error);
+      } catch (refreshError) {
+        // Refresh failed - clear auth state and redirect to login
+        if (typeof window !== "undefined") {
+          // Clear auth storage
+          localStorage.removeItem("auth-storage");
+          window.location.href = "/auth/login";
+        }
+        return Promise.reject(refreshError);
       }
     }
 

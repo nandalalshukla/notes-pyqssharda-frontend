@@ -125,16 +125,16 @@ export default function NotesForm({
       } else {
         // For create, use FormData (file upload)
         const data = new FormData();
-        data.append("title", formData.title);
+        data.append("title", formData.title.trim());
         data.append("program", formData.program);
-        data.append("courseCode", formData.courseCode);
-        data.append("courseName", formData.courseName);
-        data.append("semester", formData.semester);
+        data.append("courseCode", formData.courseCode.trim().toUpperCase());
+        data.append("courseName", formData.courseName.trim());
+        data.append("semester", semester); // Send as string, backend will handle conversion
         if (file) {
           data.append("file", file);
         }
         await addNote(data);
-        toast.success("Notes uploaded successfully!");
+        toast.success("Notes uploaded successfully! Pending approval.");
       }
 
       if (onSuccess) onSuccess();

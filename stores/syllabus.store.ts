@@ -3,11 +3,12 @@ import {
   Syllabus,
   getAllSyllabus,
   searchSyllabus,
-  getSyllabus,
+  getMySyllabus,
   createSyllabus,
   updateSyllabus,
   deleteSyllabus,
-} from "@/lib/api/crud.api";
+} from "../lib/api/syllabus.api";
+import { getErrorMessage } from "../lib/utils/errorHandler";
 
 interface SyllabusStore {
   mySyllabus: Syllabus[];
@@ -16,12 +17,13 @@ interface SyllabusStore {
   error: string | null;
 
   fetchSyllabus: () => Promise<void>;
-  addSyllabus: (data: FormData | Syllabus) => Promise<void>;
-  editSyllabus: (
-    id: string,
-    data: Partial<Syllabus> | FormData
-  ) => Promise<void>;
+  fetchAllSyllabus: () => Promise<void>;
+  searchSyllabus: (query: string) => Promise<void>;
+  addSyllabus: (data: FormData) => Promise<void>;
+  editSyllabus: (id: string, data: FormData) => Promise<void>;
   removeSyllabus: (id: string) => Promise<void>;
+  clearError: () => void;
+  resetStore: () => void;
 }
 
 export const useSyllabusStore = create<SyllabusStore>((set) => ({
@@ -33,46 +35,60 @@ export const useSyllabusStore = create<SyllabusStore>((set) => ({
   fetchSyllabus: async () => {
     set({ isLoading: true, error: null });
     try {
-      const res = await getSyllabus();
-      const syllabus = res.syllabus;
-      console.log("syllabus:",syllabus);
+      const res = await getMySyllabus();
+      const syllabus = res.syllabus || [];
       set({ mySyllabus: syllabus, isLoading: false });
-    } catch (error) {
-      set({
-        error: (error as Error).message,
-        isLoading: false,
-        mySyllabus: [],
-      });
+    } catch (error: unknown) {
+      set({ error: getErrorMessage(error) || "Failed to fetch syllabus", isLoading: false, mySyllabus: [] });
     }
   },
 
-  addSyllabus: async (data: FormData | Syllabus) => {
+  fetchAllSyllabus: async () => {
     set({ isLoading: true, error: null });
     try {
-      const newSyllabus = await createSyllabus(data);
-      set((state) => ({
-        mySyllabus: [newSyllabus, ...state.mySyllabus],
-        allSyllabus: [newSyllabus, ...state.allSyllabus],
-        isLoading: false,
-      }));
-    } catch (error) {
-      set({ error: (error as Error).message, isLoading: false });
+      const res = await getAllSyllabus();
+      const syllabus = res.syllabus || [];
+      set({ allSyllabus: syllabus, isLoading: false });
+    } catch (error: unknown) {
+      set({ error: getErrorMessage(error) || "Failed to fetch all syllabus", isLoading: false });
+    }
+  },
+
+  searchSyllabus: async (query: string) => {
+    set({ isLoading: true, error: null });
+    try {
+      const res = await searchSyllabus(query);
+      const syllabus = res.syllabus || [];
+      set({ allSyllabus: syllabus, isLoading: false });
+    } catch (error: unknown) {
+      set({ error: getErrorMessage(error) || "Search failed", isLoading: false });
+    }
+  },
+
+  addSyllabus: async (data: FormData) => {
+    set({ isLoading: true, error: null });
+    try {
+      const res = await createSyllabus(data);
+      const newSyllabus = res.syllabus;
+      set((state) => ({ mySyllabus: [newSyllabus, ...state.mySyllabus], isLoading: false }));
+    } catch (error: unknown) {
+      set({ error: getErrorMessage(error) || "Failed to add syllabus", isLoading: false });
       throw error;
     }
   },
 
-  editSyllabus: async (id: string, data: Partial<Syllabus> | FormData) => {
+  editSyllabus: async (id: string, data: FormData) => {
     set({ isLoading: true, error: null });
     try {
-      const updatedSyllabus = await updateSyllabus(id, data);
+      const res = await updateSyllabus(id, data);
+      const updatedSyllabus = res.syllabus;
       set((state) => ({
-        mySyllabus: state.mySyllabus.map((s) =>
-          s._id === id ? updatedSyllabus : s
-        ),
+        mySyllabus: state.mySyllabus.map((s) => (s._id === id ? updatedSyllabus : s)),
+        allSyllabus: state.allSyllabus.map((s) => (s._id === id ? updatedSyllabus : s)),
         isLoading: false,
       }));
-    } catch (error) {
-      set({ error: (error as Error).message, isLoading: false });
+    } catch (error: unknown) {
+      set({ error: getErrorMessage(error) || "Failed to update syllabus", isLoading: false });
       throw error;
     }
   },
@@ -83,11 +99,16 @@ export const useSyllabusStore = create<SyllabusStore>((set) => ({
       await deleteSyllabus(id);
       set((state) => ({
         mySyllabus: state.mySyllabus.filter((s) => s._id !== id),
+        allSyllabus: state.allSyllabus.filter((s) => s._id !== id),
         isLoading: false,
       }));
-    } catch (error) {
-      set({ error: (error as Error).message, isLoading: false });
+    } catch (error: unknown) {
+      set({ error: getErrorMessage(error) || "Failed to delete syllabus", isLoading: false });
       throw error;
     }
   },
+
+  clearError: () => set({ error: null }),
+  resetStore: () => set({ mySyllabus: [], allSyllabus: [], isLoading: false, error: null }),
 }));
+

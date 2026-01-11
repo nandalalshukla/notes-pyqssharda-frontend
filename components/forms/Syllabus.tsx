@@ -95,13 +95,21 @@ export default function SyllabusForm({
       return;
     }
 
+    // Validate semester
+    const sem = parseInt(formData.semester);
+    if (isNaN(sem) || sem < 1 || sem > 12) {
+      toast.error("Semester must be between 1 and 12");
+      setLoading(false);
+      return;
+    }
+
     try {
       const data = new FormData();
-      data.append("title", formData.title);
+      data.append("title", formData.title.trim());
       data.append("program", formData.program);
-      data.append("courseCode", formData.courseCode);
-      data.append("courseName", formData.courseName);
-      data.append("semester", formData.semester);
+      data.append("courseCode", formData.courseCode.trim().toUpperCase());
+      data.append("courseName", formData.courseName.trim());
+      data.append("semester", formData.semester); // Send as string, backend handles conversion
 
       if (file) {
         data.append("file", file);
@@ -113,7 +121,7 @@ export default function SyllabusForm({
         toast.success("Syllabus updated successfully!");
       } else {
         await addSyllabus(data);
-        toast.success("Syllabus uploaded successfully!");
+        toast.success("Syllabus uploaded successfully! Pending approval.");
       }
 
       if (onSuccess) onSuccess();
