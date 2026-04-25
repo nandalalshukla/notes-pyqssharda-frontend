@@ -3,19 +3,19 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "postinstall": "node -e \"require('fs').copyFileSync('node_modules/pdfjs-dist/build/pdf.worker.min.mjs', 'public/pdf.worker.min.mjs')\"",
     "dev": "next dev -p 3100",
     "build": "next build",
     "start": "next start",
     "lint": "eslint"
   },
   "dependencies": {
+    "@vercel/analytics": "^2.0.1",
     "axios": "^1.13.2",
     "framer-motion": "^12.27.0",
-    "next": "16.0.10",
+    "next": "16.2.4",
     "pdfjs-dist": "^5.4.530",
-    "react": "19.2.1",
-    "react-dom": "19.2.1",
+    "react": "19.2.5",
+    "react-dom": "18.3.1",
     "react-hot-toast": "^2.6.0",
     "react-icons": "^5.5.0",
     "zustand": "^5.0.9"
