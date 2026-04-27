@@ -73,7 +73,7 @@ export default function AboutUsPage() {
               The Solution
             </h2>
             <p className="text-gray-300 leading-7 mb-4">
-              <strong>Sharda Online Library</strong> was born to solve this
+              <strong>University Online Library</strong> was born to solve this
               chaos. We created a centralized platform where you can access:
             </p>
             <ul className="space-y-3">

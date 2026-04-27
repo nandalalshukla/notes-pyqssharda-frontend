@@ -36,7 +36,7 @@ export default function HomePage() {
         <span className="relative inline-block mt-2 transform -rotate-2 hover:rotate-0 hover:scale-105 transition-all duration-300 cursor-pointer">
           <span className="absolute inset-0 bg-[#FF9F66] border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"></span>
           <span className="relative px-4 py-1 block">
-            Sharda Online Library
+            University Online Library
           </span>
         </span>
       </h1>
