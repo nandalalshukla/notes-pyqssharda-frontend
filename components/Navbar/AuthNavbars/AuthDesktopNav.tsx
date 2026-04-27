@@ -44,7 +44,7 @@ const AuthDesktopNav = () => {
           href="/"
           className="text-2xl font-black tracking-tighter hover:scale-105 transition-transform"
         >
-          UniOL
+          SOL
         </Link>
         <div className="flex items-center gap-4">
           <a

@@ -11,7 +11,7 @@ const GuestMobileNav = () => {
       <div className="flex justify-between items-center">
         <div className="flex items-center gap-5">
           <Link href="/" className="text-xl font-black tracking-tighter">
-            UniOL
+            SOL
           </Link>
           <div className="flex items-center gap-4">
             <a
