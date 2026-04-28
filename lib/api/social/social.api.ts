@@ -1,5 +1,5 @@
 import api from "../axios";
-import { ApiResponse, PaginatedResponse } from "../types";
+import { ApiResponse, PaginatedResponse, PaginationInfo } from "../types";
 
 /**
  * ═══════════════════════════════════════════════════════════════════════════════
@@ -111,9 +111,9 @@ export const deletePost = async (postId: string) => {
  */
 
 export const getComments = async (postId: string) => {
-  const response = await api.get<ApiResponse<Comment[]>>(
-    `/social/posts/${postId}/comments`,
-  );
+  const response = await api.get<
+    ApiResponse<{ comments: Comment[]; pagination: PaginationInfo }>
+  >(`/social/posts/${postId}/comments`);
   return response.data;
 };
 

@@ -51,7 +51,10 @@ export default function AccountDangerZone() {
       {/* Deactivate Account */}
       <div className="bg-yellow-50 border-3 border-yellow-500 rounded-2xl p-8 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
         <div className="flex items-start gap-4 mb-6">
-          <FiAlertTriangle size={32} className="text-yellow-600 flex-shrink-0 mt-1" />
+          <FiAlertTriangle
+            size={32}
+            className="text-yellow-600 flex-shrink-0 mt-1"
+          />
           <div>
             <h2 className="text-2xl font-black text-yellow-900 mb-2">
               Deactivate Account
@@ -66,7 +69,10 @@ export default function AccountDangerZone() {
         {deactivateConfirm ? (
           <div className="bg-white border-2 border-yellow-500 rounded-xl p-6 space-y-4">
             <div className="flex items-start gap-3 bg-yellow-100 border-2 border-yellow-400 rounded-lg p-4">
-              <FiAlertTriangle size={24} className="text-yellow-700 flex-shrink-0" />
+              <FiAlertTriangle
+                size={24}
+                className="text-yellow-700 flex-shrink-0"
+              />
               <div>
                 <h3 className="font-bold text-yellow-900 mb-1">
                   Are you sure?
@@ -107,7 +113,10 @@ export default function AccountDangerZone() {
       {/* Delete Account */}
       <div className="bg-red-50 border-3 border-red-500 rounded-2xl p-8 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
         <div className="flex items-start gap-4 mb-6">
-          <FiAlertTriangle size={32} className="text-red-600 flex-shrink-0 mt-1" />
+          <FiAlertTriangle
+            size={32}
+            className="text-red-600 flex-shrink-0 mt-1"
+          />
           <div>
             <h2 className="text-2xl font-black text-red-900 mb-2">
               Permanently Delete Account
@@ -123,7 +132,10 @@ export default function AccountDangerZone() {
         {deleteConfirm ? (
           <div className="bg-white border-2 border-red-500 rounded-xl p-6 space-y-4">
             <div className="flex items-start gap-3 bg-red-100 border-2 border-red-400 rounded-lg p-4">
-              <FiAlertTriangle size={24} className="text-red-700 flex-shrink-0" />
+              <FiAlertTriangle
+                size={24}
+                className="text-red-700 flex-shrink-0"
+              />
               <div>
                 <h3 className="font-bold text-red-900 mb-1">
                   ⚠️ This cannot be undone

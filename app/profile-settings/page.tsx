@@ -35,7 +35,9 @@ export default function ProfileSettingsPage() {
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-3xl font-black mb-4">Please Sign In</h1>
-          <p className="text-gray-600 mb-6">You need to be logged in to access profile settings</p>
+          <p className="text-gray-600 mb-6">
+            You need to be logged in to access profile settings
+          </p>
           <button
             onClick={() => router.push("/auth/login")}
             className="px-8 py-3 bg-black text-white font-bold border-2 border-transparent rounded-lg hover:bg-white hover:text-black hover:border-black transition-all"
@@ -60,7 +62,9 @@ export default function ProfileSettingsPage() {
           </button>
           <div>
             <h1 className="text-4xl font-black">Settings</h1>
-            <p className="text-gray-600 mt-1">Manage your profile and account</p>
+            <p className="text-gray-600 mt-1">
+              Manage your profile and account
+            </p>
           </div>
         </div>
 

@@ -141,7 +141,7 @@ const AuthMobileNav = () => {
             Verify Email
           </Link>
           <Link
-            href="/dashboard"
+            href="/profile-settings"
             onClick={() => setIsProfileOpen(false)}
             className="w-full text-center px-4 py-2 bg-blue-300 border-2 border-black rounded-lg shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none text-sm font-bold"
           >

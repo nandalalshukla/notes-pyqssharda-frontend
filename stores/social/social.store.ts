@@ -260,8 +260,9 @@ export const useSocialStore = create<SocialStore>((set, get) => ({
     }));
     try {
       const res = await getComments(postId);
+      const commentsArray = res.data?.comments || [];
       set((state) => ({
-        comments: new Map(state.comments).set(postId, res.data || []),
+        comments: new Map(state.comments).set(postId, commentsArray),
         isLoadingComments: new Map(state.isLoadingComments).set(postId, false),
       }));
     } catch (error: unknown) {
@@ -358,13 +359,16 @@ export const useSocialStore = create<SocialStore>((set, get) => ({
   togglePostLike: async (postId: string) => {
     set({ error: null });
     try {
-      await toggleLike(postId, "post");
+      const res = await toggleLike(postId, "post");
+      const isLiked = res.data?.liked;
+      
+      // Update store with like status
       set((state) => ({
         feed: state.feed.map((p) => {
           if (p._id === postId) {
             return {
               ...p,
-              likedByCurrentUser: !p.likedByCurrentUser,
+              likedByCurrentUser: isLiked || false,
               likes: p.likedByCurrentUser ? p.likes - 1 : p.likes + 1,
             };
           }
@@ -375,13 +379,16 @@ export const useSocialStore = create<SocialStore>((set, get) => ({
       set({
         error: getErrorMessage(error) || "Failed to toggle like",
       });
+      throw error; // Re-throw so component can handle it
     }
   },
 
   toggleCommentLike: async (commentId: string) => {
     set({ error: null });
     try {
-      await toggleLike(commentId, "comment");
+      const res = await toggleLike(commentId, "comment");
+      const isLiked = res.data?.liked;
+      
       set((state) => {
         const updatedComments = new Map(state.comments);
         for (const [postId, comments] of updatedComments.entries()) {
@@ -391,7 +398,7 @@ export const useSocialStore = create<SocialStore>((set, get) => ({
               if (c._id === commentId) {
                 return {
                   ...c,
-                  likedByCurrentUser: !c.likedByCurrentUser,
+                  likedByCurrentUser: isLiked || false,
                   likes: c.likedByCurrentUser ? c.likes - 1 : c.likes + 1,
                 };
               }
@@ -405,6 +412,7 @@ export const useSocialStore = create<SocialStore>((set, get) => ({
       set({
         error: getErrorMessage(error) || "Failed to toggle comment like",
       });
+      throw error; // Re-throw so component can handle it
     }
   },
 

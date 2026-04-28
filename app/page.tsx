@@ -1,10 +1,12 @@
+"use client";
+
+import React from "react";
 import { Feed } from "@/components/social";
-import SocialLayout from "@/components/social/SocialLayout";
 
 export default function ShardaSocial() {
   return (
-    <SocialLayout>
+    <div className="min-h-screen bg-white">
       <Feed />
-    </SocialLayout>
+    </div>
   );
 }

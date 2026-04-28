@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
-import { useRouter } from "next/navigation";
 import { useSocialStore } from "@/stores/social/social.store";
 import useAuthStore from "@/stores/user/authStore";
 import { Comment } from "@/lib/api/social/social.api";
@@ -12,7 +11,6 @@ import {
   FiEdit2,
   FiTrash2,
   FiLoader,
-  FiLogIn,
 } from "react-icons/fi";
 import { FaHeart } from "react-icons/fa";
 import toast from "react-hot-toast";
@@ -23,7 +21,6 @@ interface CommentsSectionProps {
 }
 
 export default function CommentsSection({ postId }: CommentsSectionProps) {
-  const router = useRouter();
   const { user } = useAuthStore();
   const {
     comments,
@@ -83,10 +80,8 @@ export default function CommentsSection({ postId }: CommentsSectionProps) {
         toast.success("Comment added!", {
           icon: "✨",
         });
-      } catch (error: any) {
-        const errorMsg =
-          error?.response?.data?.message || "Failed to add comment";
-        toast.error(errorMsg);
+      } catch (error) {
+        toast.error("Failed to add comment");
       } finally {
         setIsSubmitting(false);
       }
@@ -113,10 +108,8 @@ export default function CommentsSection({ postId }: CommentsSectionProps) {
         toast.success("Comment updated!", {
           icon: "✏️",
         });
-      } catch (error: any) {
-        const errorMsg =
-          error?.response?.data?.message || "Failed to update comment";
-        toast.error(errorMsg);
+      } catch (error) {
+        toast.error("Failed to update comment");
       }
     },
     [postId, editText, updateComment],
@@ -131,10 +124,8 @@ export default function CommentsSection({ postId }: CommentsSectionProps) {
         toast.success("Comment deleted", {
           icon: "🗑️",
         });
-      } catch (error: any) {
-        const errorMsg =
-          error?.response?.data?.message || "Failed to delete comment";
-        toast.error(errorMsg);
+      } catch (error) {
+        toast.error("Failed to delete comment");
       }
     },
     [postId, removeComment],
@@ -142,15 +133,6 @@ export default function CommentsSection({ postId }: CommentsSectionProps) {
 
   const handleLikeComment = useCallback(
     async (commentId: string) => {
-      // Check authentication first
-      if (!user) {
-        toast.error("Please login to like comments", {
-          icon: <FiLogIn className="mr-2" />,
-        });
-        router.push("/auth/login");
-        return;
-      }
-
       try {
         setLikeAnimating(commentId);
         await toggleCommentLike(commentId);
@@ -167,13 +149,11 @@ export default function CommentsSection({ postId }: CommentsSectionProps) {
         setLikedComments(newLiked);
 
         setTimeout(() => setLikeAnimating(null), 300);
-      } catch (error: any) {
-        const errorMsg = error?.response?.data?.message || "Failed to react to comment";
-        toast.error(errorMsg);
-        setTimeout(() => setLikeAnimating(null), 300);
+      } catch (error) {
+        toast.error("Failed to react to comment");
       }
     },
-    [likedComments, commentLikes, toggleCommentLike, user, router],
+    [likedComments, commentLikes, toggleCommentLike],
   );
 
   const formatRelativeTime = (date: string) => {

@@ -91,14 +91,14 @@ export default function EditProfileForm() {
               {errors.bio.message}
             </div>
           )}
-          <p className="text-xs text-gray-500 mt-1">
-            Maximum 500 characters
-          </p>
+          <p className="text-xs text-gray-500 mt-1">Maximum 500 characters</p>
         </div>
 
         {/* Course */}
         <div>
-          <label className="block text-sm font-bold mb-2">Course / Program</label>
+          <label className="block text-sm font-bold mb-2">
+            Course / Program
+          </label>
           <input
             {...register("course")}
             type="text"
@@ -118,9 +118,7 @@ export default function EditProfileForm() {
 
         {/* Contact Number */}
         <div>
-          <label className="block text-sm font-bold mb-2">
-            Contact Number
-          </label>
+          <label className="block text-sm font-bold mb-2">Contact Number</label>
           <input
             {...register("contactNo")}
             type="tel"
@@ -147,9 +145,7 @@ export default function EditProfileForm() {
             disabled
             className="w-full p-4 border-2 border-gray-400 rounded-xl bg-gray-100 text-gray-600 font-semibold cursor-not-allowed"
           />
-          <p className="text-xs text-gray-500 mt-1">
-            Email cannot be changed
-          </p>
+          <p className="text-xs text-gray-500 mt-1">Email cannot be changed</p>
         </div>
 
         {/* Username (Read-only) */}

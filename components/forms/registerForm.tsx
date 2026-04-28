@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "react-hot-toast";
 import { register } from "@/lib/api/user/auth.api";
+import { FiEye, FiEyeOff } from "react-icons/fi";
 
 const RegisterForm = () => {
   const router = useRouter();
@@ -11,12 +12,15 @@ const RegisterForm = () => {
   // ✅ LOCAL form state (correct)
   const [formData, setFormData] = useState({
     name: "",
+    username: "",
     email: "",
     password: "",
     confirmPassword: "",
   });
 
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   // ✅ Generic change handler
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -31,11 +35,21 @@ const RegisterForm = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const { name, email, password, confirmPassword } = formData;
+    const { name, username, email, password, confirmPassword } = formData;
 
     // ✅ Validations
-    if (!name || !email || !password || !confirmPassword) {
+    if (!name || !username || !email || !password || !confirmPassword) {
       toast.error("Please fill all fields");
+      return;
+    }
+
+    if (username.length < 3) {
+      toast.error("Username must be at least 3 characters");
+      return;
+    }
+
+    if (!/^[a-zA-Z0-9_]+$/.test(username)) {
+      toast.error("Username can only contain letters, numbers, and underscores");
       return;
     }
 
@@ -57,7 +71,7 @@ const RegisterForm = () => {
     setLoading(true);
 
     try {
-      await register({ name, email, password });
+      await register({ name, username, email, password, confirmPassword });
       sessionStorage.setItem("verifyEmail", email);
       toast.success("Registration successful!");
       toast.success("Please verify the OTP sent to your email.");
@@ -65,6 +79,7 @@ const RegisterForm = () => {
       // ✅ Clear form
       setFormData({
         name: "",
+        username: "",
         email: "",
         password: "",
         confirmPassword: "",
@@ -115,6 +130,22 @@ const RegisterForm = () => {
 
           <div>
             <label className="block text-sm font-bold text-black mb-1">
+              Username
+            </label>
+            <input
+              name="username"
+              value={formData.username}
+              onChange={handleChange}
+              className="w-full px-4 py-2 rounded-lg border-2 border-black focus:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] outline-none transition-all text-sm font-medium text-black placeholder:text-gray-500"
+              placeholder="Choose a unique username"
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              Letters, numbers, and underscores only (min. 3 characters)
+            </p>
+          </div>
+
+          <div>
+            <label className="block text-sm font-bold text-black mb-1">
               Email
             </label>
             <input
@@ -131,28 +162,46 @@ const RegisterForm = () => {
             <label className="block text-sm font-bold text-black mb-1">
               Password
             </label>
-            <input
-              name="password"
-              type="password"
-              value={formData.password}
-              onChange={handleChange}
-              className="w-full px-4 py-2 rounded-lg border-2 border-black focus:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] outline-none transition-all text-sm font-medium text-black placeholder:text-gray-500"
-              placeholder="Minimum 6 characters"
-            />
+            <div className="relative">
+              <input
+                name="password"
+                type={showPassword ? "text" : "password"}
+                value={formData.password}
+                onChange={handleChange}
+                className="w-full px-4 py-2 pr-10 rounded-lg border-2 border-black focus:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] outline-none transition-all text-sm font-medium text-black placeholder:text-gray-500"
+                placeholder="Minimum 8 characters"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-2.5 text-gray-600 hover:text-black transition-colors"
+              >
+                {showPassword ? <FiEyeOff size={20} /> : <FiEye size={20} />}
+              </button>
+            </div>
           </div>
 
           <div>
             <label className="block text-sm font-bold text-black mb-1">
               Confirm Password
             </label>
-            <input
-              name="confirmPassword"
-              type="password"
-              value={formData.confirmPassword}
-              onChange={handleChange}
-              className="w-full px-4 py-2 rounded-lg border-2 border-black focus:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] outline-none transition-all text-sm font-medium text-black placeholder:text-gray-500"
-              placeholder="Re-enter password"
-            />
+            <div className="relative">
+              <input
+                name="confirmPassword"
+                type={showConfirmPassword ? "text" : "password"}
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                className="w-full px-4 py-2 pr-10 rounded-lg border-2 border-black focus:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] outline-none transition-all text-sm font-medium text-black placeholder:text-gray-500"
+                placeholder="Re-enter password"
+              />
+              <button
+                type="button"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                className="absolute right-3 top-2.5 text-gray-600 hover:text-black transition-colors"
+              >
+                {showConfirmPassword ? <FiEyeOff size={20} /> : <FiEye size={20} />}
+              </button>
+            </div>
           </div>
 
           <button
