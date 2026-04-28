@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { toast } from "react-hot-toast";
 import { useRouter } from "next/navigation";
-import useAuthStore from "@/stores/authStore";
+import useAuthStore from "@/stores/user/authStore";
 
 const LoginForm = () => {
   const router = useRouter();

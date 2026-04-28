@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import useAuthStore from "@/stores/authStore";
+import useAuthStore from "@/stores/user/authStore";
 import AuthDesktopNav from "./AuthNavbars/AuthDesktopNav";
 import AuthMobileNav from "./AuthNavbars/AuthMobileNav";
 import GuestDesktopNav from "./GuestNavbars/GuestDesktopNav";

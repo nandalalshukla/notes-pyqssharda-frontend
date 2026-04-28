@@ -2,10 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import useAuthStore from "@/stores/authStore";
-import { getAllNotes } from "@/lib/api/notes.api";
-import { getAllPyqs } from "@/lib/api/pyqs.api";
-import { getAllSyllabus } from "@/lib/api/syllabus.api";
+import useAuthStore from "@/stores/user/authStore";
+import { getAllNotes } from "@/lib/api/notes/notes.api";
+import { getAllPyqs } from "@/lib/api/pyqs/pyqs.api";
+import { getAllSyllabus } from "@/lib/api/syllabus/syllabus.api";
 import FileViewerModal from "./FileViewerModal";
 
 interface ContentItem {
@@ -56,13 +56,13 @@ export default function HomeContentShowcase() {
 
       // Filter approved items and take only 3 of each
       const approvedNotes = notesArray
-        .filter((n: any) => n.status === "approved")
+        .filter((n: ContentItem) => "status" in n && n.status === "approved")
         .slice(0, 3);
       const approvedPyqs = pyqsArray
-        .filter((p: any) => p.status === "approved")
+        .filter((p: ContentItem) => "status" in p && p.status === "approved")
         .slice(0, 3);
       const approvedSyllabus = syllabusArray
-        .filter((s: any) => s.status === "approved")
+        .filter((s: ContentItem) => "status" in s && s.status === "approved")
         .slice(0, 3);
 
       setNotes(approvedNotes);

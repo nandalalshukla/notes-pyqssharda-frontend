@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
 import { useRouter } from "next/navigation";
-import { resetPassword } from "@/lib/api/auth.api";
+import { resetPassword } from "@/lib/api/user/auth.api";
 
 const ResetPasswordForm = () => {
   const router = useRouter();

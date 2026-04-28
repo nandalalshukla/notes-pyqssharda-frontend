@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useState, useEffect, useRef } from "react";
-import useAuthStore from "@/stores/authStore";
+import useAuthStore from "@/stores/user/authStore";
 import { useRouter } from "next/navigation";
 import { toast } from "react-hot-toast";
 import ModRequestForm from "@/components/forms/ModRequestForm";

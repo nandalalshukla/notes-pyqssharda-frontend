@@ -2,8 +2,8 @@
 
 import React, { useState, useEffect } from "react";
 import { toast } from "react-hot-toast";
-import { Pyq } from "@/lib/api/pyqs.api"
-import { usePYQsStore } from "@/stores/pyqs.store";
+import { Pyq } from "@/lib/api/pyqs/pyqs.api";
+import { usePYQsStore } from "@/stores/pyqs/pyqs.store";
 
 interface PyqsFormProps {
   onClose?: () => void;
@@ -66,7 +66,7 @@ export default function PyqsForm({
   ];
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -146,7 +146,7 @@ export default function PyqsForm({
     } catch (error) {
       console.error(error);
       toast.error(
-        initialData ? "Failed to update PYQ." : "Failed to upload PYQ."
+        initialData ? "Failed to update PYQ." : "Failed to upload PYQ.",
       );
     } finally {
       setLoading(false);
@@ -332,8 +332,8 @@ export default function PyqsForm({
               ? "Updating..."
               : "Uploading..."
             : initialData
-            ? "Update PYQ"
-            : "Upload PYQ"}
+              ? "Update PYQ"
+              : "Upload PYQ"}
         </button>
       </form>
     </div>

@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import { toast } from "react-hot-toast";
-import { changePassword } from "@/lib/api/auth.api";
+import { changePassword } from "@/lib/api/user/auth.api";
 import { useRouter } from "next/navigation";
-import useAuthStore from "@/stores/authStore";
+import useAuthStore from "@/stores/user/authStore";
 
 const ChangePasswordForm = () => {
   const router = useRouter();

@@ -2,9 +2,8 @@
 
 import React, { useState, useEffect } from "react";
 import { toast } from "react-hot-toast";
-import { Syllabus } from "@/lib/api/syllabus.api";
-import { useSyllabusStore } from "@/stores/syllabus.store";
-
+import { Syllabus } from "@/lib/api/syllabus/syllabus.api";
+import { useSyllabusStore } from "@/stores/syllabus/syllabus.store";
 
 interface SyllabusFormProps {
   onClose?: () => void;
@@ -56,7 +55,7 @@ export default function SyllabusForm({
   ];
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -132,7 +131,7 @@ export default function SyllabusForm({
       toast.error(
         initialData
           ? "Failed to update Syllabus."
-          : "Failed to upload Syllabus."
+          : "Failed to upload Syllabus.",
       );
     } finally {
       setLoading(false);
@@ -286,8 +285,8 @@ export default function SyllabusForm({
               ? "Updating..."
               : "Uploading..."
             : initialData
-            ? "Update Syllabus"
-            : "Upload Syllabus"}
+              ? "Update Syllabus"
+              : "Upload Syllabus"}
         </button>
       </form>
     </div>

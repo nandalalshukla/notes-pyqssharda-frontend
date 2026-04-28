@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "react-hot-toast";
-import { register } from "@/lib/api/auth.api";
+import { register } from "@/lib/api/user/auth.api";
 
 const RegisterForm = () => {
   const router = useRouter();

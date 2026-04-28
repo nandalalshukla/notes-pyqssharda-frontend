@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useModStore } from "@/stores/mod.store";
+import { useModStore } from "@/stores/mod/mod.store";
 import { toast } from "react-hot-toast";
-import useAuthStore from "@/stores/authStore";
+import useAuthStore from "@/stores/user/authStore";
 import DashboardPage from "./DashboardPage";
 import RejectionModal from "@/components/modals/RejectionModal";
 import { FaUserShield, FaUser } from "react-icons/fa";
@@ -71,7 +71,9 @@ export default function ModDashboard({
         toast.success("Item approved successfully");
         // No need to refetch - store already updates optimistically
       } catch (error: unknown) {
-        toast.error((error as any)?.message || "Failed to approve item");
+        const errorMessage =
+          error instanceof Error ? error.message : "Failed to approve item";
+        toast.error(errorMessage);
         console.error("Approval error:", error);
         // Only refetch on error to restore correct state
         await fetchPendingContent();
@@ -96,7 +98,9 @@ export default function ModDashboard({
       });
       // No need to refetch - store already updates optimistically
     } catch (error: unknown) {
-      toast.error((error as any)?.message || "Failed to reject item");
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to reject item";
+      toast.error(errorMessage);
       console.error("Rejection error:", error);
       // Only refetch on error to restore correct state
       await fetchPendingContent();
@@ -386,7 +390,9 @@ function ModSection({
                 {item.userId?.email && (
                   <div className="text-xs text-gray-500">
                     Email:{" "}
-                    <span className="font-medium text-black">{item.userId.email}</span>
+                    <span className="font-medium text-black">
+                      {item.userId.email}
+                    </span>
                   </div>
                 )}
               </div>

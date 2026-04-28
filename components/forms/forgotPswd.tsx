@@ -1,6 +1,6 @@
 "use client";
 
-import { forgotPassword } from "@/lib/api/auth.api";
+import { forgotPassword } from "@/lib/api/user/auth.api";
 import { useState } from "react";
 import { toast } from "react-hot-toast";
 import { useRouter } from "next/navigation";

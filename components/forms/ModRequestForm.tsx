@@ -2,8 +2,8 @@
 
 import React, { useState } from "react";
 import { toast } from "react-hot-toast";
-import { requestModRole } from "@/lib/api/user.api";
-import useAuthStore from "@/stores/authStore";
+import { requestModRole } from "@/lib/api/user/user.api";
+import useAuthStore from "@/stores/user/authStore";
 
 interface ModRequestFormProps {
   onClose?: () => void;
@@ -30,7 +30,7 @@ export default function ModRequestForm({
   const wasRejected = user?.modRequest === "rejected";
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -51,7 +51,7 @@ export default function ModRequestForm({
 
     if (!motivation || motivation.trim().length < 50) {
       toast.error(
-        "Please write at least 50 characters about why you want to become a moderator"
+        "Please write at least 50 characters about why you want to become a moderator",
       );
       setLoading(false);
       return;
@@ -60,13 +60,15 @@ export default function ModRequestForm({
     try {
       await requestModRole({ contactNo, motivation });
       toast.success(
-        "Moderator request submitted successfully! We'll review it soon."
+        "Moderator request submitted successfully! We'll review it soon.",
       );
       await fetchMe(); // Refresh user data
       if (onSuccess) onSuccess();
       if (onClose) onClose();
-    } catch (error: any) {
-      toast.error(error?.response?.data?.message || "Failed to submit request");
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to submit request";
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
