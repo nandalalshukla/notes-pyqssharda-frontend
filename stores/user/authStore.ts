@@ -1,22 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { login, logout, logoutAll, getMe } from "@/lib/api/user/auth.api";
-
-interface User {
-  _id: string;
-  name: string;
-  email: string;
-  role: "user" | "mod" | "admin";
-  isActive: boolean;
-  isEmailVerified: boolean;
-  contributions: number;
-  modRequest?: "pending" | "approved" | "rejected" | null;
-  contactNo?: string;
-  modRequestAt?: string;
-  modMotivation?: string;
-  createdAt: string;
-  updatedAt: string;
-}
+import { User } from "@/lib/api/user/user.api";
 
 interface AuthState {
   user: User | null;
@@ -29,6 +14,7 @@ interface AuthState {
   logoutAll: () => Promise<void>;
   fetchMe: () => Promise<void>;
   setAuthLoading: (loading: boolean) => void;
+  setUser: (user: User | null) => void;
 }
 
 const useAuthStore = create<AuthState>()(
@@ -40,6 +26,8 @@ const useAuthStore = create<AuthState>()(
       lastLoginTime: null,
 
       setAuthLoading: (loading) => set({ authLoading: loading }),
+
+      setUser: (user) => set({ user }),
 
       login: async (data) => {
         const res = await login(data);

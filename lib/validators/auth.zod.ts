@@ -114,15 +114,26 @@ export const editProfileSchema = z.object({
   name: z
     .string()
     .trim()
-    .min(3, "Name must be at least 3 characters")
+    .min(2, "Name must be at least 2 characters")
     .max(50, "Name must not exceed 50 characters")
+    .regex(/^[a-zA-Z\s]+$/, "Name can only contain letters and spaces")
     .optional(),
-  username: z
+  bio: z
     .string()
     .trim()
-    .min(3, "Username must be at least 3 characters")
-    .max(30, "Username must not exceed 30 characters")
+    .max(500, "Bio must not exceed 500 characters")
     .optional(),
+  course: z
+    .string()
+    .trim()
+    .max(100, "Course must not exceed 100 characters")
+    .optional(),
+  contactNo: z
+    .string()
+    .trim()
+    .regex(/^[0-9]{10}$/, "Contact number must be exactly 10 digits")
+    .optional()
+    .or(z.literal("")),
   profilePic: z.instanceof(File).optional(),
 });
 

@@ -1,12 +1,10 @@
-import React from "react";
+import { Feed } from "@/components/social";
+import SocialLayout from "@/components/social/SocialLayout";
 
-const ShardaSocial = () => {
+export default function ShardaSocial() {
   return (
-    <div>
-      <div>The Social Networking Platform for Sharda University Students!</div>
-      <h1>The world is here, where are you?</h1>
-    </div>
+    <SocialLayout>
+      <Feed />
+    </SocialLayout>
   );
-};
-
-export default ShardaSocial;
+}

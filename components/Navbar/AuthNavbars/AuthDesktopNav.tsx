@@ -72,7 +72,7 @@ const AuthDesktopNav = () => {
           Explore
         </Link>
         <Link
-          href="/dashboard"
+          href="/library/dashboard"
           className="hover:text-blue-600 transition-colors"
         >
           Dashboard
@@ -114,11 +114,11 @@ const AuthDesktopNav = () => {
                 Verify Email
               </Link>
               <Link
-                href="/dashboard"
+                href="/edit-profile"
                 onClick={() => setIsProfileOpen(false)}
                 className="w-full text-center px-4 py-2 bg-blue-300 border-2 border-black rounded-lg shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all text-sm font-bold"
               >
-                Edit Profile
+                Profile Settings
               </Link>
               <Link
                 href="/auth/change-password"

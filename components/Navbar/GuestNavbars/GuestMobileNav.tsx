@@ -74,7 +74,7 @@ const GuestMobileNav = () => {
       {isOpen && (
         <div className="flex flex-col gap-4 mt-4 pb-4 font-bold">
           <Link
-            href="/dashboard"
+            href="/library/dashboard"
             className="hover:text-blue-600"
             onClick={() => setIsOpen(false)}
           >

@@ -46,7 +46,7 @@ const LoginForm = () => {
       await login({ email, password });
       toast.success("Logged in successfully 🎉");
       setFormData({ email: "", password: "" });
-      router.push("/dashboard");
+      router.push("/library/dashboard");
     } catch (error: unknown) {
       const message =
         (error as { response?: { data?: { message?: string } } })?.response

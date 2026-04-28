@@ -7,3 +7,4 @@ export { useSyllabusStore } from "./syllabus/syllabus.store";
 export { useSocialStore } from "./social/social.store";
 export { useSearchStore } from "./search/search.store";
 export { useAuthStore } from "./user/authStore";
+export { useProfileStore } from "./user/profile.store";
