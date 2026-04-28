@@ -155,7 +155,12 @@ export const toggleLike = async (
   targetType: "post" | "comment",
 ) => {
   const response = await api.post<
-    ApiResponse<{ liked: boolean; likeCount: number }>
+    ApiResponse<{
+      liked: boolean;
+      likeCount: number;
+      targetId: string;
+      targetType: string;
+    }>
   >("/social/likes/toggle", {
     targetId,
     targetType,

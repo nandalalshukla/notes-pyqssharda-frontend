@@ -50,10 +50,15 @@ const LoginForm = () => {
       setFormData({ email: "", password: "" });
       router.push("/library/dashboard");
     } catch (error: unknown) {
-      const message =
-        (error as { response?: { data?: { message?: string } } })?.response
-          ?.data?.message || "Invalid email or password";
-      toast.error(message);
+      // Preserve email on failed login, extract error message from response
+      const errorMessage = (error as any)?.response?.data?.message;
+      const displayMessage = errorMessage || "Invalid credentials";
+      toast.error(displayMessage);
+      // Keep email, clear only password for better UX
+      setFormData((prev) => ({
+        ...prev,
+        password: "",
+      }));
     } finally {
       setLoading(false);
     }

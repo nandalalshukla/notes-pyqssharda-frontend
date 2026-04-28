@@ -25,7 +25,8 @@ interface PostCardProps {
 export default function PostCard({ post }: PostCardProps) {
   const router = useRouter();
   const { user } = useAuthStore();
-  const { togglePostLike, removePost, fetchPostComments, feed } = useSocialStore();
+  const { togglePostLike, removePost, fetchPostComments, feed } =
+    useSocialStore();
 
   const [showComments, setShowComments] = useState(false);
   const [showMenu, setShowMenu] = useState(false);

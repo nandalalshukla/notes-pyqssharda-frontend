@@ -361,25 +361,43 @@ export const useSocialStore = create<SocialStore>((set, get) => ({
     try {
       const res = await toggleLike(postId, "post");
       const isLiked = res.data?.liked;
-      
-      // Update store with like status
-      set((state) => ({
-        feed: state.feed.map((p) => {
-          if (p._id === postId) {
-            return {
-              ...p,
-              likedByCurrentUser: isLiked || false,
-              likes: p.likedByCurrentUser ? p.likes - 1 : p.likes + 1,
-            };
-          }
-          return p;
-        }),
-      }));
-    } catch (error: unknown) {
+      const actualLikeCount = res.data?.likeCount;
+
+      // Update store with ACTUAL like count from API response, not calculated
+      set((state) => {
+        const currentPost = state.feed.find((p) => p._id === postId);
+        const likeCount = actualLikeCount ?? currentPost?.likes ?? 0;
+
+        return {
+          feed: state.feed.map((p) => {
+            if (p._id === postId) {
+              return {
+                ...p,
+                likedByCurrentUser: isLiked || false,
+                likes: likeCount,
+              };
+            }
+            return p;
+          }),
+        };
+      });
+    } catch (error: any) {
+      // Handle "Already liked" error - sync with backend state
+      const errorStatus = error?.response?.status;
+      const errorMsg = error?.response?.data?.message;
+
+      if (errorStatus === 409 && errorMsg === "Already liked") {
+        // The post IS already liked (backend confirmed it)
+        // MUST REFETCH to get actual state from backend
+        const state = get();
+        await state.fetchFeed(state.feedPage);
+        throw error;
+      }
+
       set({
         error: getErrorMessage(error) || "Failed to toggle like",
       });
-      throw error; // Re-throw so component can handle it
+      throw error;
     }
   },
 
@@ -388,8 +406,20 @@ export const useSocialStore = create<SocialStore>((set, get) => ({
     try {
       const res = await toggleLike(commentId, "comment");
       const isLiked = res.data?.liked;
-      
+      const actualLikeCount = res.data?.likeCount;
+
       set((state) => {
+        // Find current comment to use as fallback
+        let currentCommentLikes = 0;
+        for (const comments of state.comments.values()) {
+          const current = comments.find((c) => c._id === commentId);
+          if (current) {
+            currentCommentLikes = current.likes;
+            break;
+          }
+        }
+        const likeCount = actualLikeCount ?? currentCommentLikes ?? 0;
+
         const updatedComments = new Map(state.comments);
         for (const [postId, comments] of updatedComments.entries()) {
           updatedComments.set(
@@ -399,7 +429,7 @@ export const useSocialStore = create<SocialStore>((set, get) => ({
                 return {
                   ...c,
                   likedByCurrentUser: isLiked || false,
-                  likes: c.likedByCurrentUser ? c.likes - 1 : c.likes + 1,
+                  likes: likeCount,
                 };
               }
               return c;
@@ -408,11 +438,28 @@ export const useSocialStore = create<SocialStore>((set, get) => ({
         }
         return { comments: updatedComments };
       });
-    } catch (error: unknown) {
+    } catch (error: any) {
+      // Handle "Already liked" error - sync with backend state
+      const errorStatus = error?.response?.status;
+      const errorMsg = error?.response?.data?.message;
+
+      if (errorStatus === 409 && errorMsg === "Already liked") {
+        // The comment IS already liked (backend confirmed it)
+        // Refetch comments to get actual state
+        const state = get();
+        const postId = Array.from(state.comments.entries()).find(
+          ([_, comments]) => comments.some((c) => c._id === commentId),
+        )?.[0];
+        if (postId) {
+          await state.fetchPostComments(postId);
+        }
+        throw error;
+      }
+
       set({
         error: getErrorMessage(error) || "Failed to toggle comment like",
       });
-      throw error; // Re-throw so component can handle it
+      throw error;
     }
   },
 

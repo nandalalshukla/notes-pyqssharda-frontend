@@ -168,7 +168,8 @@ export default function CommentsSection({ postId }: CommentsSectionProps) {
 
         setTimeout(() => setLikeAnimating(null), 300);
       } catch (error: any) {
-        const errorMsg = error?.response?.data?.message || "Failed to react to comment";
+        const errorMsg =
+          error?.response?.data?.message || "Failed to react to comment";
         toast.error(errorMsg);
         setTimeout(() => setLikeAnimating(null), 300);
       }

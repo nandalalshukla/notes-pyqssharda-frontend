@@ -18,6 +18,7 @@ export const resetPassword = (data: {
   email: string;
   otp: string;
   newPassword: string;
+  confirmNewPassword: string;
 }) => api.post("/auth/reset-password", data);
 
 export const verifyEmail = (data: { otp: string; email: string }) =>

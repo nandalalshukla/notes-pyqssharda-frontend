@@ -70,6 +70,7 @@ const ResetPasswordForm = () => {
         email,
         otp,
         newPassword,
+        confirmNewPassword,
       });
 
       toast.success("Password reset successfully 🎉");
@@ -169,7 +170,11 @@ const ResetPasswordForm = () => {
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                 className="absolute right-3 top-2.5 text-gray-600 hover:text-black transition-colors"
               >
-                {showConfirmPassword ? <FiEyeOff size={20} /> : <FiEye size={20} />}
+                {showConfirmPassword ? (
+                  <FiEyeOff size={20} />
+                ) : (
+                  <FiEye size={20} />
+                )}
               </button>
             </div>
           </div>
