@@ -33,7 +33,9 @@ const ForgotPasswordForm = () => {
           ? (error as { response: { data: { message: string } } }).response
               ?.data?.message
           : undefined;
-      toast.error(message || "Failed to send password reset link");
+      toast.error(
+        message || "We are experiencing high traffic. Please try again later.",
+      );
     } finally {
       setLoading(false);
     }
