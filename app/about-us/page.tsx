@@ -93,6 +93,27 @@ export default function AboutUsPage() {
           </div>
         </motion.div>
 
+        {/* --- OFFICIAL STATEMENT --- */}
+        <div className="mb-24">
+          <div className="bg-white p-8 md:p-10 rounded-2xl border-2 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]">
+            <h2 className="text-2xl md:text-3xl font-black mb-4">
+              Official Statement
+            </h2>
+            <p className="text-gray-700 leading-7 mb-4">
+              This platform is a student-led initiative created to support
+              students by organizing academic resources in one place. It is not
+              an official initiative of Sharda University, nor does it represent
+              the University in any capacity.
+            </p>
+            <p className="text-gray-700 leading-7">
+              All resources available on this platform are copyrighted and are
+              the property of Sharda University. The materials are shared solely
+              for educational reference in accordance with applicable policies
+              and guidelines.
+            </p>
+          </div>
+        </div>
+
         {/* --- MEET THE TEAM SECTION --- */}
         <div className="mb-24">
           <div className="text-center mb-12">
