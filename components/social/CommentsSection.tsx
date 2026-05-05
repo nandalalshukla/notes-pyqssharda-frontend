@@ -40,28 +40,10 @@ export default function CommentsSection({ postId }: CommentsSectionProps) {
   const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
   const [editText, setEditText] = useState("");
   const [showCommentMenu, setShowCommentMenu] = useState<string | null>(null);
-  const [commentLikes, setCommentLikes] = useState<Map<string, number>>(
-    new Map(),
-  );
-  const [likedComments, setLikedComments] = useState<Set<string>>(new Set());
   const [likeAnimating, setLikeAnimating] = useState<string | null>(null);
 
   const postComments = comments.get(postId) || [];
   const isLoading = isLoadingComments.get(postId) || false;
-
-  // Initialize like states from comments
-  useEffect(() => {
-    const likes = new Map<string, number>();
-    const liked = new Set<string>();
-    postComments.forEach((comment) => {
-      likes.set(comment._id, comment.likes);
-      if (comment.likedByCurrentUser) {
-        liked.add(comment._id);
-      }
-    });
-    setCommentLikes(likes);
-    setLikedComments(liked);
-  }, [postComments]);
 
   const handleAddComment = useCallback(
     async (e: React.FormEvent) => {
@@ -154,18 +136,7 @@ export default function CommentsSection({ postId }: CommentsSectionProps) {
       try {
         setLikeAnimating(commentId);
         await toggleCommentLike(commentId);
-        const isLiked = likedComments.has(commentId);
-        const newLikes = new Map(commentLikes);
-        newLikes.set(
-          commentId,
-          (newLikes.get(commentId) || 0) + (isLiked ? -1 : 1),
-        );
-        setCommentLikes(newLikes);
-
-        const newLiked = new Set(likedComments);
-        isLiked ? newLiked.delete(commentId) : newLiked.add(commentId);
-        setLikedComments(newLiked);
-
+        // Don't manually update - let the store update sync via useEffect
         setTimeout(() => setLikeAnimating(null), 300);
       } catch (error: any) {
         const errorMsg =
@@ -174,7 +145,7 @@ export default function CommentsSection({ postId }: CommentsSectionProps) {
         setTimeout(() => setLikeAnimating(null), 300);
       }
     },
-    [likedComments, commentLikes, toggleCommentLike, user, router],
+    [toggleCommentLike, user, router],
   );
 
   const formatRelativeTime = (date: string) => {
@@ -298,9 +269,9 @@ export default function CommentsSection({ postId }: CommentsSectionProps) {
             >
               {/* Avatar */}
               <div className="w-10 h-10 rounded-full bg-gradient-to-br from-green-400 to-blue-500 flex-shrink-0 flex items-center justify-center overflow-hidden border-2 border-gray-200 shadow-sm">
-                {comment.author.avatar ? (
+                {comment.author.profilePic?.url ? (
                   <Image
-                    src={comment.author.avatar}
+                    src={comment.author.profilePic.url}
                     alt={comment.author.username || "User"}
                     width={40}
                     height={40}
@@ -411,7 +382,7 @@ export default function CommentsSection({ postId }: CommentsSectionProps) {
                     <button
                       onClick={() => handleLikeComment(comment._id)}
                       className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
-                        likedComments.has(comment._id)
+                        comment.likedByCurrentUser
                           ? "bg-red-50 text-red-600"
                           : "text-gray-600 hover:bg-gray-100"
                       } ${
@@ -423,16 +394,14 @@ export default function CommentsSection({ postId }: CommentsSectionProps) {
                         transitionDuration: "300ms",
                       }}
                     >
-                      {likedComments.has(comment._id) ? (
+                      {comment.likedByCurrentUser ? (
                         <FaHeart size={14} className="fill-current" />
                       ) : (
                         <FiHeart size={14} />
                       )}
                       <span>
-                        {commentLikes.get(comment._id) || 0}{" "}
-                        {(commentLikes.get(comment._id) || 0) === 1
-                          ? "like"
-                          : "likes"}
+                        {comment.likes || 0}{" "}
+                        {(comment.likes || 0) === 1 ? "like" : "likes"}
                       </span>
                     </button>
                   </div>

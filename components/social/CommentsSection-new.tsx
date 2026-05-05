@@ -277,9 +277,9 @@ export default function CommentsSection({ postId }: CommentsSectionProps) {
             >
               {/* Avatar */}
               <div className="w-10 h-10 rounded-full bg-gradient-to-br from-green-400 to-blue-500 flex-shrink-0 flex items-center justify-center overflow-hidden border-2 border-gray-200 shadow-sm">
-                {comment.author.avatar ? (
+                {comment.author.profilePic?.url ? (
                   <Image
-                    src={comment.author.avatar}
+                    src={comment.author.profilePic.url}
                     alt={comment.author.username || "User"}
                     width={40}
                     height={40}

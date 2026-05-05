@@ -359,14 +359,35 @@ export const useSocialStore = create<SocialStore>((set, get) => ({
   togglePostLike: async (postId: string) => {
     set({ error: null });
     try {
+      console.log("🔵 [togglePostLike] Starting for post:", postId);
       const res = await toggleLike(postId, "post");
+      console.log("🟢 [togglePostLike] API Response received:", res);
+      console.log("🟢 [togglePostLike] Response structure:", {
+        hasData: !!res.data,
+        dataKeys: res.data ? Object.keys(res.data) : [],
+        dataValue: res.data,
+      });
+
       const isLiked = res.data?.liked;
       const actualLikeCount = res.data?.likeCount;
+
+      console.log("🟡 [togglePostLike] Extracted values:", {
+        isLiked,
+        actualLikeCount,
+        resDataLiked: res.data?.liked,
+        resDataLikeCount: res.data?.likeCount,
+      });
 
       // Update store with ACTUAL like count from API response, not calculated
       set((state) => {
         const currentPost = state.feed.find((p) => p._id === postId);
         const likeCount = actualLikeCount ?? currentPost?.likes ?? 0;
+
+        console.log("🟣 [togglePostLike] Store update:", {
+          postId,
+          newIsLiked: isLiked || false,
+          newLikeCount: likeCount,
+        });
 
         return {
           feed: state.feed.map((p) => {
@@ -382,6 +403,12 @@ export const useSocialStore = create<SocialStore>((set, get) => ({
         };
       });
     } catch (error: any) {
+      console.error("❌ [togglePostLike] Error:", error);
+      console.error(
+        "❌ [togglePostLike] Error response:",
+        error?.response?.data,
+      );
+
       // Handle "Already liked" error - sync with backend state
       const errorStatus = error?.response?.status;
       const errorMsg = error?.response?.data?.message;

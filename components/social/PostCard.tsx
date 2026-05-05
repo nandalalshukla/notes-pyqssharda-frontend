@@ -45,8 +45,18 @@ export default function PostCard({ post }: PostCardProps) {
   const isLiked = currentPost.likedByCurrentUser || false;
 
   const handleLike = useCallback(async () => {
+    console.log("🔴 [PostCard.handleLike] Click detected for post:", post._id);
+    console.log("🔴 [PostCard.handleLike] Current state:", {
+      user: !!user,
+      isLiking,
+      isLiked,
+      currentPostLikes: currentPost.likes,
+      currentPostLikedByCurrentUser: currentPost.likedByCurrentUser,
+    });
+
     // Check authentication first
     if (!user) {
+      console.log("🔴 [PostCard.handleLike] No user, redirecting to login");
       toast.error("Please login to like posts", {
         icon: <FiLogIn className="mr-2" />,
       });
@@ -54,15 +64,21 @@ export default function PostCard({ post }: PostCardProps) {
       return;
     }
 
-    if (isLiking) return;
+    if (isLiking) {
+      console.log("🔴 [PostCard.handleLike] Already liking, returning");
+      return;
+    }
 
     setIsLiking(true);
     try {
+      console.log("🟠 [PostCard.handleLike] Calling togglePostLike");
       await togglePostLike(post._id);
+      console.log("🟢 [PostCard.handleLike] togglePostLike successful");
       toast.success(isLiked ? "Unliked" : "Liked!", {
         icon: isLiked ? "💔" : "❤️",
       });
     } catch (error: any) {
+      console.error("❌ [PostCard.handleLike] Error:", error);
       const errorMsg = error?.response?.data?.message || "Failed to like post";
       toast.error(errorMsg);
     } finally {
@@ -132,9 +148,9 @@ export default function PostCard({ post }: PostCardProps) {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3 flex-1">
               <div className="w-12 h-12 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full border-2 border-gray-200 flex-shrink-0 flex items-center justify-center overflow-hidden shadow-md">
-                {post.author.avatar ? (
+                {post.author.profilePic?.url ? (
                   <Image
-                    src={post.author.avatar}
+                    src={post.author.profilePic.url}
                     alt={post.author.username || "User"}
                     width={48}
                     height={48}
