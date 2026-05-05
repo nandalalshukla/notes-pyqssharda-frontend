@@ -259,7 +259,11 @@ export default function CommentsSection({ postId }: CommentsSectionProps) {
             ))}
           </div>
         ) : postComments.length > 0 ? (
-          postComments.map((comment: Comment, index: number) => (
+          postComments.map((comment: Comment, index: number) => {
+            const commentAuthorImage =
+              comment.author.profilePic?.url || comment.author.avatar || "";
+
+            return (
             <div
               key={comment._id}
               className="flex gap-3 group/comment animate-fade-in"
@@ -269,9 +273,9 @@ export default function CommentsSection({ postId }: CommentsSectionProps) {
             >
               {/* Avatar */}
               <div className="w-10 h-10 rounded-full bg-gradient-to-br from-green-400 to-blue-500 flex-shrink-0 flex items-center justify-center overflow-hidden border-2 border-gray-200 shadow-sm">
-                {comment.author.profilePic?.url ? (
+                {commentAuthorImage ? (
                   <Image
-                    src={comment.author.profilePic.url}
+                    src={commentAuthorImage}
                     alt={comment.author.username || "User"}
                     width={40}
                     height={40}
@@ -408,7 +412,8 @@ export default function CommentsSection({ postId }: CommentsSectionProps) {
                 )}
               </div>
             </div>
-          ))
+            );
+          })
         ) : (
           <div className="text-center py-12 px-4">
             <div className="text-3xl mb-3">💭</div>

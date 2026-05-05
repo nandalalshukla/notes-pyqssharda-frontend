@@ -43,6 +43,8 @@ export default function PostCard({ post }: PostCardProps) {
   // Use post data directly from store, don't maintain local state for likes
   const likeCount = currentPost.likes || 0;
   const isLiked = currentPost.likedByCurrentUser || false;
+  const authorImage =
+    currentPost.author.profilePic?.url || currentPost.author.avatar || "";
 
   const handleLike = useCallback(async () => {
     console.log("🔴 [PostCard.handleLike] Click detected for post:", post._id);
@@ -148,9 +150,9 @@ export default function PostCard({ post }: PostCardProps) {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3 flex-1">
               <div className="w-12 h-12 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full border-2 border-gray-200 flex-shrink-0 flex items-center justify-center overflow-hidden shadow-md">
-                {post.author.profilePic?.url ? (
+                {authorImage ? (
                   <Image
-                    src={post.author.profilePic.url}
+                    src={authorImage}
                     alt={post.author.username || "User"}
                     width={48}
                     height={48}

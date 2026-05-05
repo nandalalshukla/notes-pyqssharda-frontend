@@ -83,8 +83,21 @@ export default function CreatePostModal({
         setPreviews([]);
         onClose();
         toast.success("Post created successfully");
-      } catch (error) {
-        toast.error("Failed to create post");
+      } catch (error: unknown) {
+        const message =
+          error &&
+          typeof error === "object" &&
+          "response" in error &&
+          typeof error.response === "object" &&
+          error.response &&
+          "data" in error.response &&
+          typeof error.response.data === "object" &&
+          error.response.data &&
+          "message" in error.response.data &&
+          typeof error.response.data.message === "string"
+            ? error.response.data.message
+            : "Failed to create post";
+        toast.error(message);
       }
     },
     [content, files, createNewPost, onClose],

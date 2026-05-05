@@ -34,15 +34,15 @@ export default function Feed() {
   }, [currentPage, feedTotalPages]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white">
-      {/* Sticky Header */}
-      <div className="sticky top-0 z-40 bg-white/80 backdrop-blur-xl border-b border-gray-200 shadow-sm">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
+    <div className="min-h-screen bg-gray-50">
+      {/* Page Header */}
+      <div className="border-b border-gray-200 bg-white">
+        <div className="mx-auto flex max-w-3xl items-center justify-between px-4 py-6 sm:px-6 lg:px-8">
           <div>
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-black to-gray-600 bg-clip-text text-transparent">
+            <h1 className="text-3xl font-black tracking-tight text-gray-950">
               Feed
             </h1>
-            <p className="text-sm text-gray-500 mt-1">
+            <p className="mt-1 text-sm font-medium text-gray-500">
               {feed.length > 0
                 ? `${feed.length} posts${feedTotalPages > 1 ? ` (Page ${currentPage})` : ""}`
                 : "No posts yet"}
@@ -51,7 +51,7 @@ export default function Feed() {
           {isAuthenticated && (
             <button
               onClick={() => setShowCreateModal(true)}
-              className="group flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-black to-gray-800 text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-black/20 transition-all duration-200 hover:-translate-y-1"
+              className="group flex items-center gap-2 rounded-2xl bg-gray-950 px-5 py-3 text-sm font-bold text-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-gray-950/20"
             >
               <FiPlus
                 size={20}
@@ -64,7 +64,7 @@ export default function Feed() {
       </div>
 
       {/* Main Content */}
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+      <div className="mx-auto max-w-3xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">
         {/* Auth Prompt */}
         {!isAuthenticated && (
           <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-2xl p-8 text-center shadow-sm hover:shadow-md transition-shadow">

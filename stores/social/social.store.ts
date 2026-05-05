@@ -358,138 +358,140 @@ export const useSocialStore = create<SocialStore>((set, get) => ({
 
   togglePostLike: async (postId: string) => {
     set({ error: null });
+
+    const previousPost = get().feed.find((p) => p._id === postId);
+    if (!previousPost) return;
+
+    const optimisticLiked = !previousPost.likedByCurrentUser;
+    const optimisticLikeCount = Math.max(
+      0,
+      (previousPost.likes || 0) + (optimisticLiked ? 1 : -1),
+    );
+
+    set((state) => ({
+      feed: state.feed.map((p) =>
+        p._id === postId
+          ? {
+              ...p,
+              likedByCurrentUser: optimisticLiked,
+              likes: optimisticLikeCount,
+            }
+          : p,
+      ),
+    }));
+
     try {
-      console.log("🔵 [togglePostLike] Starting for post:", postId);
       const res = await toggleLike(postId, "post");
-      console.log("🟢 [togglePostLike] API Response received:", res);
-      console.log("🟢 [togglePostLike] Response structure:", {
-        hasData: !!res.data,
-        dataKeys: res.data ? Object.keys(res.data) : [],
-        dataValue: res.data,
-      });
-
       const isLiked = res.data?.liked;
-      const actualLikeCount = res.data?.likeCount;
+      const actualLikeCount = res.data?.likeCount ?? res.data?.likes;
 
-      console.log("🟡 [togglePostLike] Extracted values:", {
-        isLiked,
-        actualLikeCount,
-        resDataLiked: res.data?.liked,
-        resDataLikeCount: res.data?.likeCount,
-      });
-
-      // Update store with ACTUAL like count from API response, not calculated
       set((state) => {
         const currentPost = state.feed.find((p) => p._id === postId);
         const likeCount = actualLikeCount ?? currentPost?.likes ?? 0;
-
-        console.log("🟣 [togglePostLike] Store update:", {
-          postId,
-          newIsLiked: isLiked || false,
-          newLikeCount: likeCount,
-        });
+        const likedByCurrentUser =
+          isLiked ?? currentPost?.likedByCurrentUser ?? false;
 
         return {
-          feed: state.feed.map((p) => {
-            if (p._id === postId) {
-              return {
-                ...p,
-                likedByCurrentUser: isLiked || false,
-                likes: likeCount,
-              };
-            }
-            return p;
-          }),
+          feed: state.feed.map((p) =>
+            p._id === postId
+              ? { ...p, likedByCurrentUser, likes: likeCount }
+              : p,
+          ),
         };
       });
-    } catch (error: any) {
-      console.error("❌ [togglePostLike] Error:", error);
-      console.error(
-        "❌ [togglePostLike] Error response:",
-        error?.response?.data,
-      );
-
-      // Handle "Already liked" error - sync with backend state
-      const errorStatus = error?.response?.status;
-      const errorMsg = error?.response?.data?.message;
-
-      if (errorStatus === 409 && errorMsg === "Already liked") {
-        // The post IS already liked (backend confirmed it)
-        // MUST REFETCH to get actual state from backend
-        const state = get();
-        await state.fetchFeed(state.feedPage);
-        throw error;
-      }
-
-      set({
+    } catch (error: unknown) {
+      set((state) => ({
+        feed: state.feed.map((p) => (p._id === postId ? previousPost : p)),
         error: getErrorMessage(error) || "Failed to toggle like",
-      });
+      }));
       throw error;
     }
   },
 
   toggleCommentLike: async (commentId: string) => {
     set({ error: null });
+
+    let previousComment: Comment | undefined;
+    for (const comments of get().comments.values()) {
+      previousComment = comments.find((c) => c._id === commentId);
+      if (previousComment) break;
+    }
+    if (!previousComment) return;
+
+    const optimisticLiked = !previousComment.likedByCurrentUser;
+    const optimisticLikeCount = Math.max(
+      0,
+      (previousComment.likes || 0) + (optimisticLiked ? 1 : -1),
+    );
+
+    set((state) => {
+      const updatedComments = new Map(state.comments);
+      for (const [postId, comments] of updatedComments.entries()) {
+        updatedComments.set(
+          postId,
+          comments.map((c) =>
+            c._id === commentId
+              ? {
+                  ...c,
+                  likedByCurrentUser: optimisticLiked,
+                  likes: optimisticLikeCount,
+                }
+              : c,
+          ),
+        );
+      }
+      return { comments: updatedComments };
+    });
+
     try {
       const res = await toggleLike(commentId, "comment");
       const isLiked = res.data?.liked;
-      const actualLikeCount = res.data?.likeCount;
+      const actualLikeCount = res.data?.likeCount ?? res.data?.likes;
 
       set((state) => {
-        // Find current comment to use as fallback
-        let currentCommentLikes = 0;
+        let currentComment: Comment | undefined;
         for (const comments of state.comments.values()) {
           const current = comments.find((c) => c._id === commentId);
           if (current) {
-            currentCommentLikes = current.likes;
+            currentComment = current;
             break;
           }
         }
-        const likeCount = actualLikeCount ?? currentCommentLikes ?? 0;
+
+        const likeCount = actualLikeCount ?? currentComment?.likes ?? 0;
+        const likedByCurrentUser =
+          isLiked ?? currentComment?.likedByCurrentUser ?? false;
 
         const updatedComments = new Map(state.comments);
         for (const [postId, comments] of updatedComments.entries()) {
           updatedComments.set(
             postId,
-            comments.map((c) => {
-              if (c._id === commentId) {
-                return {
-                  ...c,
-                  likedByCurrentUser: isLiked || false,
-                  likes: likeCount,
-                };
-              }
-              return c;
-            }),
+            comments.map((c) =>
+              c._id === commentId
+                ? { ...c, likedByCurrentUser, likes: likeCount }
+                : c,
+            ),
           );
         }
         return { comments: updatedComments };
       });
-    } catch (error: any) {
-      // Handle "Already liked" error - sync with backend state
-      const errorStatus = error?.response?.status;
-      const errorMsg = error?.response?.data?.message;
-
-      if (errorStatus === 409 && errorMsg === "Already liked") {
-        // The comment IS already liked (backend confirmed it)
-        // Refetch comments to get actual state
-        const state = get();
-        const postId = Array.from(state.comments.entries()).find(
-          ([_, comments]) => comments.some((c) => c._id === commentId),
-        )?.[0];
-        if (postId) {
-          await state.fetchPostComments(postId);
+    } catch (error: unknown) {
+      set((state) => {
+        const updatedComments = new Map(state.comments);
+        for (const [postId, comments] of updatedComments.entries()) {
+          updatedComments.set(
+            postId,
+            comments.map((c) => (c._id === commentId ? previousComment : c)),
+          );
         }
-        throw error;
-      }
-
-      set({
-        error: getErrorMessage(error) || "Failed to toggle comment like",
+        return {
+          comments: updatedComments,
+          error: getErrorMessage(error) || "Failed to toggle comment like",
+        };
       });
       throw error;
     }
   },
-
   /**
    * ───────────────────────────────────────────────────────────────────────────────
    * FOLLOW MANAGEMENT

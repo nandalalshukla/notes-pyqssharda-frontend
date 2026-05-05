@@ -15,6 +15,7 @@ export interface User {
     url: string;
     publicId?: string;
   };
+  avatar?: string;
 }
 
 export interface Post {
@@ -161,6 +162,7 @@ export const toggleLike = async (
     ApiResponse<{
       liked: boolean;
       likeCount: number;
+      likes: number;
       targetId: string;
       targetType: string;
     }>
