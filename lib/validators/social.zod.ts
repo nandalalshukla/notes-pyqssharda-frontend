@@ -20,7 +20,7 @@ export type CreatePostInput = z.infer<typeof createPostSchema>;
  * Edit Post Schema
  */
 export const editPostSchema = z.object({
-  content: z.string().trim().min(1, "Content cannot be empty").optional(),
+  content: z.string().trim().max(2000, "Post content is too long").optional(),
   files: z.instanceof(FileList).optional(),
   removePublicIds: z.array(z.string()).optional(),
 });
@@ -35,7 +35,7 @@ export const createCommentSchema = z.object({
     .string()
     .trim()
     .min(1, "Comment text is required")
-    .max(500, "Comment must not exceed 500 characters"),
+    .max(1000, "Comment must not exceed 1000 characters"),
 });
 
 export type CreateCommentInput = z.infer<typeof createCommentSchema>;
@@ -48,7 +48,7 @@ export const editCommentSchema = z.object({
     .string()
     .trim()
     .min(1, "Comment text is required")
-    .max(500, "Comment must not exceed 500 characters"),
+    .max(1000, "Comment must not exceed 1000 characters"),
 });
 
 export type EditCommentInput = z.infer<typeof editCommentSchema>;

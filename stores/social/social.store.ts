@@ -1,15 +1,11 @@
 import { create } from "zustand";
 import {
-  Post,
-  Comment,
-  Notification,
-  User,
-  FollowStats,
-  getFeed,
   createPost,
   editPost,
   deletePost,
+  getFeed,
   getComments,
+  getCommentReplies,
   createComment,
   editComment,
   deleteComment,
@@ -20,6 +16,11 @@ import {
   getNotifications,
   markAllNotificationsAsRead,
   markNotificationAsRead,
+  Post,
+  Comment,
+  FollowStats,
+  Notification,
+  User,
 } from "@/lib/api/social/social.api";
 import { getErrorMessage } from "@/lib/utils/errorHandler";
 
@@ -40,6 +41,8 @@ interface PostsState {
 interface CommentsState {
   comments: Map<string, Comment[]>;
   isLoadingComments: Map<string, boolean>;
+  replies: Map<string, Comment[]>;
+  isLoadingReplies: Map<string, boolean>;
 }
 
 interface NotificationsState {
@@ -71,13 +74,18 @@ interface SocialStore
 
   // Comments actions
   fetchPostComments: (postId: string) => Promise<void>;
-  addComment: (postId: string, text: string) => Promise<void>;
+  addComment: (
+    postId: string,
+    text: string,
+    parentComment?: string,
+  ) => Promise<void>;
   updateComment: (
     postId: string,
     commentId: string,
     text: string,
   ) => Promise<void>;
   removeComment: (postId: string, commentId: string) => Promise<void>;
+  fetchCommentReplies: (postId: string, commentId: string) => Promise<void>;
 
   // Likes actions
   togglePostLike: (postId: string) => Promise<void>;
@@ -107,24 +115,25 @@ interface SocialStore
 const initialState: Omit<
   SocialStore,
   keyof {
-    fetchFeed: any;
-    createNewPost: any;
-    updatePost: any;
-    removePost: any;
-    fetchPostComments: any;
-    addComment: any;
-    updateComment: any;
-    removeComment: any;
-    togglePostLike: any;
-    toggleCommentLike: any;
-    toggleUserFollow: any;
-    fetchUserFollowers: any;
-    fetchUserFollowing: any;
-    fetchNotifications: any;
-    markAllAsRead: any;
-    markOneAsRead: any;
-    clearError: any;
-    resetStore: any;
+    fetchFeed: unknown;
+    createNewPost: unknown;
+    updatePost: unknown;
+    removePost: unknown;
+    fetchPostComments: unknown;
+    addComment: unknown;
+    updateComment: unknown;
+    removeComment: unknown;
+    fetchCommentReplies: unknown;
+    togglePostLike: unknown;
+    toggleCommentLike: unknown;
+    toggleUserFollow: unknown;
+    fetchUserFollowers: unknown;
+    fetchUserFollowing: unknown;
+    fetchNotifications: unknown;
+    markAllAsRead: unknown;
+    markOneAsRead: unknown;
+    clearError: unknown;
+    resetStore: unknown;
   }
 > = {
   // Posts
@@ -137,6 +146,8 @@ const initialState: Omit<
   // Comments
   comments: new Map(),
   isLoadingComments: new Map(),
+  replies: new Map(),
+  isLoadingReplies: new Map(),
 
   // Notifications
   notifications: [],
@@ -155,6 +166,75 @@ const initialState: Omit<
   // General
   isLoading: false,
   error: null,
+};
+
+const updatePostEverywhere = (
+  userPosts: Map<string, Post[]>,
+  postId: string,
+  updater: (post: Post) => Post,
+) => {
+  const nextUserPosts = new Map(userPosts);
+  for (const [userId, posts] of nextUserPosts.entries()) {
+    nextUserPosts.set(
+      userId,
+      posts.map((post) => (post._id === postId ? updater(post) : post)),
+    );
+  }
+  return nextUserPosts;
+};
+
+const updateCommentEverywhere = (
+  comments: Map<string, Comment[]>,
+  replies: Map<string, Comment[]>,
+  commentId: string,
+  updater: (comment: Comment) => Comment,
+) => {
+  const nextComments = new Map(comments);
+  for (const [postId, postComments] of nextComments.entries()) {
+    nextComments.set(
+      postId,
+      postComments.map((comment) =>
+        comment._id === commentId ? updater(comment) : comment,
+      ),
+    );
+  }
+
+  const nextReplies = new Map(replies);
+  for (const [parentId, parentReplies] of nextReplies.entries()) {
+    nextReplies.set(
+      parentId,
+      parentReplies.map((reply) =>
+        reply._id === commentId ? updater(reply) : reply,
+      ),
+    );
+  }
+
+  return { comments: nextComments, replies: nextReplies };
+};
+
+const removeCommentEverywhere = (
+  comments: Map<string, Comment[]>,
+  replies: Map<string, Comment[]>,
+  commentId: string,
+) => {
+  const nextComments = new Map(comments);
+  for (const [postId, postComments] of nextComments.entries()) {
+    nextComments.set(
+      postId,
+      postComments.filter((comment) => comment._id !== commentId),
+    );
+  }
+
+  const nextReplies = new Map(replies);
+  nextReplies.delete(commentId);
+  for (const [parentId, parentReplies] of nextReplies.entries()) {
+    nextReplies.set(
+      parentId,
+      parentReplies.filter((reply) => reply._id !== commentId),
+    );
+  }
+
+  return { comments: nextComments, replies: nextReplies };
 };
 
 /**
@@ -218,6 +298,11 @@ export const useSocialStore = create<SocialStore>((set, get) => ({
       if (updatedPost) {
         set((state) => ({
           feed: state.feed.map((p) => (p._id === postId ? updatedPost : p)),
+          userPosts: updatePostEverywhere(
+            state.userPosts,
+            postId,
+            () => updatedPost,
+          ),
           isLoading: false,
         }));
       }
@@ -236,6 +321,12 @@ export const useSocialStore = create<SocialStore>((set, get) => ({
       await deletePost(postId);
       set((state) => ({
         feed: state.feed.filter((p) => p._id !== postId),
+        userPosts: new Map(
+          Array.from(state.userPosts.entries()).map(([userId, posts]) => [
+            userId,
+            posts.filter((post) => post._id !== postId),
+          ]),
+        ),
         isLoading: false,
       }));
     } catch (error: unknown) {
@@ -273,13 +364,22 @@ export const useSocialStore = create<SocialStore>((set, get) => ({
     }
   },
 
-  addComment: async (postId: string, text: string) => {
+  addComment: async (postId: string, text: string, parentComment?: string) => {
     set({ isLoading: true, error: null });
     try {
-      const res = await createComment(postId, text);
+      const res = await createComment(postId, text, parentComment);
       const newComment = res.data?.comment;
       if (newComment) {
         set((state) => {
+          if (parentComment) {
+            const commentReplies = state.replies.get(parentComment) || [];
+            const updatedReplies = new Map(state.replies).set(parentComment, [
+              ...commentReplies,
+              newComment,
+            ]);
+            return { replies: updatedReplies, isLoading: false };
+          }
+
           const postComments = state.comments.get(postId) || [];
           return {
             comments: new Map(state.comments).set(postId, [
@@ -299,6 +399,26 @@ export const useSocialStore = create<SocialStore>((set, get) => ({
     }
   },
 
+  fetchCommentReplies: async (postId: string, commentId: string) => {
+    set((state) => ({
+      isLoadingReplies: new Map(state.isLoadingReplies).set(commentId, true),
+      error: null,
+    }));
+    try {
+      const res = await getCommentReplies(postId, commentId);
+      const repliesArray = res.data?.replies || [];
+      set((state) => ({
+        replies: new Map(state.replies).set(commentId, repliesArray),
+        isLoadingReplies: new Map(state.isLoadingReplies).set(commentId, false),
+      }));
+    } catch (error: unknown) {
+      set((state) => ({
+        error: getErrorMessage(error) || "Failed to fetch replies",
+        isLoadingReplies: new Map(state.isLoadingReplies).set(commentId, false),
+      }));
+    }
+  },
+
   updateComment: async (postId: string, commentId: string, text: string) => {
     set({ isLoading: true, error: null });
     try {
@@ -306,14 +426,15 @@ export const useSocialStore = create<SocialStore>((set, get) => ({
       const updatedComment = res.data?.comment;
       if (updatedComment) {
         set((state) => {
-          const postComments = state.comments.get(postId) || [];
+          const updated = updateCommentEverywhere(
+            state.comments,
+            state.replies,
+            commentId,
+            () => updatedComment,
+          );
           return {
-            comments: new Map(state.comments).set(
-              postId,
-              postComments.map((c) =>
-                c._id === commentId ? updatedComment : c,
-              ),
-            ),
+            comments: updated.comments,
+            replies: updated.replies,
             isLoading: false,
           };
         });
@@ -330,14 +451,32 @@ export const useSocialStore = create<SocialStore>((set, get) => ({
   removeComment: async (postId: string, commentId: string) => {
     set({ isLoading: true, error: null });
     try {
-      await deleteComment(postId, commentId);
+      const res = await deleteComment(postId, commentId);
+      const deletedCount = Math.max(1, res.data?.deletedCount || 1);
       set((state) => {
-        const postComments = state.comments.get(postId) || [];
+        const updated = removeCommentEverywhere(
+          state.comments,
+          state.replies,
+          commentId,
+        );
         return {
-          comments: new Map(state.comments).set(
-            postId,
-            postComments.filter((c) => c._id !== commentId),
+          comments: updated.comments,
+          replies: updated.replies,
+          feed: state.feed.map((post) =>
+            post._id === postId
+              ? {
+                  ...post,
+                  commentCount: Math.max(
+                    0,
+                    (post.commentCount || 0) - deletedCount,
+                  ),
+                }
+              : post,
           ),
+          userPosts: updatePostEverywhere(state.userPosts, postId, (post) => ({
+            ...post,
+            commentCount: Math.max(0, (post.commentCount || 0) - deletedCount),
+          })),
           isLoading: false,
         };
       });
@@ -416,6 +555,12 @@ export const useSocialStore = create<SocialStore>((set, get) => ({
       previousComment = comments.find((c) => c._id === commentId);
       if (previousComment) break;
     }
+    if (!previousComment) {
+      for (const replies of get().replies.values()) {
+        previousComment = replies.find((c) => c._id === commentId);
+        if (previousComment) break;
+      }
+    }
     if (!previousComment) return;
 
     const optimisticLiked = !previousComment.likedByCurrentUser;
@@ -440,7 +585,22 @@ export const useSocialStore = create<SocialStore>((set, get) => ({
           ),
         );
       }
-      return { comments: updatedComments };
+      const updatedReplies = new Map(state.replies);
+      for (const [parentId, replies] of updatedReplies.entries()) {
+        updatedReplies.set(
+          parentId,
+          replies.map((c) =>
+            c._id === commentId
+              ? {
+                  ...c,
+                  likedByCurrentUser: optimisticLiked,
+                  likes: optimisticLikeCount,
+                }
+              : c,
+          ),
+        );
+      }
+      return { comments: updatedComments, replies: updatedReplies };
     });
 
     try {
@@ -455,6 +615,15 @@ export const useSocialStore = create<SocialStore>((set, get) => ({
           if (current) {
             currentComment = current;
             break;
+          }
+        }
+        if (!currentComment) {
+          for (const replies of state.replies.values()) {
+            const current = replies.find((c) => c._id === commentId);
+            if (current) {
+              currentComment = current;
+              break;
+            }
           }
         }
 
@@ -473,7 +642,18 @@ export const useSocialStore = create<SocialStore>((set, get) => ({
             ),
           );
         }
-        return { comments: updatedComments };
+        const updatedReplies = new Map(state.replies);
+        for (const [parentId, replies] of updatedReplies.entries()) {
+          updatedReplies.set(
+            parentId,
+            replies.map((c) =>
+              c._id === commentId
+                ? { ...c, likedByCurrentUser, likes: likeCount }
+                : c,
+            ),
+          );
+        }
+        return { comments: updatedComments, replies: updatedReplies };
       });
     } catch (error: unknown) {
       set((state) => {
@@ -484,8 +664,16 @@ export const useSocialStore = create<SocialStore>((set, get) => ({
             comments.map((c) => (c._id === commentId ? previousComment : c)),
           );
         }
+        const updatedReplies = new Map(state.replies);
+        for (const [parentId, replies] of updatedReplies.entries()) {
+          updatedReplies.set(
+            parentId,
+            replies.map((c) => (c._id === commentId ? previousComment : c)),
+          );
+        }
         return {
           comments: updatedComments,
+          replies: updatedReplies,
           error: getErrorMessage(error) || "Failed to toggle comment like",
         };
       });

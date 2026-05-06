@@ -25,26 +25,43 @@ interface PostCardProps {
 export default function PostCard({ post }: PostCardProps) {
   const router = useRouter();
   const { user } = useAuthStore();
-  const { togglePostLike, removePost, fetchPostComments, feed } =
-    useSocialStore();
+  const {
+    togglePostLike,
+    removePost,
+    fetchPostComments,
+    toggleUserFollow,
+    followStats,
+    feed,
+  } = useSocialStore();
 
   const [showComments, setShowComments] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [isLiking, setIsLiking] = useState(false);
 
-  const isAuthor = user?._id === post.author._id;
-
   // Get the current post from feed to ensure state is in sync with store
   const currentPost = useMemo(() => {
     return feed.find((p) => p._id === post._id) || post;
   }, [feed, post]);
 
+  const authorId =
+    typeof (currentPost.author as unknown) === "string"
+      ? (currentPost.author as unknown as string)
+      : (currentPost.author as { _id?: string })?._id;
+  const isAuthor = user?._id && authorId
+    ? String(user._id) === String(authorId)
+    : false;
+  const isFollowing =
+    followStats.get(authorId || "")?.isFollowedByCurrentUser || false;
+
   // Use post data directly from store, don't maintain local state for likes
   const likeCount = currentPost.likes || 0;
   const isLiked = currentPost.likedByCurrentUser || false;
   const authorImage =
-    currentPost.author.profilePic?.url || currentPost.author.avatar || "";
+    (currentPost.author as { profilePic?: { url?: string }; avatar?: string })
+      ?.profilePic?.url ||
+    (currentPost.author as { avatar?: string })?.avatar ||
+    "";
 
   const handleLike = useCallback(async () => {
     console.log("🔴 [PostCard.handleLike] Click detected for post:", post._id);
@@ -79,14 +96,25 @@ export default function PostCard({ post }: PostCardProps) {
       toast.success(isLiked ? "Unliked" : "Liked!", {
         icon: isLiked ? "💔" : "❤️",
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("❌ [PostCard.handleLike] Error:", error);
-      const errorMsg = error?.response?.data?.message || "Failed to like post";
+      const errorMsg =
+        (error as { response?: { data?: { message?: string } } })?.response
+          ?.data?.message || "Failed to like post";
       toast.error(errorMsg);
     } finally {
       setIsLiking(false);
     }
-  }, [post._id, isLiking, isLiked, user, togglePostLike, router]);
+  }, [
+    post._id,
+    isLiking,
+    isLiked,
+    user,
+    togglePostLike,
+    router,
+    currentPost.likes,
+    currentPost.likedByCurrentUser,
+  ]);
 
   const handleComment = useCallback(async () => {
     // Check authentication for comments
@@ -102,6 +130,7 @@ export default function PostCard({ post }: PostCardProps) {
       await fetchPostComments(post._id);
       setShowComments(!showComments);
     } catch (error) {
+      console.error("Failed to load comments", error);
       toast.error("Failed to load comments");
     }
   }, [post._id, showComments, fetchPostComments, user, router]);
@@ -112,6 +141,7 @@ export default function PostCard({ post }: PostCardProps) {
       await removePost(post._id);
       toast.success("Post deleted");
     } catch (error) {
+      console.error("Failed to delete post", error);
       toast.error("Failed to delete post");
     }
   }, [post._id, removePost]);
@@ -122,6 +152,30 @@ export default function PostCard({ post }: PostCardProps) {
       toast.success("Post link copied to clipboard");
     });
   }, [post._id]);
+
+  const handleViewProfile = useCallback(() => {
+    router.push(`/profile/${post.author._id}`);
+  }, [post.author._id, router]);
+
+  const handleFollow = useCallback(async () => {
+    if (!user) {
+      toast.error("Please login to follow users", {
+        icon: <FiLogIn className="mr-2" />,
+      });
+      router.push("/auth/login");
+      return;
+    }
+
+    if (isAuthor) return;
+
+    try {
+      await toggleUserFollow(post.author._id);
+      toast.success(isFollowing ? "Unfollowed" : "Followed");
+    } catch (error: unknown) {
+      console.error("Failed to update follow status", error);
+      toast.error("Failed to update follow status");
+    }
+  }, [user, isAuthor, isFollowing, toggleUserFollow, post.author._id, router]);
 
   const formatDate = (date: string) => {
     const now = new Date();
@@ -148,8 +202,11 @@ export default function PostCard({ post }: PostCardProps) {
         {/* Header Section */}
         <div className="px-6 pt-6 pb-4 border-b border-gray-100">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3 flex-1">
-              <div className="w-12 h-12 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full border-2 border-gray-200 flex-shrink-0 flex items-center justify-center overflow-hidden shadow-md">
+            <button
+              onClick={handleViewProfile}
+              className="flex items-center gap-3 flex-1 text-left hover:opacity-80 transition-opacity"
+            >
+              <div className="w-12 h-12 bg-linear-to-br from-blue-400 to-purple-500 rounded-full border-2 border-gray-200 shrink-0 flex items-center justify-center overflow-hidden shadow-md">
                 {authorImage ? (
                   <Image
                     src={authorImage}
@@ -174,7 +231,20 @@ export default function PostCard({ post }: PostCardProps) {
                   {formatDate(post.createdAt)}
                 </p>
               </div>
-            </div>
+            </button>
+
+            {!isAuthor && (
+              <button
+                onClick={handleFollow}
+                className={`px-4 py-2 rounded-full text-xs font-semibold transition-all border ${
+                  isFollowing
+                    ? "bg-gray-100 text-gray-700 border-gray-200 hover:bg-gray-200"
+                    : "bg-blue-600 text-white border-blue-600 hover:bg-blue-700"
+                }`}
+              >
+                {isFollowing ? "Following" : "Follow"}
+              </button>
+            )}
 
             {isAuthor && (
               <div className="relative">
@@ -213,7 +283,7 @@ export default function PostCard({ post }: PostCardProps) {
 
         {/* Content Section */}
         <div className="px-6 py-4">
-          <p className="text-base leading-relaxed text-gray-900 whitespace-pre-wrap break-words">
+          <p className="text-base leading-relaxed text-gray-900 whitespace-pre-wrap wrap-break-word">
             {post.content}
           </p>
         </div>
@@ -260,7 +330,7 @@ export default function PostCard({ post }: PostCardProps) {
                       href={file}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center justify-center h-full bg-gradient-to-br from-gray-200 to-gray-300 hover:from-gray-300 hover:to-gray-400 transition-colors"
+                      className="flex items-center justify-center h-full bg-linear-to-br from-gray-200 to-gray-300 hover:from-gray-300 hover:to-gray-400 transition-colors"
                     >
                       <span className="text-sm font-bold text-gray-700">
                         📎 File
@@ -285,7 +355,7 @@ export default function PostCard({ post }: PostCardProps) {
         </div>
 
         {/* Action Buttons */}
-        <div className="px-6 py-3 flex gap-2">
+        <div className="px-6 py-3 flex gap-2 flex-wrap">
           <button
             onClick={handleLike}
             disabled={isLiking}
@@ -316,6 +386,22 @@ export default function PostCard({ post }: PostCardProps) {
             <FiShare2 size={16} />
             Share
           </button>
+          {isAuthor && (
+            <button
+              onClick={() => setShowEditModal(true)}
+              className="flex-1 flex items-center justify-center gap-2 py-2.5 font-semibold rounded-lg bg-gray-50 text-gray-700 border border-gray-200 hover:bg-gray-100 transition-all duration-200 text-sm"
+            >
+              ✏️ Edit
+            </button>
+          )}
+          {isAuthor && (
+            <button
+              onClick={handleDelete}
+              className="flex-1 flex items-center justify-center gap-2 py-2.5 font-semibold rounded-lg bg-red-50 text-red-600 border border-red-200 hover:bg-red-100 transition-all duration-200 text-sm"
+            >
+              🗑️ Delete
+            </button>
+          )}
         </div>
       </div>
 
@@ -324,7 +410,10 @@ export default function PostCard({ post }: PostCardProps) {
 
       {/* Edit Modal */}
       {showEditModal && (
-        <EditPostModal post={post} onClose={() => setShowEditModal(false)} />
+        <EditPostModal
+          post={currentPost}
+          onClose={() => setShowEditModal(false)}
+        />
       )}
     </>
   );

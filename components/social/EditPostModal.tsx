@@ -18,8 +18,11 @@ export default function EditPostModal({ post, onClose }: EditPostModalProps) {
   const [content, setContent] = useState(post.content);
   const [newFiles, setNewFiles] = useState<File[]>([]);
   const [newPreviews, setNewPreviews] = useState<string[]>([]);
-  const [existingFiles, setExistingFiles] = useState<string[]>(
-    post.files || [],
+  const [existingMedia, setExistingMedia] = useState(
+    (post.files || []).map((url, index) => ({
+      url,
+      publicId: post.publicIds?.[index],
+    })),
   );
 
   const handleFileSelect = useCallback(
@@ -27,7 +30,7 @@ export default function EditPostModal({ post, onClose }: EditPostModalProps) {
       const selectedFiles = Array.from(e.target.files || []);
 
       // Validate total files
-      if (selectedFiles.length + newFiles.length + existingFiles.length > 5) {
+      if (selectedFiles.length + newFiles.length + existingMedia.length > 5) {
         toast.error("Maximum 5 files total allowed");
         return;
       }
@@ -52,7 +55,7 @@ export default function EditPostModal({ post, onClose }: EditPostModalProps) {
 
       setNewFiles((prev) => [...prev, ...validFiles]);
     },
-    [newFiles, existingFiles],
+    [newFiles, existingMedia],
   );
 
   const removeNewFile = useCallback((index: number) => {
@@ -61,25 +64,30 @@ export default function EditPostModal({ post, onClose }: EditPostModalProps) {
   }, []);
 
   const removeExistingFile = useCallback((index: number) => {
-    setExistingFiles((prev) => prev.filter((_, i) => i !== index));
+    setExistingMedia((prev) => prev.filter((_, i) => i !== index));
   }, []);
 
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {
       e.preventDefault();
 
-      if (!content.trim()) {
-        toast.error("Post content cannot be empty");
+      if (!content.trim() && existingMedia.length === 0 && newFiles.length === 0) {
+        toast.error("Add text or at least one file");
         return;
       }
 
       const formData = new FormData();
       formData.append("content", content);
 
-      // Append existing files to keep
-      existingFiles.forEach((file) => {
-        formData.append("existingFiles", file);
-      });
+      const keptPublicIds = new Set(
+        existingMedia
+          .map((media) => media.publicId)
+          .filter((publicId): publicId is string => Boolean(publicId)),
+      );
+      const removePublicIds = (post.publicIds || []).filter(
+        (publicId) => !keptPublicIds.has(publicId),
+      );
+      formData.append("removePublicIds", JSON.stringify(removePublicIds));
 
       // Append new files
       newFiles.forEach((file) => {
@@ -90,11 +98,11 @@ export default function EditPostModal({ post, onClose }: EditPostModalProps) {
         await updatePost(post._id, formData);
         onClose();
         toast.success("Post updated successfully");
-      } catch (error) {
+      } catch {
         toast.error("Failed to update post");
       }
     },
-    [content, existingFiles, newFiles, post._id, updatePost, onClose],
+    [content, existingMedia, newFiles, post._id, post.publicIds, updatePost, onClose],
   );
 
   return (
@@ -125,35 +133,38 @@ export default function EditPostModal({ post, onClose }: EditPostModalProps) {
           </div>
 
           {/* Existing File Previews */}
-          {existingFiles.length > 0 && (
+          {existingMedia.length > 0 && (
             <div>
               <label className="block text-sm font-bold mb-2">
                 Current Files
               </label>
               <div
                 className={`grid gap-2 ${
-                  existingFiles.length === 1
+                  existingMedia.length === 1
                     ? "grid-cols-1"
-                    : existingFiles.length === 2
+                    : existingMedia.length === 2
                       ? "grid-cols-2"
                       : "grid-cols-3"
                 }`}
               >
-                {existingFiles.map((file, idx) => (
+                {existingMedia.map((media, idx) => (
                   <div
-                    key={idx}
+                    key={media.publicId || media.url}
                     className="relative border-2 border-black rounded-lg overflow-hidden bg-gray-100"
                   >
-                    {file.match(/\.(jpg|jpeg|png|gif|webp)$/i) ? (
+                    {media.url.match(/\.(jpg|jpeg|png|gif|webp)$/i) ? (
                       <Image
-                        src={file}
+                        src={media.url}
                         alt={`File ${idx}`}
                         width={200}
                         height={200}
                         className="w-full h-32 object-cover"
                       />
-                    ) : file.match(/\.mp4$/i) ? (
-                      <video src={file} className="w-full h-32 object-cover" />
+                    ) : media.url.match(/\.mp4$/i) ? (
+                      <video
+                        src={media.url}
+                        className="w-full h-32 object-cover"
+                      />
                     ) : (
                       <div className="w-full h-32 flex items-center justify-center bg-gray-200">
                         <span className="text-sm font-bold">📄 File</span>
@@ -241,7 +252,7 @@ export default function EditPostModal({ post, onClose }: EditPostModalProps) {
               />
             </label>
             <p className="text-xs text-gray-500 mt-1">
-              {`${existingFiles.length + newFiles.length}/5 files total`}
+              {`${existingMedia.length + newFiles.length}/5 files total`}
             </p>
           </div>
 
@@ -256,7 +267,12 @@ export default function EditPostModal({ post, onClose }: EditPostModalProps) {
             </button>
             <button
               type="submit"
-              disabled={isLoading || !content.trim()}
+              disabled={
+                isLoading ||
+                (!content.trim() &&
+                  existingMedia.length === 0 &&
+                  newFiles.length === 0)
+              }
               className="flex-1 py-3 font-bold bg-black text-white border-2 border-transparent rounded-lg hover:bg-white hover:text-black hover:border-black transition-all disabled:opacity-50"
             >
               {isLoading ? "Updating..." : "Update"}

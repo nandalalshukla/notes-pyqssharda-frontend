@@ -44,7 +44,7 @@ export function useSocialActions() {
         await createNewPost(formData);
         toast.success("Post created successfully");
         return true;
-      } catch (error) {
+      } catch {
         toast.error("Failed to create post");
         return false;
       }
@@ -58,17 +58,25 @@ export function useSocialActions() {
       content: string,
       files: File[],
       existingFiles: string[],
+      publicIds: string[] = [],
     ) => {
-      if (!content.trim()) {
-        toast.error("Post content cannot be empty");
+      if (!content.trim() && existingFiles.length === 0 && files.length === 0) {
+        toast.error("Add text or at least one file");
         return false;
       }
 
       const formData = new FormData();
       formData.append("content", content);
 
-      // Add existing files to keep
-      existingFiles.forEach((file) => formData.append("existingFiles", file));
+      const keptPublicIds = new Set(
+        existingFiles
+          .map((file) => publicIds[existingFiles.indexOf(file)])
+          .filter((publicId): publicId is string => Boolean(publicId)),
+      );
+      const removePublicIds = publicIds.filter(
+        (publicId) => !keptPublicIds.has(publicId),
+      );
+      formData.append("removePublicIds", JSON.stringify(removePublicIds));
 
       // Add new files
       files.forEach((file) => formData.append("files", file));
@@ -77,7 +85,7 @@ export function useSocialActions() {
         await updatePost(postId, formData);
         toast.success("Post updated successfully");
         return true;
-      } catch (error) {
+      } catch {
         toast.error("Failed to update post");
         return false;
       }
@@ -93,7 +101,7 @@ export function useSocialActions() {
         await removePost(postId);
         toast.success("Post deleted");
         return true;
-      } catch (error) {
+      } catch {
         toast.error("Failed to delete post");
         return false;
       }
@@ -118,7 +126,7 @@ export function useSocialActions() {
         await addComment(postId, text);
         toast.success("Comment added");
         return true;
-      } catch (error) {
+      } catch {
         toast.error("Failed to add comment");
         return false;
       }
@@ -137,7 +145,7 @@ export function useSocialActions() {
         await updateComment(postId, commentId, text);
         toast.success("Comment updated");
         return true;
-      } catch (error) {
+      } catch {
         toast.error("Failed to update comment");
         return false;
       }
@@ -153,7 +161,7 @@ export function useSocialActions() {
         await removeComment(postId, commentId);
         toast.success("Comment deleted");
         return true;
-      } catch (error) {
+      } catch {
         toast.error("Failed to delete comment");
         return false;
       }
@@ -172,7 +180,7 @@ export function useSocialActions() {
       try {
         await togglePostLike(postId);
         return true;
-      } catch (error) {
+      } catch {
         toast.error("Failed to like post");
         return false;
       }
@@ -190,7 +198,7 @@ export function useSocialActions() {
       try {
         await toggleCommentLike(commentId);
         return true;
-      } catch (error) {
+      } catch {
         toast.error("Failed to like comment");
         return false;
       }
@@ -209,7 +217,7 @@ export function useSocialActions() {
       try {
         await toggleUserFollow(userId);
         return true;
-      } catch (error) {
+      } catch {
         toast.error("Failed to follow user");
         return false;
       }

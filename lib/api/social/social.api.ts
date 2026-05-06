@@ -36,6 +36,7 @@ export interface Comment {
   text: string;
   author: User;
   post: string;
+  parentComment?: string | null;
   likes: number;
   likedByCurrentUser?: boolean;
   createdAt: string;
@@ -59,6 +60,29 @@ export interface FollowStats {
   followerCount: number;
   followingCount: number;
   isFollowedByCurrentUser?: boolean;
+}
+
+export interface UserProfile {
+  _id: string;
+  name: string;
+  username: string;
+  email: string;
+  bio: string;
+  profilePic?: {
+    url: string;
+    publicId?: string;
+  };
+  course?: string;
+  contactNo?: string;
+  role: string;
+  stats: {
+    postsCount: number;
+    followersCount: number;
+    followingCount: number;
+    contributions: number;
+  };
+  isFollowedByCurrentUser: boolean;
+  isOwnProfile: boolean;
 }
 
 /**
@@ -121,11 +145,29 @@ export const getComments = async (postId: string) => {
   return response.data;
 };
 
-export const createComment = async (postId: string, text: string) => {
+export const createComment = async (
+  postId: string,
+  text: string,
+  parentComment?: string,
+) => {
   const response = await api.post<ApiResponse<{ comment: Comment }>>(
     `/social/posts/${postId}/comments`,
-    { text },
+    { text, parentComment },
   );
+  return response.data;
+};
+
+export const getCommentReplies = async (
+  postId: string,
+  commentId: string,
+  page: number = 1,
+  limit: number = 10,
+) => {
+  const response = await api.get<
+    ApiResponse<{ replies: Comment[]; pagination: PaginationInfo }>
+  >(`/social/posts/${postId}/comments/${commentId}/replies`, {
+    params: { page, limit },
+  });
   return response.data;
 };
 
@@ -142,7 +184,7 @@ export const editComment = async (
 };
 
 export const deleteComment = async (postId: string, commentId: string) => {
-  const response = await api.delete<ApiResponse>(
+  const response = await api.delete<ApiResponse<{ deletedCount: number }>>(
     `/social/posts/${postId}/comments/${commentId}`,
   );
   return response.data;
@@ -211,6 +253,35 @@ export const getFollowing = async (
       params: { page, limit },
     },
   );
+  return response.data;
+};
+
+/**
+ * ═══════════════════════════════════════════════════════════════════════════════
+ * USER PROFILE API
+ * ═══════════════════════════════════════════════════════════════════════════════
+ */
+
+export const getUserProfile = async (userId: string) => {
+  const response = await api.get<ApiResponse<{ profile: UserProfile }>>(
+    `/social/users/${userId}`,
+  );
+  return response.data;
+};
+
+export const getUserPosts = async (
+  userId: string,
+  page: number = 1,
+  limit: number = 10,
+) => {
+  const response = await api.get<
+    ApiResponse<{
+      posts: Post[];
+      pagination: PaginationInfo;
+    }>
+  >(`/social/users/${userId}/posts`, {
+    params: { page, limit },
+  });
   return response.data;
 };
 
