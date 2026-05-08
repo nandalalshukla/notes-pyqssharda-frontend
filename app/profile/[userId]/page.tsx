@@ -4,11 +4,12 @@ import React, { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import {
   getUserProfile,
-  getUserPosts,
   toggleFollow,
+  Post,
   UserProfile,
 } from "@/lib/api/social/social.api";
 import useAuthStore from "@/stores/user/authStore";
+import { useSocialStore } from "@/stores/social/social.store";
 import PostCard from "@/components/social/PostCard";
 import ProfileHeader from "@/components/social/ProfileHeader";
 import { FeedLoadingState } from "@/components/social/LoadingSkeletons";
@@ -21,37 +22,46 @@ export default function UserProfilePage() {
   const router = useRouter();
   const { user: currentUser } = useAuthStore();
   const userId = params.userId as string;
+  const {
+    userPosts,
+    userPostsPage,
+    userPostsTotalPages,
+    isLoadingUserPosts,
+    fetchUserPosts,
+  } = useSocialStore();
 
   const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [posts, setPosts] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isFollowLoading, setIsFollowLoading] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
   const [error, setError] = useState<string | null>(null);
 
+  const posts = userPosts.get(userId) || [];
+  const currentPage = userPostsPage.get(userId) || 1;
+  const totalPages = userPostsTotalPages.get(userId) || 1;
+  const isPostsLoading = isLoadingUserPosts.get(userId) ?? true;
+
   useEffect(() => {
-    const fetchProfileData = async () => {
+    const fetchInitialData = async () => {
       setIsLoading(true);
       try {
-        const [profileRes, postsRes] = await Promise.all([
-          getUserProfile(userId),
-          getUserPosts(userId, 1, 10),
-        ]);
+        // Fetch profile and posts in parallel
+        const profilePromise = getUserProfile(userId);
+        const postsPromise = fetchUserPosts(userId, 1);
+
+        const [profileRes] = await Promise.all([profilePromise, postsPromise]);
 
         if (profileRes.success) {
           setProfile(profileRes.data?.profile || null);
-        }
-
-        if (postsRes.success && postsRes.data) {
-          setPosts(postsRes.data.posts || []);
-          setTotalPages(postsRes.data.pagination?.totalPages || 1);
+        } else {
+          throw new Error(profileRes.message || "Failed to load profile");
         }
 
         setError(null);
       } catch (err: any) {
         const errorMsg =
-          err?.response?.data?.message || "Failed to load profile";
+          err?.response?.data?.message ||
+          err.message ||
+          "Failed to load profile data";
         setError(errorMsg);
         toast.error(errorMsg);
       } finally {
@@ -60,23 +70,16 @@ export default function UserProfilePage() {
     };
 
     if (userId) {
-      fetchProfileData();
+      fetchInitialData();
     }
-  }, [userId]);
+  }, [userId, fetchUserPosts]);
 
   const handleLoadMore = async () => {
-    if (currentPage >= totalPages) return;
+    if (currentPage >= totalPages || isPostsLoading) return;
 
     try {
-      const nextPage = currentPage + 1;
-      const res = await getUserPosts(userId, nextPage, 10);
-      const data = res.data;
-
-      if (res.success && data?.posts) {
-        setPosts((prev) => [...prev, ...data.posts]);
-        setCurrentPage(nextPage);
-      }
-    } catch (err: any) {
+      await fetchUserPosts(userId, currentPage + 1);
+    } catch {
       toast.error("Failed to load more posts");
     }
   };
@@ -172,40 +175,36 @@ export default function UserProfilePage() {
 
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="mb-8">
-          <h2 className="text-2xl font-bold text-gray-900">Posts</h2>
-          <p className="text-gray-500 mt-1">
-            {posts.length} {posts.length === 1 ? "post" : "posts"} by{" "}
-            {profile.name}
-          </p>
-        </div>
-
-        {posts.length > 0 ? (
-          <>
-            <div className="space-y-6">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6">Posts</h2>
+          {isPostsLoading && posts.length === 0 ? (
+            <FeedLoadingState />
+          ) : posts.length > 0 ? (
+            <div className="space-y-8">
               {posts.map((post) => (
                 <PostCard key={post._id} post={post} />
               ))}
             </div>
+          ) : (
+            <div className="text-center py-16">
+              <h3 className="text-xl font-medium text-gray-700">
+                No posts yet
+              </h3>
+              <p className="text-gray-500 mt-2">
+                This user hasn't shared any posts.
+              </p>
+            </div>
+          )}
+        </div>
 
-            {currentPage < totalPages && (
-              <div className="mt-8 flex justify-center">
-                <button
-                  onClick={handleLoadMore}
-                  className="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors font-medium"
-                >
-                  Load More Posts
-                </button>
-              </div>
-            )}
-          </>
-        ) : (
-          <div className="text-center py-16">
-            <div className="text-4xl mb-4">No posts yet</div>
-            <p className="text-gray-600 text-lg">
-              {profile.isOwnProfile
-                ? "Start by creating your first post."
-                : `${profile.name} has not posted anything yet.`}
-            </p>
+        {currentPage < totalPages && (
+          <div className="text-center">
+            <button
+              onClick={handleLoadMore}
+              disabled={isPostsLoading}
+              className="bg-white border border-gray-300 rounded-lg px-6 py-3 text-gray-700 font-medium hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              {isPostsLoading ? "Loading..." : "Load More"}
+            </button>
           </div>
         )}
       </div>

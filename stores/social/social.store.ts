@@ -4,6 +4,7 @@ import {
   editPost,
   deletePost,
   getFeed,
+  getUserPosts,
   getComments,
   getCommentReplies,
   createComment,
@@ -33,6 +34,9 @@ import { getErrorMessage } from "@/lib/utils/errorHandler";
 interface PostsState {
   feed: Post[];
   userPosts: Map<string, Post[]>;
+  userPostsPage: Map<string, number>;
+  userPostsTotalPages: Map<string, number>;
+  isLoadingUserPosts: Map<string, boolean>;
   feedPage: number;
   feedTotalPages: number;
   isLoadingFeed: boolean;
@@ -68,6 +72,7 @@ interface SocialStore
 
   // Posts actions
   fetchFeed: (page?: number) => Promise<void>;
+  fetchUserPosts: (userId: string, page?: number) => Promise<void>;
   createNewPost: (data: FormData) => Promise<void>;
   updatePost: (postId: string, data: FormData) => Promise<void>;
   removePost: (postId: string) => Promise<void>;
@@ -116,6 +121,7 @@ const initialState: Omit<
   SocialStore,
   keyof {
     fetchFeed: unknown;
+    fetchUserPosts: unknown;
     createNewPost: unknown;
     updatePost: unknown;
     removePost: unknown;
@@ -139,6 +145,9 @@ const initialState: Omit<
   // Posts
   feed: [],
   userPosts: new Map(),
+  userPostsPage: new Map(),
+  userPostsTotalPages: new Map(),
+  isLoadingUserPosts: new Map(),
   feedPage: 1,
   feedTotalPages: 0,
   isLoadingFeed: false,
@@ -267,6 +276,67 @@ export const useSocialStore = create<SocialStore>((set, get) => ({
         error: getErrorMessage(error) || "Failed to fetch feed",
         isLoadingFeed: false,
       });
+    }
+  },
+
+  fetchUserPosts: async (userId: string, page = 1) => {
+    set((state) => ({
+      isLoadingUserPosts: new Map(state.isLoadingUserPosts).set(userId, true),
+      error: null,
+    }));
+    try {
+      const res = await getUserPosts(userId, page, 10);
+      const rawPosts = Array.isArray(res.data?.data?.data)
+        ? res.data?.data?.data
+        : Array.isArray(res.data?.data)
+          ? res.data?.data
+          : Array.isArray(res.data?.posts)
+            ? res.data?.posts
+            : Array.isArray(res.data?.data?.posts)
+              ? res.data?.data?.posts
+              : [];
+      const posts = rawPosts.map((post: any) => ({
+        ...post,
+        files: post.files || post.media?.map((m: any) => m.url) || [],
+        publicIds:
+          post.publicIds || post.media?.map((m: any) => m.publicId) || [],
+        commentCount:
+          post.commentCount ?? post.commentsCount ?? post.comments ?? 0,
+      }));
+      const totalPages =
+        res.data?.data?.totalPages ||
+        res.data?.totalPages ||
+        res.data?.data?.pagination?.totalPages ||
+        res.data?.pagination?.totalPages ||
+        1;
+
+      set((state) => {
+        const existing = state.userPosts.get(userId) || [];
+        const nextPosts = page > 1 ? [...existing, ...posts] : posts;
+
+        return {
+          userPosts: new Map(state.userPosts).set(userId, nextPosts),
+          userPostsPage: new Map(state.userPostsPage).set(userId, page),
+          userPostsTotalPages: new Map(state.userPostsTotalPages).set(
+            userId,
+            totalPages,
+          ),
+          isLoadingUserPosts: new Map(state.isLoadingUserPosts).set(
+            userId,
+            false,
+          ),
+        };
+      });
+      return { posts, totalPages };
+    } catch (error: unknown) {
+      set((state) => ({
+        error: getErrorMessage(error) || "Failed to fetch user posts",
+        isLoadingUserPosts: new Map(state.isLoadingUserPosts).set(
+          userId,
+          false,
+        ),
+      }));
+      throw error;
     }
   },
 

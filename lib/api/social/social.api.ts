@@ -276,8 +276,10 @@ export const getUserPosts = async (
 ) => {
   const response = await api.get<
     ApiResponse<{
-      posts: Post[];
-      pagination: PaginationInfo;
+      data: Post[];
+      totalPages: number;
+      currentPage: number;
+      total: number;
     }>
   >(`/social/users/${userId}/posts`, {
     params: { page, limit },

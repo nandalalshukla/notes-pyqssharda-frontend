@@ -81,7 +81,7 @@ export default function ProfilePictureSection() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {/* Current Profile Picture */}
         <div className="flex flex-col items-center">
-          <div className="w-40 h-40 bg-gradient-to-br from-blue-400 to-purple-500 rounded-2xl border-4 border-black flex items-center justify-center overflow-hidden mb-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+          <div className="w-40 h-40 flex items-center justify-center overflow-hidden mb-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
             {currentProfilePic ? (
               <Image
                 src={currentProfilePic}

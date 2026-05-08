@@ -17,6 +17,8 @@ import toast from "react-hot-toast";
 import CommentsSection from "./CommentsSection";
 import EditPostModal from "./EditPostModal";
 import Image from "next/image";
+import { Menu, Transition } from "@headlessui/react";
+import { Fragment } from "react";
 
 interface PostCardProps {
   post: Post;
@@ -48,9 +50,8 @@ export default function PostCard({ post }: PostCardProps) {
     typeof (currentPost.author as unknown) === "string"
       ? (currentPost.author as unknown as string)
       : (currentPost.author as { _id?: string })?._id;
-  const isAuthor = user?._id && authorId
-    ? String(user._id) === String(authorId)
-    : false;
+  const isAuthor =
+    user?._id && authorId ? String(user._id) === String(authorId) : false;
   const isFollowing =
     followStats.get(authorId || "")?.isFollowedByCurrentUser || false;
 
@@ -202,82 +203,102 @@ export default function PostCard({ post }: PostCardProps) {
         {/* Header Section */}
         <div className="px-6 pt-6 pb-4 border-b border-gray-100">
           <div className="flex items-center justify-between">
-            <button
-              onClick={handleViewProfile}
-              className="flex items-center gap-3 flex-1 text-left hover:opacity-80 transition-opacity"
-            >
-              <div className="w-12 h-12 bg-linear-to-br from-blue-400 to-purple-500 rounded-full border-2 border-gray-200 shrink-0 flex items-center justify-center overflow-hidden shadow-md">
-                {authorImage ? (
-                  <Image
-                    src={authorImage}
-                    alt={post.author.username || "User"}
-                    width={48}
-                    height={48}
-                    className="rounded-full w-full h-full object-cover"
-                  />
-                ) : (
-                  <span className="text-white font-bold text-lg">
-                    {(post.author.username || "U")[0].toUpperCase()}
-                  </span>
-                )}
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <h3 className="font-bold text-gray-900 truncate">
-                    {post.author.username || "Anonymous"}
-                  </h3>
-                </div>
-                <p className="text-xs text-gray-500 mt-0.5">
-                  {formatDate(post.createdAt)}
+            <div className="flex items-center gap-3">
+              <Image
+                src={authorImage || "/images/default-avatar.png"}
+                alt={
+                  (currentPost.author as { username?: string })?.username ||
+                  "User"
+                }
+                width={40}
+                height={40}
+                className="rounded-full object-cover cursor-pointer"
+                onClick={handleViewProfile}
+              />
+              <div>
+                <p
+                  className="font-bold text-gray-800 cursor-pointer"
+                  onClick={handleViewProfile}
+                >
+                  {(currentPost.author as { username?: string })?.username}
+                </p>
+                <p className="text-xs text-gray-500">
+                  {formatDate(currentPost.createdAt)}
                 </p>
               </div>
-            </button>
+            </div>
 
-            {!isAuthor && (
-              <button
-                onClick={handleFollow}
-                className={`px-4 py-2 rounded-full text-xs font-semibold transition-all border ${
-                  isFollowing
-                    ? "bg-gray-100 text-gray-700 border-gray-200 hover:bg-gray-200"
-                    : "bg-blue-600 text-white border-blue-600 hover:bg-blue-700"
-                }`}
-              >
-                {isFollowing ? "Following" : "Follow"}
-              </button>
-            )}
-
-            {isAuthor && (
-              <div className="relative">
-                <button
-                  onClick={() => setShowMenu(!showMenu)}
-                  className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-600 hover:text-gray-900"
+            <div className="relative">
+              <Menu as="div" className="relative inline-block text-left">
+                <div>
+                  <Menu.Button className="p-2 rounded-full hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    <FiMoreVertical className="h-5 w-5 text-gray-500" />
+                  </Menu.Button>
+                </div>
+                <Transition
+                  as={Fragment}
+                  enter="transition ease-out duration-100"
+                  enterFrom="transform opacity-0 scale-95"
+                  enterTo="transform opacity-100 scale-100"
+                  leave="transition ease-in duration-75"
+                  leaveFrom="transform opacity-100 scale-100"
+                  leaveTo="transform opacity-0 scale-95"
                 >
-                  <FiMoreVertical size={18} />
-                </button>
-                {showMenu && (
-                  <div className="absolute right-0 top-full mt-2 bg-white border border-gray-200 rounded-xl shadow-lg z-20 overflow-hidden">
-                    <button
-                      onClick={() => {
-                        setShowEditModal(true);
-                        setShowMenu(false);
-                      }}
-                      className="block w-full text-left px-4 py-2.5 hover:bg-gray-50 font-medium text-sm text-gray-900 border-b border-gray-100"
-                    >
-                      ✏️ Edit
-                    </button>
-                    <button
-                      onClick={() => {
-                        handleDelete();
-                        setShowMenu(false);
-                      }}
-                      className="block w-full text-left px-4 py-2.5 hover:bg-red-50 font-medium text-sm text-red-600"
-                    >
-                      🗑️ Delete
-                    </button>
-                  </div>
-                )}
-              </div>
-            )}
+                  <Menu.Items className="absolute right-0 mt-2 w-48 origin-top-right bg-white divide-y divide-gray-100 rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-10">
+                    <div className="px-1 py-1">
+                      {!isAuthor && (
+                        <Menu.Item>
+                          {({ active }) => (
+                            <button
+                              onClick={handleFollow}
+                              className={`${
+                                active
+                                  ? "bg-indigo-500 text-white"
+                                  : "text-gray-900"
+                              } group flex rounded-md items-center w-full px-2 py-2 text-sm`}
+                            >
+                              {isFollowing ? "Unfollow" : "Follow"}
+                            </button>
+                          )}
+                        </Menu.Item>
+                      )}
+                      {isAuthor && (
+                        <>
+                          <Menu.Item>
+                            {({ active }) => (
+                              <button
+                                onClick={() => setShowEditModal(true)}
+                                className={`${
+                                  active
+                                    ? "bg-indigo-500 text-white"
+                                    : "text-gray-900"
+                                } group flex rounded-md items-center w-full px-2 py-2 text-sm`}
+                              >
+                                Edit
+                              </button>
+                            )}
+                          </Menu.Item>
+                          <Menu.Item>
+                            {({ active }) => (
+                              <button
+                                onClick={handleDelete}
+                                className={`${
+                                  active
+                                    ? "bg-red-500 text-white"
+                                    : "text-red-600"
+                                } group flex rounded-md items-center w-full px-2 py-2 text-sm`}
+                              >
+                                Delete
+                              </button>
+                            )}
+                          </Menu.Item>
+                        </>
+                      )}
+                    </div>
+                  </Menu.Items>
+                </Transition>
+              </Menu>
+            </div>
           </div>
         </div>
 
@@ -386,22 +407,6 @@ export default function PostCard({ post }: PostCardProps) {
             <FiShare2 size={16} />
             Share
           </button>
-          {isAuthor && (
-            <button
-              onClick={() => setShowEditModal(true)}
-              className="flex-1 flex items-center justify-center gap-2 py-2.5 font-semibold rounded-lg bg-gray-50 text-gray-700 border border-gray-200 hover:bg-gray-100 transition-all duration-200 text-sm"
-            >
-              ✏️ Edit
-            </button>
-          )}
-          {isAuthor && (
-            <button
-              onClick={handleDelete}
-              className="flex-1 flex items-center justify-center gap-2 py-2.5 font-semibold rounded-lg bg-red-50 text-red-600 border border-red-200 hover:bg-red-100 transition-all duration-200 text-sm"
-            >
-              🗑️ Delete
-            </button>
-          )}
         </div>
       </div>
 

@@ -17,6 +17,17 @@ interface AuthState {
   setUser: (user: User | null) => void;
 }
 
+const normalizeUser = (user: User | null) => {
+  if (!user) return null;
+
+  const anyUser = user as User & { id?: string };
+  if (!anyUser._id && anyUser.id) {
+    return { ...anyUser, _id: anyUser.id } as User;
+  }
+
+  return user;
+};
+
 const useAuthStore = create<AuthState>()(
   persist(
     (set) => ({
@@ -27,12 +38,12 @@ const useAuthStore = create<AuthState>()(
 
       setAuthLoading: (loading) => set({ authLoading: loading }),
 
-      setUser: (user) => set({ user }),
+      setUser: (user) => set({ user: normalizeUser(user) }),
 
       login: async (data) => {
         const res = await login(data);
         set({
-          user: res.data.data.user,
+          user: normalizeUser(res.data.data.user),
           isAuthenticated: true,
           authLoading: false,
           lastLoginTime: Date.now(),
@@ -74,7 +85,7 @@ const useAuthStore = create<AuthState>()(
         try {
           const res = await getMe();
           set({
-            user: res.data.data.user,
+            user: normalizeUser(res.data.data.user),
             isAuthenticated: true,
             authLoading: false,
           });
