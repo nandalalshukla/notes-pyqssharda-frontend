@@ -1,9 +1,11 @@
 "use client";
 
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, Fragment } from "react";
+import { Dialog, Transition } from "@headlessui/react";
 import { useSocialStore } from "@/stores/social/social.store";
+import { useBodyScroll } from "@/hooks/useBodyScroll";
 import { Post } from "@/lib/api/social/social.api";
-import { FiX, FiImage } from "react-icons/fi";
+import { FiX, FiImage, FiFile, FiTrash2, FiVideo } from "react-icons/fi";
 import toast from "react-hot-toast";
 import Image from "next/image";
 
@@ -14,6 +16,9 @@ interface EditPostModalProps {
 
 export default function EditPostModal({ post, onClose }: EditPostModalProps) {
   const { updatePost, isLoading } = useSocialStore();
+
+  // Prevent body scroll when modal is open
+  useBodyScroll(true);
 
   const [content, setContent] = useState(post.content);
   const [newFiles, setNewFiles] = useState<File[]>([]);
@@ -29,7 +34,6 @@ export default function EditPostModal({ post, onClose }: EditPostModalProps) {
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const selectedFiles = Array.from(e.target.files || []);
 
-      // Validate total files
       if (selectedFiles.length + newFiles.length + existingMedia.length > 5) {
         toast.error("Maximum 5 files total allowed");
         return;
@@ -44,7 +48,6 @@ export default function EditPostModal({ post, onClose }: EditPostModalProps) {
         }
       });
 
-      // Create previews
       validFiles.forEach((file) => {
         const reader = new FileReader();
         reader.onloadend = () => {
@@ -71,7 +74,11 @@ export default function EditPostModal({ post, onClose }: EditPostModalProps) {
     async (e: React.FormEvent) => {
       e.preventDefault();
 
-      if (!content.trim() && existingMedia.length === 0 && newFiles.length === 0) {
+      if (
+        !content.trim() &&
+        existingMedia.length === 0 &&
+        newFiles.length === 0
+      ) {
         toast.error("Add text or at least one file");
         return;
       }
@@ -89,7 +96,6 @@ export default function EditPostModal({ post, onClose }: EditPostModalProps) {
       );
       formData.append("removePublicIds", JSON.stringify(removePublicIds));
 
-      // Append new files
       newFiles.forEach((file) => {
         formData.append("files", file);
       });
@@ -102,184 +108,239 @@ export default function EditPostModal({ post, onClose }: EditPostModalProps) {
         toast.error("Failed to update post");
       }
     },
-    [content, existingMedia, newFiles, post._id, post.publicIds, updatePost, onClose],
+    [
+      content,
+      existingMedia,
+      newFiles,
+      post._id,
+      post.publicIds,
+      updatePost,
+      onClose,
+    ],
   );
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl border-2 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-        {/* Header */}
-        <div className="sticky top-0 bg-white border-b-2 border-black p-6 flex items-center justify-between">
-          <h2 className="text-2xl font-bold">Edit Post</h2>
-          <button
-            onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-          >
-            <FiX size={24} />
-          </button>
-        </div>
+    <Transition appear show={true} as={Fragment}>
+      <Dialog as="div" className="relative z-50" onClose={onClose}>
+        <Transition.Child
+          as={Fragment}
+          enter="ease-out duration-300"
+          enterFrom="opacity-0"
+          enterTo="opacity-100"
+          leave="ease-in duration-200"
+          leaveFrom="opacity-100"
+          leaveTo="opacity-0"
+        >
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" />
+        </Transition.Child>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          {/* Content Input */}
-          <div>
-            <label className="block text-sm font-bold mb-2">Content</label>
-            <textarea
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              className="w-full p-4 border-2 border-black rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
-              rows={6}
-            />
-            <p className="text-xs text-gray-500 mt-1">{content.length}/2000</p>
-          </div>
-
-          {/* Existing File Previews */}
-          {existingMedia.length > 0 && (
-            <div>
-              <label className="block text-sm font-bold mb-2">
-                Current Files
-              </label>
-              <div
-                className={`grid gap-2 ${
-                  existingMedia.length === 1
-                    ? "grid-cols-1"
-                    : existingMedia.length === 2
-                      ? "grid-cols-2"
-                      : "grid-cols-3"
-                }`}
-              >
-                {existingMedia.map((media, idx) => (
-                  <div
-                    key={media.publicId || media.url}
-                    className="relative border-2 border-black rounded-lg overflow-hidden bg-gray-100"
+        <div className="fixed inset-0 overflow-y-auto">
+          <div className="flex min-h-full items-center justify-center p-4 sm:p-6">
+            <Transition.Child
+              as={Fragment}
+              enter="ease-out duration-300"
+              enterFrom="opacity-0 scale-95"
+              enterTo="opacity-100 scale-100"
+              leave="ease-in duration-200"
+              leaveFrom="opacity-100 scale-100"
+              leaveTo="opacity-0 scale-95"
+            >
+              <Dialog.Panel className="bg-white rounded-xl border border-gray-200 shadow-xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
+                <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between z-10 shrink-0">
+                  <Dialog.Title className="text-xl font-bold text-gray-900">
+                    Edit Post
+                  </Dialog.Title>
+                  <button
+                    onClick={onClose}
+                    className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors text-gray-600 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
-                    {media.url.match(/\.(jpg|jpeg|png|gif|webp)$/i) ? (
-                      <Image
-                        src={media.url}
-                        alt={`File ${idx}`}
-                        width={200}
-                        height={200}
-                        className="w-full h-32 object-cover"
-                      />
-                    ) : media.url.match(/\.mp4$/i) ? (
-                      <video
-                        src={media.url}
-                        className="w-full h-32 object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-32 flex items-center justify-center bg-gray-200">
-                        <span className="text-sm font-bold">📄 File</span>
-                      </div>
-                    )}
-                    <button
-                      type="button"
-                      onClick={() => removeExistingFile(idx)}
-                      className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
-                    >
-                      <FiX size={16} />
-                    </button>
+                    <FiX size={24} />
+                  </button>
+                </div>
+
+                <form
+                  onSubmit={handleSubmit}
+                  className="flex-1 overflow-y-auto p-6 space-y-5"
+                >
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Post Content
+                    </label>
+                    <textarea
+                      value={content}
+                      onChange={(e) => setContent(e.target.value)}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-gray-900 placeholder-gray-500 transition-all"
+                      rows={5}
+                      maxLength={2000}
+                    />
+                    <p className="text-xs text-gray-500 mt-2 text-right">
+                      {content.length}/2000
+                    </p>
                   </div>
-                ))}
-              </div>
-            </div>
-          )}
 
-          {/* New File Previews */}
-          {newPreviews.length > 0 && (
-            <div>
-              <label className="block text-sm font-bold mb-2">New Files</label>
-              <div
-                className={`grid gap-2 ${
-                  newPreviews.length === 1
-                    ? "grid-cols-1"
-                    : newPreviews.length === 2
-                      ? "grid-cols-2"
-                      : "grid-cols-3"
-                }`}
-              >
-                {newPreviews.map((preview, idx) => (
-                  <div
-                    key={idx}
-                    className="relative border-2 border-black rounded-lg overflow-hidden bg-gray-100"
-                  >
-                    {newFiles[idx]?.type.startsWith("image") ? (
-                      <Image
-                        src={preview}
-                        alt={`Preview ${idx}`}
-                        width={200}
-                        height={200}
-                        className="w-full h-32 object-cover"
+                  {existingMedia.length > 0 && (
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-3">
+                        Current Media ({existingMedia.length})
+                      </label>
+                      <div
+                        className={`grid gap-3 ${
+                          existingMedia.length <= 2
+                            ? "grid-cols-2"
+                            : "grid-cols-3"
+                        }`}
+                      >
+                        {existingMedia.map((media, idx) => (
+                          <div
+                            key={media.publicId || media.url}
+                            className="relative border border-gray-300 rounded-lg overflow-hidden bg-gray-50 aspect-square group"
+                          >
+                            {media.url.match(/\.(jpg|jpeg|png|gif|webp)$/i) ? (
+                              <Image
+                                src={media.url}
+                                alt={`File ${idx}`}
+                                width={200}
+                                height={200}
+                                className="w-full h-full object-cover"
+                              />
+                            ) : media.url.match(/\.mp4$/i) ? (
+                              <>
+                                <video
+                                  src={media.url}
+                                  className="w-full h-full object-cover"
+                                />
+                                <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/40 transition-colors">
+                                  <FiVideo className="text-white" size={32} />
+                                </div>
+                              </>
+                            ) : (
+                              <div className="w-full h-full flex flex-col items-center justify-center bg-gray-100 gap-2">
+                                <FiFile className="text-gray-400" size={28} />
+                                <span className="text-xs font-medium text-gray-600">
+                                  File
+                                </span>
+                              </div>
+                            )}
+                            <button
+                              type="button"
+                              onClick={() => removeExistingFile(idx)}
+                              className="absolute top-2 right-2 p-1.5 bg-red-600 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-all hover:bg-red-700"
+                            >
+                              <FiTrash2 size={16} />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-3">
+                      Add Media ({newPreviews.length + existingMedia.length}/5)
+                    </label>
+                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-400 transition-colors cursor-pointer">
+                      <input
+                        type="file"
+                        multiple
+                        accept="image/*,video/*,.pdf,.doc,.docx"
+                        onChange={handleFileSelect}
+                        className="hidden"
+                        id="edit-file-input"
                       />
-                    ) : newFiles[idx]?.type.startsWith("video") ? (
-                      <video
-                        src={preview}
-                        className="w-full h-32 object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-32 flex items-center justify-center bg-gray-200">
-                        <span className="text-sm font-bold">
-                          📄 {newFiles[idx]?.name}
+                      <label
+                        htmlFor="edit-file-input"
+                        className="cursor-pointer flex flex-col items-center gap-2"
+                      >
+                        <FiImage className="text-gray-400" size={32} />
+                        <span className="text-sm font-medium text-gray-700">
+                          Click to add files
                         </span>
-                      </div>
-                    )}
-                    <button
-                      type="button"
-                      onClick={() => removeNewFile(idx)}
-                      className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
-                    >
-                      <FiX size={16} />
-                    </button>
+                        <span className="text-xs text-gray-500">
+                          Images, videos, or documents up to 10MB each
+                        </span>
+                      </label>
+                    </div>
                   </div>
-                ))}
-              </div>
-            </div>
-          )}
 
-          {/* File Upload */}
-          <div>
-            <label className="flex items-center justify-center gap-2 p-4 border-2 border-black border-dashed rounded-xl cursor-pointer hover:bg-gray-50 transition-colors">
-              <FiImage size={20} />
-              <span className="font-semibold">
-                {newFiles.length === 0
-                  ? "Add new files"
-                  : `${newFiles.length} new file(s)`}
-              </span>
-              <input
-                type="file"
-                multiple
-                accept="image/*,video/mp4,.pdf,.doc,.docx"
-                onChange={handleFileSelect}
-                className="hidden"
-              />
-            </label>
-            <p className="text-xs text-gray-500 mt-1">
-              {`${existingMedia.length + newFiles.length}/5 files total`}
-            </p>
-          </div>
+                  {newPreviews.length > 0 && (
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-3">
+                        New Media ({newPreviews.length})
+                      </label>
+                      <div
+                        className={`grid gap-3 ${
+                          newPreviews.length <= 2
+                            ? "grid-cols-2"
+                            : "grid-cols-3"
+                        }`}
+                      >
+                        {newPreviews.map((preview, idx) => (
+                          <div
+                            key={idx}
+                            className="relative border border-gray-300 rounded-lg overflow-hidden bg-gray-50 aspect-square group"
+                          >
+                            {newFiles[idx]?.type.startsWith("image") ? (
+                              <Image
+                                src={preview}
+                                alt={`Preview ${idx}`}
+                                width={200}
+                                height={200}
+                                className="w-full h-full object-cover"
+                              />
+                            ) : newFiles[idx]?.type.startsWith("video") ? (
+                              <>
+                                <video
+                                  src={preview}
+                                  className="w-full h-full object-cover"
+                                />
+                                <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/40 transition-colors">
+                                  <FiVideo className="text-white" size={32} />
+                                </div>
+                              </>
+                            ) : (
+                              <div className="w-full h-full flex flex-col items-center justify-center bg-gray-100 gap-2">
+                                <FiFile className="text-gray-400" size={28} />
+                                <span className="text-xs font-medium text-gray-600">
+                                  File
+                                </span>
+                              </div>
+                            )}
+                            <button
+                              type="button"
+                              onClick={() => removeNewFile(idx)}
+                              className="absolute top-2 right-2 p-1.5 bg-red-600 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-all hover:bg-red-700"
+                            >
+                              <FiTrash2 size={16} />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </form>
 
-          {/* Actions */}
-          <div className="flex gap-2 pt-4 border-t-2 border-black">
-            <button
-              type="button"
-              onClick={onClose}
-              className="flex-1 py-3 font-bold border-2 border-black rounded-lg hover:bg-gray-100 transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={
-                isLoading ||
-                (!content.trim() &&
-                  existingMedia.length === 0 &&
-                  newFiles.length === 0)
-              }
-              className="flex-1 py-3 font-bold bg-black text-white border-2 border-transparent rounded-lg hover:bg-white hover:text-black hover:border-black transition-all disabled:opacity-50"
-            >
-              {isLoading ? "Updating..." : "Update"}
-            </button>
+                <div className="bg-gray-50 border-t border-gray-200 px-6 py-4 flex items-center justify-end gap-3 shrink-0">
+                  <button
+                    type="button"
+                    onClick={onClose}
+                    className="px-4 py-2.5 text-sm font-semibold text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    onClick={handleSubmit}
+                    disabled={isLoading}
+                    className="px-4 py-2.5 text-sm font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:bg-blue-400 transition-colors"
+                  >
+                    {isLoading ? "Updating..." : "Update Post"}
+                  </button>
+                </div>
+              </Dialog.Panel>
+            </Transition.Child>
           </div>
-        </form>
-      </div>
-    </div>
+        </div>
+      </Dialog>
+    </Transition>
   );
 }

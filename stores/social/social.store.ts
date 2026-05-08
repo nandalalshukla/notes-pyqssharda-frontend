@@ -286,15 +286,7 @@ export const useSocialStore = create<SocialStore>((set, get) => ({
     }));
     try {
       const res = await getUserPosts(userId, page, 10);
-      const rawPosts = Array.isArray(res.data?.data?.data)
-        ? res.data?.data?.data
-        : Array.isArray(res.data?.data)
-          ? res.data?.data
-          : Array.isArray(res.data?.posts)
-            ? res.data?.posts
-            : Array.isArray(res.data?.data?.posts)
-              ? res.data?.data?.posts
-              : [];
+      const rawPosts = Array.isArray(res.data?.data) ? res.data.data : [];
       const posts = rawPosts.map((post: any) => ({
         ...post,
         files: post.files || post.media?.map((m: any) => m.url) || [],
@@ -303,12 +295,7 @@ export const useSocialStore = create<SocialStore>((set, get) => ({
         commentCount:
           post.commentCount ?? post.commentsCount ?? post.comments ?? 0,
       }));
-      const totalPages =
-        res.data?.data?.totalPages ||
-        res.data?.totalPages ||
-        res.data?.data?.pagination?.totalPages ||
-        res.data?.pagination?.totalPages ||
-        1;
+      const totalPages = res.data?.totalPages || 1;
 
       set((state) => {
         const existing = state.userPosts.get(userId) || [];
@@ -327,7 +314,6 @@ export const useSocialStore = create<SocialStore>((set, get) => ({
           ),
         };
       });
-      return { posts, totalPages };
     } catch (error: unknown) {
       set((state) => ({
         error: getErrorMessage(error) || "Failed to fetch user posts",
@@ -389,16 +375,40 @@ export const useSocialStore = create<SocialStore>((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       await deletePost(postId);
-      set((state) => ({
-        feed: state.feed.filter((p) => p._id !== postId),
-        userPosts: new Map(
+      set((state) => {
+        // Remove the post from feed and userPosts
+        const nextFeed = state.feed.filter((p) => p._id !== postId);
+        const nextUserPosts = new Map(
           Array.from(state.userPosts.entries()).map(([userId, posts]) => [
             userId,
             posts.filter((post) => post._id !== postId),
           ]),
-        ),
-        isLoading: false,
-      }));
+        );
+
+        // Get all comment IDs for this post that we need to delete
+        const postComments = state.comments.get(postId) || [];
+        const commentIdsToDelete = new Set<string>(
+          postComments.map((c) => c._id),
+        );
+
+        // Remove the post's comments
+        const nextComments = new Map(state.comments);
+        nextComments.delete(postId);
+
+        // Remove replies for comments of this post
+        const nextReplies = new Map(state.replies);
+        for (const commentId of commentIdsToDelete) {
+          nextReplies.delete(commentId);
+        }
+
+        return {
+          feed: nextFeed,
+          userPosts: nextUserPosts,
+          comments: nextComments,
+          replies: nextReplies,
+          isLoading: false,
+        };
+      });
     } catch (error: unknown) {
       set({
         error: getErrorMessage(error) || "Failed to delete post",

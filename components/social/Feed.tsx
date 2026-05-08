@@ -6,7 +6,7 @@ import useAuthStore from "@/stores/user/authStore";
 import PostCard from "./PostCard";
 import CreatePostModal from "./CreatePostModal";
 import { FeedLoadingState } from "./LoadingSkeletons";
-import { FiPlus } from "react-icons/fi";
+import { FiPlus, FiStar, FiFileText } from "react-icons/fi";
 
 export default function Feed() {
   const { isAuthenticated } = useAuthStore();
@@ -36,13 +36,11 @@ export default function Feed() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Page Header */}
-      <div className="border-b border-gray-200 bg-white">
-        <div className="mx-auto flex max-w-3xl items-center justify-between px-4 py-6 sm:px-6 lg:px-8">
+      <div className="border-b border-gray-200 bg-white sticky top-0 z-10 shadow-sm">
+        <div className="mx-auto flex max-w-3xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
           <div>
-            <h1 className="text-3xl font-black tracking-tight text-gray-950">
-              Feed
-            </h1>
-            <p className="mt-1 text-sm font-medium text-gray-500">
+            <h1 className="text-2xl font-bold text-gray-900">Feed</h1>
+            <p className="mt-0.5 text-sm text-gray-500">
               {feed.length > 0
                 ? `${feed.length} posts${feedTotalPages > 1 ? ` (Page ${currentPage})` : ""}`
                 : "No posts yet"}
@@ -51,12 +49,9 @@ export default function Feed() {
           {isAuthenticated && (
             <button
               onClick={() => setShowCreateModal(true)}
-              className="group flex items-center gap-2 rounded-2xl bg-gray-950 px-5 py-3 text-sm font-bold text-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-gray-950/20"
+              className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 transition-colors shadow-sm hover:shadow-md"
             >
-              <FiPlus
-                size={20}
-                className="group-hover:rotate-90 transition-transform"
-              />
+              <FiPlus size={18} />
               <span className="hidden sm:inline">New Post</span>
             </button>
           )}
@@ -67,14 +62,16 @@ export default function Feed() {
       <div className="mx-auto max-w-3xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">
         {/* Auth Prompt */}
         {!isAuthenticated && (
-          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-2xl p-8 text-center shadow-sm hover:shadow-md transition-shadow">
-            <div className="flex items-center justify-center mb-3">
-              <div className="text-4xl">💭</div>
+          <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-8 text-center shadow-sm">
+            <div className="flex items-center justify-center mb-4">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-100">
+                <FiStar size={32} className="text-blue-600" />
+              </div>
             </div>
-            <p className="text-lg font-bold text-blue-900 mb-2">
+            <h2 className="text-lg font-semibold text-blue-900 mb-1">
               Sign in to share your thoughts
-            </p>
-            <p className="text-sm text-blue-700 mb-4">
+            </h2>
+            <p className="text-sm text-blue-700">
               Create posts, comment, and connect with your community
             </p>
           </div>
@@ -82,9 +79,9 @@ export default function Feed() {
 
         {/* Error State */}
         {error && (
-          <div className="bg-red-50 border-2 border-red-200 rounded-2xl p-6 text-center">
-            <p className="text-red-900 font-semibold mb-2">
-              ⚠️ Something went wrong
+          <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-center shadow-sm">
+            <p className="text-red-900 font-semibold mb-1">
+              Something went wrong
             </p>
             <p className="text-sm text-red-700">{error}</p>
           </div>
@@ -96,7 +93,7 @@ export default function Feed() {
         ) : feed.length > 0 ? (
           <>
             {/* Posts Grid */}
-            <div className="space-y-6">
+            <div className="space-y-5">
               {feed.map((post, index) => (
                 <div
                   key={post._id}
@@ -112,11 +109,11 @@ export default function Feed() {
 
             {/* Load More Button */}
             {feedTotalPages > currentPage && (
-              <div className="flex justify-center pt-4">
+              <div className="flex justify-center pt-6">
                 <button
                   onClick={handleLoadMore}
                   disabled={isLoadingFeed}
-                  className="group px-8 py-3 bg-gradient-to-r from-black to-gray-800 text-white font-bold rounded-xl hover:shadow-lg hover:shadow-black/20 transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed hover:-translate-y-1"
+                  className="px-8 py-2.5 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow-md"
                 >
                   {isLoadingFeed ? (
                     <span className="flex items-center gap-2">
@@ -132,35 +129,34 @@ export default function Feed() {
 
             {/* End of Feed Message */}
             {currentPage === feedTotalPages && feed.length > 0 && (
-              <div className="text-center py-12 px-6 bg-gradient-to-r from-gray-100 to-gray-50 rounded-2xl border border-gray-200">
-                <p className="text-gray-600 font-semibold mb-2">
-                  🎉 You're all caught up!
+              <div className="text-center py-12 px-6 bg-white rounded-xl border border-gray-200 shadow-sm">
+                <p className="text-gray-900 font-semibold mb-1">
+                  You're all caught up
                 </p>
                 <p className="text-sm text-gray-500">
-                  Check back later for more posts
+                  Check back later for more posts from the community
                 </p>
               </div>
             )}
           </>
         ) : (
           /* Empty State */
-          <div className="text-center py-20 px-6">
-            <div className="text-6xl mb-6 animate-bounce">📝</div>
-            <h2 className="text-3xl font-bold text-gray-900 mb-3">
+          <div className="text-center py-20 px-6 bg-white rounded-xl border border-gray-200 shadow-sm">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-6">
+              <FiFileText size={32} className="text-gray-400" />
+            </div>
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">
               No posts yet
             </h2>
-            <p className="text-gray-600 mb-8 text-lg">
-              Be the first to share something amazing with the community!
+            <p className="text-gray-500 mb-6 text-sm">
+              Be the first to share something with the community!
             </p>
             {isAuthenticated && (
               <button
                 onClick={() => setShowCreateModal(true)}
-                className="group inline-flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-black to-gray-800 text-white font-bold rounded-xl hover:shadow-lg hover:shadow-black/20 transition-all duration-200 hover:-translate-y-1"
+                className="inline-flex items-center gap-2 px-6 py-2.5 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors shadow-sm hover:shadow-md"
               >
-                <FiPlus
-                  size={20}
-                  className="group-hover:rotate-90 transition-transform"
-                />
+                <FiPlus size={18} />
                 Create First Post
               </button>
             )}

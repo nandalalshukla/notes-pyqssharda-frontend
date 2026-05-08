@@ -120,7 +120,11 @@ const AuthMobileNav = () => {
             className="rounded-xl border border-gray-200 bg-white p-2.5 shadow-sm"
             aria-label="Navigation menu"
           >
-            {isOpen ? <FiX className="h-5 w-5" /> : <FiMenu className="h-5 w-5" />}
+            {isOpen ? (
+              <FiX className="h-5 w-5" />
+            ) : (
+              <FiMenu className="h-5 w-5" />
+            )}
           </button>
         </div>
       </div>
@@ -186,7 +190,9 @@ const AuthMobileNav = () => {
         <div className="mt-3 grid gap-1 rounded-2xl border border-gray-200 bg-white p-2 shadow-sm">
           {navLinks.map((link) => {
             const active =
-              link.href === "/" ? pathname === "/" : pathname.startsWith(link.href);
+              link.href === "/"
+                ? pathname === "/"
+                : pathname.startsWith(link.href);
 
             return (
               <Link
@@ -206,19 +212,14 @@ const AuthMobileNav = () => {
         </div>
       )}
 
-      {showModRequestModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-950/50 p-4 backdrop-blur-sm">
-          <div className="relative w-full max-w-2xl">
-            <ModRequestForm
-              onClose={() => setShowModRequestModal(false)}
-              onSuccess={() => {
-                setShowModRequestModal(false);
-                toast.success("Request submitted successfully!");
-              }}
-            />
-          </div>
-        </div>
-      )}
+      <ModRequestForm
+        isOpen={showModRequestModal}
+        onClose={() => setShowModRequestModal(false)}
+        onSuccess={() => {
+          setShowModRequestModal(false);
+          toast.success("Request submitted successfully!");
+        }}
+      />
     </div>
   );
 };

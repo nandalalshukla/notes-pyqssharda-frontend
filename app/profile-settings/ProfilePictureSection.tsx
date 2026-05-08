@@ -75,13 +75,15 @@ export default function ProfilePictureSection() {
   const currentProfilePic = previewUrl || user?.profilePic?.url;
 
   return (
-    <div className="bg-white rounded-2xl border-2 border-black p-8 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-      <h2 className="text-2xl font-bold mb-8">Profile Picture</h2>
+    <div className="bg-white rounded-xl border border-slate-200 p-8 shadow-sm">
+      <h2 className="text-2xl font-bold text-slate-900 mb-8">
+        Profile Picture
+      </h2>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {/* Current Profile Picture */}
         <div className="flex flex-col items-center">
-          <div className="w-40 h-40 flex items-center justify-center overflow-hidden mb-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+          <div className="w-40 h-40 flex items-center justify-center overflow-hidden mb-6 rounded-lg bg-gradient-to-br from-blue-50 to-slate-100 border border-slate-200 shadow-sm">
             {currentProfilePic ? (
               <Image
                 src={currentProfilePic}
@@ -91,23 +93,27 @@ export default function ProfilePictureSection() {
                 className="w-full h-full object-cover"
               />
             ) : (
-              <span className="text-white font-black text-5xl">
+              <span className="text-slate-400 font-bold text-5xl bg-gradient-to-br from-blue-400 to-blue-600 text-white rounded-lg w-full h-full flex items-center justify-center">
                 {(user?.name || "U")[0].toUpperCase()}
               </span>
             )}
           </div>
-          <p className="text-center text-gray-600 font-semibold">
+          <p className="text-center text-slate-900 font-semibold">
             {user?.name}
           </p>
-          <p className="text-center text-gray-500 text-sm">@{user?.username}</p>
+          <p className="text-center text-slate-500 text-sm mt-1">
+            @{user?.username}
+          </p>
         </div>
 
         {/* Upload Area */}
         <div className="flex flex-col justify-center space-y-4">
           {selectedFile && (
-            <div className="bg-blue-50 border-2 border-blue-500 rounded-xl p-4">
-              <p className="text-sm font-bold text-blue-900 mb-2">Preview</p>
-              <div className="w-full h-32 bg-gradient-to-br from-blue-100 to-purple-100 rounded-lg overflow-hidden border-2 border-blue-400">
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <p className="text-xs font-semibold text-blue-900 mb-3">
+                Preview
+              </p>
+              <div className="w-full h-32 bg-white rounded-lg overflow-hidden border border-blue-200">
                 {previewUrl && (
                   <Image
                     src={previewUrl}
@@ -118,17 +124,19 @@ export default function ProfilePictureSection() {
                   />
                 )}
               </div>
-              <p className="text-xs text-blue-700 mt-2">{selectedFile.name}</p>
+              <p className="text-xs text-blue-700 mt-2 truncate">
+                {selectedFile.name}
+              </p>
             </div>
           )}
 
-          <label className="flex items-center justify-center gap-3 p-6 border-4 border-dashed border-black rounded-2xl cursor-pointer hover:bg-gray-50 transition-colors bg-white">
-            <FiUpload size={24} className="font-bold" />
+          <label className="flex items-center justify-center gap-3 p-6 border-2 border-dashed border-slate-300 rounded-lg cursor-pointer hover:bg-blue-50/50 hover:border-blue-400 transition-colors bg-white">
+            <FiUpload size={24} className="text-slate-600" />
             <div className="text-center">
-              <p className="font-bold">
+              <p className="font-semibold text-slate-900">
                 {selectedFile ? "Choose Another" : "Upload Picture"}
               </p>
-              <p className="text-xs text-gray-600">JPG, PNG, GIF (max 5MB)</p>
+              <p className="text-xs text-slate-500">JPG, PNG, GIF (max 5MB)</p>
             </div>
             <input
               ref={fileInputRef}
@@ -149,7 +157,7 @@ export default function ProfilePictureSection() {
                     fileInputRef.current.value = "";
                   }
                 }}
-                className="flex-1 py-3 px-4 bg-gray-200 text-black font-bold border-2 border-black rounded-lg hover:bg-gray-300 transition-colors flex items-center justify-center gap-2"
+                className="flex-1 py-2 px-4 bg-slate-100 text-slate-900 font-medium rounded-lg hover:bg-slate-200 transition-colors flex items-center justify-center gap-2 text-sm"
               >
                 <FiX size={18} />
                 Cancel
@@ -160,7 +168,7 @@ export default function ProfilePictureSection() {
               <button
                 onClick={handleUpload}
                 disabled={isLoading}
-                className="flex-1 py-3 px-4 bg-green-500 text-white font-bold border-2 border-black rounded-lg hover:bg-green-600 transition-colors disabled:opacity-50"
+                className="flex-1 py-2 px-4 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm"
               >
                 {isLoading ? "Uploading..." : "Upload"}
               </button>
@@ -170,7 +178,7 @@ export default function ProfilePictureSection() {
               <button
                 onClick={handleRemove}
                 disabled={isRemoving || isLoading}
-                className="flex-1 py-3 px-4 bg-red-500 text-white font-bold border-2 border-black rounded-lg hover:bg-red-600 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                className="flex-1 py-2 px-4 bg-red-50 text-red-600 font-medium rounded-lg hover:bg-red-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm border border-red-200"
               >
                 <FiTrash2 size={18} />
                 {isRemoving ? "Removing..." : "Remove"}

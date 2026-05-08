@@ -10,12 +10,17 @@ import {
   FiMessageCircle,
   FiShare2,
   FiMoreVertical,
-  FiLogIn,
+  FiEdit2,
+  FiTrash2,
+  FiLink2,
+  FiUserPlus,
+  FiUserMinus,
 } from "react-icons/fi";
 import { FaHeart } from "react-icons/fa";
 import toast from "react-hot-toast";
 import CommentsSection from "./CommentsSection";
 import EditPostModal from "./EditPostModal";
+import ConfirmationDialog from "@/components/shared/ConfirmationDialog";
 import Image from "next/image";
 import { Menu, Transition } from "@headlessui/react";
 import { Fragment } from "react";
@@ -37,9 +42,11 @@ export default function PostCard({ post }: PostCardProps) {
   } = useSocialStore();
 
   const [showComments, setShowComments] = useState(false);
-  const [showMenu, setShowMenu] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [isLiking, setIsLiking] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isFollowLoading, setIsFollowLoading] = useState(false);
 
   // Get the current post from feed to ensure state is in sync with store
   const currentPost = useMemo(() => {
@@ -50,12 +57,13 @@ export default function PostCard({ post }: PostCardProps) {
     typeof (currentPost.author as unknown) === "string"
       ? (currentPost.author as unknown as string)
       : (currentPost.author as { _id?: string })?._id;
+
   const isAuthor =
     user?._id && authorId ? String(user._id) === String(authorId) : false;
+
   const isFollowing =
     followStats.get(authorId || "")?.isFollowedByCurrentUser || false;
 
-  // Use post data directly from store, don't maintain local state for likes
   const likeCount = currentPost.likes || 0;
   const isLiked = currentPost.likedByCurrentUser || false;
   const authorImage =
@@ -65,40 +73,20 @@ export default function PostCard({ post }: PostCardProps) {
     "";
 
   const handleLike = useCallback(async () => {
-    console.log("🔴 [PostCard.handleLike] Click detected for post:", post._id);
-    console.log("🔴 [PostCard.handleLike] Current state:", {
-      user: !!user,
-      isLiking,
-      isLiked,
-      currentPostLikes: currentPost.likes,
-      currentPostLikedByCurrentUser: currentPost.likedByCurrentUser,
-    });
-
-    // Check authentication first
     if (!user) {
-      console.log("🔴 [PostCard.handleLike] No user, redirecting to login");
-      toast.error("Please login to like posts", {
-        icon: <FiLogIn className="mr-2" />,
-      });
+      toast.error("Please login to like posts");
       router.push("/auth/login");
       return;
     }
 
-    if (isLiking) {
-      console.log("🔴 [PostCard.handleLike] Already liking, returning");
-      return;
-    }
+    if (isLiking) return;
 
     setIsLiking(true);
     try {
-      console.log("🟠 [PostCard.handleLike] Calling togglePostLike");
       await togglePostLike(post._id);
-      console.log("🟢 [PostCard.handleLike] togglePostLike successful");
-      toast.success(isLiked ? "Unliked" : "Liked!", {
-        icon: isLiked ? "💔" : "❤️",
-      });
+      toast.success(isLiked ? "Post unliked" : "Post liked!");
     } catch (error: unknown) {
-      console.error("❌ [PostCard.handleLike] Error:", error);
+      console.error("Error:", error);
       const errorMsg =
         (error as { response?: { data?: { message?: string } } })?.response
           ?.data?.message || "Failed to like post";
@@ -106,23 +94,11 @@ export default function PostCard({ post }: PostCardProps) {
     } finally {
       setIsLiking(false);
     }
-  }, [
-    post._id,
-    isLiking,
-    isLiked,
-    user,
-    togglePostLike,
-    router,
-    currentPost.likes,
-    currentPost.likedByCurrentUser,
-  ]);
+  }, [post._id, isLiking, isLiked, user, togglePostLike, router]);
 
   const handleComment = useCallback(async () => {
-    // Check authentication for comments
     if (!user) {
-      toast.error("Please login to comment", {
-        icon: <FiLogIn className="mr-2" />,
-      });
+      toast.error("Please login to comment");
       router.push("/auth/login");
       return;
     }
@@ -137,13 +113,16 @@ export default function PostCard({ post }: PostCardProps) {
   }, [post._id, showComments, fetchPostComments, user, router]);
 
   const handleDelete = useCallback(async () => {
-    if (!confirm("Are you sure you want to delete this post?")) return;
+    setIsDeleting(true);
     try {
       await removePost(post._id);
-      toast.success("Post deleted");
+      setShowDeleteDialog(false);
+      toast.success("Post deleted successfully");
     } catch (error) {
       console.error("Failed to delete post", error);
       toast.error("Failed to delete post");
+    } finally {
+      setIsDeleting(false);
     }
   }, [post._id, removePost]);
 
@@ -155,28 +134,29 @@ export default function PostCard({ post }: PostCardProps) {
   }, [post._id]);
 
   const handleViewProfile = useCallback(() => {
-    router.push(`/profile/${post.author._id}`);
-  }, [post.author._id, router]);
+    router.push(`/profile/${authorId}`);
+  }, [authorId, router]);
 
   const handleFollow = useCallback(async () => {
     if (!user) {
-      toast.error("Please login to follow users", {
-        icon: <FiLogIn className="mr-2" />,
-      });
+      toast.error("Please login to follow users");
       router.push("/auth/login");
       return;
     }
 
     if (isAuthor) return;
 
+    setIsFollowLoading(true);
     try {
-      await toggleUserFollow(post.author._id);
-      toast.success(isFollowing ? "Unfollowed" : "Followed");
+      await toggleUserFollow(authorId || "");
+      toast.success(isFollowing ? "User unfollowed" : "User followed!");
     } catch (error: unknown) {
       console.error("Failed to update follow status", error);
       toast.error("Failed to update follow status");
+    } finally {
+      setIsFollowLoading(false);
     }
-  }, [user, isAuthor, isFollowing, toggleUserFollow, post.author._id, router]);
+  }, [user, isAuthor, isFollowing, toggleUserFollow, authorId, router]);
 
   const formatDate = (date: string) => {
     const now = new Date();
@@ -199,121 +179,126 @@ export default function PostCard({ post }: PostCardProps) {
 
   return (
     <>
-      <div className="group bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden">
+      <div className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden">
         {/* Header Section */}
-        <div className="px-6 pt-6 pb-4 border-b border-gray-100">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Image
-                src={authorImage || "/images/default-avatar.png"}
-                alt={
-                  (currentPost.author as { username?: string })?.username ||
-                  "User"
-                }
-                width={40}
-                height={40}
-                className="rounded-full object-cover cursor-pointer"
-                onClick={handleViewProfile}
-              />
-              <div>
-                <p
-                  className="font-bold text-gray-800 cursor-pointer"
-                  onClick={handleViewProfile}
-                >
-                  {(currentPost.author as { username?: string })?.username}
-                </p>
-                <p className="text-xs text-gray-500">
-                  {formatDate(currentPost.createdAt)}
-                </p>
-              </div>
-            </div>
-
-            <div className="relative">
-              <Menu as="div" className="relative inline-block text-left">
-                <div>
-                  <Menu.Button className="p-2 rounded-full hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                    <FiMoreVertical className="h-5 w-5 text-gray-500" />
-                  </Menu.Button>
-                </div>
-                <Transition
-                  as={Fragment}
-                  enter="transition ease-out duration-100"
-                  enterFrom="transform opacity-0 scale-95"
-                  enterTo="transform opacity-100 scale-100"
-                  leave="transition ease-in duration-75"
-                  leaveFrom="transform opacity-100 scale-100"
-                  leaveTo="transform opacity-0 scale-95"
-                >
-                  <Menu.Items className="absolute right-0 mt-2 w-48 origin-top-right bg-white divide-y divide-gray-100 rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-10">
-                    <div className="px-1 py-1">
-                      {!isAuthor && (
-                        <Menu.Item>
-                          {({ active }) => (
-                            <button
-                              onClick={handleFollow}
-                              className={`${
-                                active
-                                  ? "bg-indigo-500 text-white"
-                                  : "text-gray-900"
-                              } group flex rounded-md items-center w-full px-2 py-2 text-sm`}
-                            >
-                              {isFollowing ? "Unfollow" : "Follow"}
-                            </button>
-                          )}
-                        </Menu.Item>
-                      )}
-                      {isAuthor && (
-                        <>
-                          <Menu.Item>
-                            {({ active }) => (
-                              <button
-                                onClick={() => setShowEditModal(true)}
-                                className={`${
-                                  active
-                                    ? "bg-indigo-500 text-white"
-                                    : "text-gray-900"
-                                } group flex rounded-md items-center w-full px-2 py-2 text-sm`}
-                              >
-                                Edit
-                              </button>
-                            )}
-                          </Menu.Item>
-                          <Menu.Item>
-                            {({ active }) => (
-                              <button
-                                onClick={handleDelete}
-                                className={`${
-                                  active
-                                    ? "bg-red-500 text-white"
-                                    : "text-red-600"
-                                } group flex rounded-md items-center w-full px-2 py-2 text-sm`}
-                              >
-                                Delete
-                              </button>
-                            )}
-                          </Menu.Item>
-                        </>
-                      )}
-                    </div>
-                  </Menu.Items>
-                </Transition>
-              </Menu>
+        <div className="px-5 pt-4 pb-3 border-b border-gray-100 flex items-center justify-between">
+          <div
+            className="flex items-center gap-3 flex-1 min-w-0 cursor-pointer hover:opacity-80 transition-opacity"
+            onClick={handleViewProfile}
+          >
+            <Image
+              src={authorImage || "/images/default-avatar.png"}
+              alt={
+                (currentPost.author as { username?: string })?.username ||
+                "User"
+              }
+              width={44}
+              height={44}
+              className="rounded-full object-cover flex-shrink-0"
+            />
+            <div className="min-w-0">
+              <p className="font-semibold text-gray-900 text-sm truncate">
+                {(currentPost.author as { username?: string })?.username}
+              </p>
+              <p className="text-xs text-gray-500">
+                {formatDate(currentPost.createdAt)}
+              </p>
             </div>
           </div>
+
+          {/* More Menu */}
+          <Menu as="div" className="relative flex-shrink-0">
+            <Menu.Button className="p-1.5 hover:bg-gray-100 rounded-full focus:outline-none transition-colors">
+              <FiMoreVertical className="h-5 w-5 text-gray-600 hover:text-gray-900" />
+            </Menu.Button>
+            <Transition
+              as={Fragment}
+              enter="transition ease-out duration-100"
+              enterFrom="transform opacity-0 scale-95"
+              enterTo="transform opacity-100 scale-100"
+              leave="transition ease-in duration-75"
+              leaveFrom="transform opacity-100 scale-100"
+              leaveTo="transform opacity-0 scale-95"
+            >
+              <Menu.Items className="absolute right-0 mt-2 w-44 origin-top-right bg-white rounded-lg shadow-lg border border-gray-200 focus:outline-none z-20">
+                <div className="py-1">
+                  {!isAuthor && (
+                    <Menu.Item>
+                      {({ active }) => (
+                        <button
+                          onClick={handleFollow}
+                          disabled={isFollowLoading}
+                          className={`w-full flex items-center gap-2 px-4 py-2.5 text-sm font-medium transition-colors ${
+                            active
+                              ? "bg-blue-50 text-blue-600"
+                              : "text-gray-900"
+                          } ${isFollowLoading ? "opacity-50" : ""}`}
+                        >
+                          {isFollowing ? (
+                            <>
+                              <FiUserMinus size={16} />
+                              Unfollow
+                            </>
+                          ) : (
+                            <>
+                              <FiUserPlus size={16} />
+                              Follow
+                            </>
+                          )}
+                        </button>
+                      )}
+                    </Menu.Item>
+                  )}
+                  {isAuthor && (
+                    <>
+                      <Menu.Item>
+                        {({ active }) => (
+                          <button
+                            onClick={() => setShowEditModal(true)}
+                            className={`w-full flex items-center gap-2 px-4 py-2.5 text-sm font-medium transition-colors ${
+                              active
+                                ? "bg-blue-50 text-blue-600"
+                                : "text-gray-900"
+                            }`}
+                          >
+                            <FiEdit2 size={16} />
+                            Edit Post
+                          </button>
+                        )}
+                      </Menu.Item>
+                      <Menu.Item>
+                        {({ active }) => (
+                          <button
+                            onClick={() => setShowDeleteDialog(true)}
+                            className={`w-full flex items-center gap-2 px-4 py-2.5 text-sm font-medium transition-colors ${
+                              active ? "bg-red-50 text-red-600" : "text-red-600"
+                            }`}
+                          >
+                            <FiTrash2 size={16} />
+                            Delete Post
+                          </button>
+                        )}
+                      </Menu.Item>
+                    </>
+                  )}
+                </div>
+              </Menu.Items>
+            </Transition>
+          </Menu>
         </div>
 
         {/* Content Section */}
-        <div className="px-6 py-4">
-          <p className="text-base leading-relaxed text-gray-900 whitespace-pre-wrap wrap-break-word">
+        <div className="px-5 py-4">
+          <p className="text-base leading-relaxed text-gray-900 whitespace-pre-wrap break-words">
             {post.content}
           </p>
         </div>
 
         {/* Media Gallery */}
         {post.files && post.files.length > 0 && (
-          <div className="px-6 py-3">
+          <div className="px-5 py-3">
             <div
-              className={`grid gap-3 rounded-xl overflow-hidden ${
+              className={`grid gap-2 rounded-lg overflow-hidden ${
                 post.files.length === 1
                   ? "grid-cols-1"
                   : post.files.length === 2
@@ -351,10 +336,10 @@ export default function PostCard({ post }: PostCardProps) {
                       href={file}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center justify-center h-full bg-linear-to-br from-gray-200 to-gray-300 hover:from-gray-300 hover:to-gray-400 transition-colors"
+                      className="flex items-center justify-center h-full bg-gradient-to-br from-gray-200 to-gray-300 hover:from-gray-300 hover:to-gray-400 transition-colors"
                     >
-                      <span className="text-sm font-bold text-gray-700">
-                        📎 File
+                      <span className="text-sm font-semibold text-gray-700">
+                        File
                       </span>
                     </a>
                   )}
@@ -365,25 +350,25 @@ export default function PostCard({ post }: PostCardProps) {
         )}
 
         {/* Stats Bar */}
-        <div className="px-6 py-3 border-t border-gray-100 flex justify-between text-xs font-semibold text-gray-600 bg-gray-50">
+        <div className="px-5 py-3 border-t border-gray-100 flex justify-between text-xs font-semibold text-gray-600 bg-gray-50">
           <span className="hover:text-red-600 cursor-pointer transition-colors">
-            ❤️ {likeCount} {likeCount === 1 ? "like" : "likes"}
+            {likeCount} {likeCount === 1 ? "like" : "likes"}
           </span>
           <span className="hover:text-blue-600 cursor-pointer transition-colors">
-            💬 {post.commentCount}{" "}
+            {post.commentCount}{" "}
             {post.commentCount === 1 ? "comment" : "comments"}
           </span>
         </div>
 
         {/* Action Buttons */}
-        <div className="px-6 py-3 flex gap-2 flex-wrap">
+        <div className="px-5 py-3 flex gap-2">
           <button
             onClick={handleLike}
             disabled={isLiking}
             className={`flex-1 flex items-center justify-center gap-2 py-2.5 font-semibold rounded-lg transition-all duration-200 text-sm ${
               isLiked
-                ? "bg-red-50 text-red-600 border border-red-200"
-                : "bg-gray-50 text-gray-700 border border-gray-200 hover:bg-red-50 hover:border-red-200"
+                ? "bg-red-50 text-red-600 border border-red-200 hover:bg-red-100"
+                : "bg-gray-50 text-gray-700 border border-gray-200 hover:bg-gray-100 hover:border-gray-300"
             } ${isLiking ? "opacity-50 cursor-not-allowed" : ""}`}
           >
             {isLiked ? (
@@ -391,21 +376,25 @@ export default function PostCard({ post }: PostCardProps) {
             ) : (
               <FiHeart size={16} />
             )}
-            {isLiked ? "Liked" : "Like"}
+            <span className="hidden sm:inline">
+              {isLiked ? "Liked" : "Like"}
+            </span>
           </button>
+
           <button
             onClick={handleComment}
             className="flex-1 flex items-center justify-center gap-2 py-2.5 font-semibold rounded-lg bg-gray-50 text-gray-700 border border-gray-200 hover:bg-blue-50 hover:border-blue-200 transition-all duration-200 text-sm"
           >
             <FiMessageCircle size={16} />
-            Reply
+            <span className="hidden sm:inline">Reply</span>
           </button>
+
           <button
             onClick={handleShare}
             className="flex-1 flex items-center justify-center gap-2 py-2.5 font-semibold rounded-lg bg-gray-50 text-gray-700 border border-gray-200 hover:bg-green-50 hover:border-green-200 transition-all duration-200 text-sm"
           >
-            <FiShare2 size={16} />
-            Share
+            <FiLink2 size={16} />
+            <span className="hidden sm:inline">Share</span>
           </button>
         </div>
       </div>
@@ -420,6 +409,19 @@ export default function PostCard({ post }: PostCardProps) {
           onClose={() => setShowEditModal(false)}
         />
       )}
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmationDialog
+        isOpen={showDeleteDialog}
+        title="Delete Post?"
+        message="This post will be permanently deleted. You cannot undo this action."
+        confirmText="Delete"
+        cancelText="Cancel"
+        isDangerous={true}
+        isLoading={isDeleting}
+        onConfirm={handleDelete}
+        onCancel={() => setShowDeleteDialog(false)}
+      />
     </>
   );
 }

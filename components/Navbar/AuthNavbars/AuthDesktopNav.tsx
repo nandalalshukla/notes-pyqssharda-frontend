@@ -90,7 +90,9 @@ const AuthDesktopNav = () => {
       <div className="flex items-center gap-2 rounded-2xl border border-gray-200 bg-gray-50 p-1">
         {navLinks.map((link) => {
           const active =
-            link.href === "/" ? pathname === "/" : pathname.startsWith(link.href);
+            link.href === "/"
+              ? pathname === "/"
+              : pathname.startsWith(link.href);
 
           return (
             <Link
@@ -195,19 +197,14 @@ const AuthDesktopNav = () => {
         )}
       </div>
 
-      {showModRequestModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-950/50 p-4 backdrop-blur-sm">
-          <div className="relative w-full max-w-2xl">
-            <ModRequestForm
-              onClose={() => setShowModRequestModal(false)}
-              onSuccess={() => {
-                setShowModRequestModal(false);
-                toast.success("Request submitted successfully!");
-              }}
-            />
-          </div>
-        </div>
-      )}
+      <ModRequestForm
+        isOpen={showModRequestModal}
+        onClose={() => setShowModRequestModal(false)}
+        onSuccess={() => {
+          setShowModRequestModal(false);
+          toast.success("Request submitted successfully!");
+        }}
+      />
     </div>
   );
 };

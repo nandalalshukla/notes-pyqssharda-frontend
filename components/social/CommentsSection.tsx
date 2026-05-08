@@ -15,10 +15,13 @@ import {
   FiLogIn,
   FiCornerDownRight,
   FiMessageSquare,
+  FiCheckCircle,
+  FiMessageCircle,
 } from "react-icons/fi";
 import { FaHeart } from "react-icons/fa";
 import toast from "react-hot-toast";
 import Image from "next/image";
+import ConfirmationDialog from "@/components/shared/ConfirmationDialog";
 
 interface CommentsSectionProps {
   postId: string;
@@ -59,6 +62,10 @@ export default function CommentsSection({ postId }: CommentsSectionProps) {
   const [expandedReplies, setExpandedReplies] = useState<Set<string>>(
     new Set(),
   );
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(
+    null,
+  );
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const postComments = comments.get(postId) || [];
   const isLoading = isLoadingComments.get(postId) || false;
@@ -80,9 +87,7 @@ export default function CommentsSection({ postId }: CommentsSectionProps) {
       try {
         await addComment(postId, newCommentText);
         setNewCommentText("");
-        toast.success("Comment added!", {
-          icon: "✨",
-        });
+        toast.success("Comment added!");
       } catch (error: unknown) {
         toast.error(getApiErrorMessage(error, "Failed to add comment"));
       } finally {
@@ -111,7 +116,7 @@ export default function CommentsSection({ postId }: CommentsSectionProps) {
         setReplyText("");
         setReplyingToId(null);
         setExpandedReplies((prev) => new Set(prev).add(parentCommentId));
-        toast.success("Reply added!", { icon: "R" });
+        toast.success("Reply added!");
       } catch (error: unknown) {
         toast.error(getApiErrorMessage(error, "Failed to add reply"));
       } finally {
@@ -158,9 +163,7 @@ export default function CommentsSection({ postId }: CommentsSectionProps) {
         await updateComment(postId, commentId, editText);
         setEditingCommentId(null);
         setEditText("");
-        toast.success("Comment updated!", {
-          icon: "✏️",
-        });
+        toast.success("Comment updated!");
       } catch (error: unknown) {
         toast.error(getApiErrorMessage(error, "Failed to update comment"));
       }
@@ -168,17 +171,21 @@ export default function CommentsSection({ postId }: CommentsSectionProps) {
     [postId, editText, updateComment],
   );
 
-  const handleDeleteComment = useCallback(
+  const handleDeleteComment = useCallback(async (commentId: string) => {
+    setShowDeleteConfirm(commentId);
+  }, []);
+
+  const confirmDeleteComment = useCallback(
     async (commentId: string) => {
-      if (!confirm("Delete this comment? This action cannot be undone."))
-        return;
+      setIsDeleting(true);
       try {
         await removeComment(postId, commentId);
-        toast.success("Comment deleted", {
-          icon: "🗑️",
-        });
+        toast.success("Comment deleted successfully");
+        setShowDeleteConfirm(null);
       } catch (error: unknown) {
         toast.error(getApiErrorMessage(error, "Failed to delete comment"));
+      } finally {
+        setIsDeleting(false);
       }
     },
     [postId, removeComment],
@@ -348,28 +355,30 @@ export default function CommentsSection({ postId }: CommentsSectionProps) {
                         : "View replies"}
                     </button>
 
-                    {user?._id && getAuthorId(reply.author) &&
-                      String(user._id) === String(getAuthorId(reply.author)) && (
-                      <>
-                        <button
-                          onClick={() => {
-                            setEditingCommentId(reply._id);
-                            setEditText(reply.text);
-                          }}
-                          className="flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-semibold text-gray-600 hover:bg-gray-100 transition-all"
-                        >
-                          <FiEdit2 size={12} />
-                          Edit
-                        </button>
-                        <button
-                          onClick={() => handleDeleteComment(reply._id)}
-                          className="flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-semibold text-red-600 hover:bg-red-50 transition-all"
-                        >
-                          <FiTrash2 size={12} />
-                          Delete
-                        </button>
-                      </>
-                    )}
+                    {user?._id &&
+                      getAuthorId(reply.author) &&
+                      String(user._id) ===
+                        String(getAuthorId(reply.author)) && (
+                        <>
+                          <button
+                            onClick={() => {
+                              setEditingCommentId(reply._id);
+                              setEditText(reply.text);
+                            }}
+                            className="flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-semibold text-gray-600 hover:bg-gray-100 transition-all"
+                          >
+                            <FiEdit2 size={12} />
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => handleDeleteComment(reply._id)}
+                            className="flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-semibold text-red-600 hover:bg-red-50 transition-all"
+                          >
+                            <FiTrash2 size={12} />
+                            Delete
+                          </button>
+                        </>
+                      )}
                   </div>
                 )}
 
@@ -569,51 +578,53 @@ export default function CommentsSection({ postId }: CommentsSectionProps) {
                       </div>
 
                       {/* Menu */}
-                      {user?._id && getAuthorId(comment.author) &&
-                        String(user._id) === String(getAuthorId(comment.author)) && (
-                        <div className="relative opacity-100">
-                          <button
-                            onClick={() =>
-                              setShowCommentMenu(
-                                showCommentMenu === comment._id
-                                  ? null
-                                  : comment._id,
-                              )
-                            }
-                            className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors"
-                          >
-                            <FiMoreVertical
-                              size={16}
-                              className="text-gray-600"
-                            />
-                          </button>
-                          {showCommentMenu === comment._id && (
-                            <div className="absolute right-0 top-full mt-2 bg-white border border-gray-200 rounded-lg shadow-lg z-20 overflow-hidden min-w-max">
-                              <button
-                                onClick={() => {
-                                  setEditingCommentId(comment._id);
-                                  setEditText(comment.text);
-                                  setShowCommentMenu(null);
-                                }}
-                                className="flex items-center gap-2 w-full px-4 py-2.5 hover:bg-gray-50 font-medium text-sm text-gray-700 border-b border-gray-100 transition-colors"
-                              >
-                                <FiEdit2 size={16} />
-                                Edit
-                              </button>
-                              <button
-                                onClick={() => {
-                                  handleDeleteComment(comment._id);
-                                  setShowCommentMenu(null);
-                                }}
-                                className="flex items-center gap-2 w-full px-4 py-2.5 hover:bg-red-50 font-medium text-sm text-red-600 transition-colors"
-                              >
-                                <FiTrash2 size={16} />
-                                Delete
-                              </button>
-                            </div>
-                          )}
-                        </div>
-                      )}
+                      {user?._id &&
+                        getAuthorId(comment.author) &&
+                        String(user._id) ===
+                          String(getAuthorId(comment.author)) && (
+                          <div className="relative opacity-100">
+                            <button
+                              onClick={() =>
+                                setShowCommentMenu(
+                                  showCommentMenu === comment._id
+                                    ? null
+                                    : comment._id,
+                                )
+                              }
+                              className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors"
+                            >
+                              <FiMoreVertical
+                                size={16}
+                                className="text-gray-600"
+                              />
+                            </button>
+                            {showCommentMenu === comment._id && (
+                              <div className="absolute right-0 top-full mt-2 bg-white border border-gray-200 rounded-lg shadow-lg z-20 overflow-hidden min-w-max">
+                                <button
+                                  onClick={() => {
+                                    setEditingCommentId(comment._id);
+                                    setEditText(comment.text);
+                                    setShowCommentMenu(null);
+                                  }}
+                                  className="flex items-center gap-2 w-full px-4 py-2.5 hover:bg-gray-50 font-medium text-sm text-gray-700 border-b border-gray-100 transition-colors"
+                                >
+                                  <FiEdit2 size={16} />
+                                  Edit
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    handleDeleteComment(comment._id);
+                                    setShowCommentMenu(null);
+                                  }}
+                                  className="flex items-center gap-2 w-full px-4 py-2.5 hover:bg-red-50 font-medium text-sm text-red-600 transition-colors"
+                                >
+                                  <FiTrash2 size={16} />
+                                  Delete
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        )}
                     </div>
 
                     {/* Comment Text */}
@@ -695,28 +706,30 @@ export default function CommentsSection({ postId }: CommentsSectionProps) {
                         {isExpanded ? "Hide replies" : "View replies"}
                       </button>
 
-                      {user?._id && getAuthorId(comment.author) &&
-                        String(user._id) === String(getAuthorId(comment.author)) && (
-                        <>
-                          <button
-                            onClick={() => {
-                              setEditingCommentId(comment._id);
-                              setEditText(comment.text);
-                            }}
-                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold text-gray-600 hover:bg-gray-100 transition-all"
-                          >
-                            <FiEdit2 size={14} />
-                            Edit
-                          </button>
-                          <button
-                            onClick={() => handleDeleteComment(comment._id)}
-                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold text-red-600 hover:bg-red-50 transition-all"
-                          >
-                            <FiTrash2 size={14} />
-                            Delete
-                          </button>
-                        </>
-                      )}
+                      {user?._id &&
+                        getAuthorId(comment.author) &&
+                        String(user._id) ===
+                          String(getAuthorId(comment.author)) && (
+                          <>
+                            <button
+                              onClick={() => {
+                                setEditingCommentId(comment._id);
+                                setEditText(comment.text);
+                              }}
+                              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold text-gray-600 hover:bg-gray-100 transition-all"
+                            >
+                              <FiEdit2 size={14} />
+                              Edit
+                            </button>
+                            <button
+                              onClick={() => handleDeleteComment(comment._id)}
+                              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold text-red-600 hover:bg-red-50 transition-all"
+                            >
+                              <FiTrash2 size={14} />
+                              Delete
+                            </button>
+                          </>
+                        )}
                     </div>
                   )}
 
@@ -777,13 +790,30 @@ export default function CommentsSection({ postId }: CommentsSectionProps) {
           })
         ) : (
           <div className="text-center py-12 px-4">
-            <div className="text-3xl mb-3">💭</div>
+            <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-gray-100 mb-3">
+              <FiMessageCircle size={24} className="text-gray-400" />
+            </div>
             <p className="text-sm text-gray-600">
               No comments yet. Be the first to share your thoughts!
             </p>
           </div>
         )}
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmationDialog
+        isOpen={showDeleteConfirm !== null}
+        title="Delete Comment?"
+        message="This comment will be permanently deleted. This action cannot be undone."
+        confirmText="Delete"
+        cancelText="Cancel"
+        isDangerous={true}
+        isLoading={isDeleting}
+        onConfirm={() => {
+          if (showDeleteConfirm) confirmDeleteComment(showDeleteConfirm);
+        }}
+        onCancel={() => setShowDeleteConfirm(null)}
+      />
     </div>
   );
 }
