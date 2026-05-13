@@ -2,15 +2,17 @@
 
 import React, { useState } from "react";
 import { toast } from "react-hot-toast";
-import { useNotesStore } from "@/stores/notes.store";
-import { usePYQsStore } from "@/stores/pyqs.store";
-import { useSyllabusStore } from "@/stores/syllabus.store";
-import { Note } from "@/lib/api/notes.api";
-import { Pyq } from "@/lib/api/pyqs.api";
-import { Syllabus } from "@/lib/api/syllabus.api";
+import { useNotesStore } from "@/stores/notes/notes.store";
+import { usePYQsStore } from "@/stores/pyqs/pyqs.store";
+import { useSyllabusStore } from "@/stores/syllabus/syllabus.store";
+import { Note } from "@/lib/api/notes/notes.api";
+import { Pyq } from "@/lib/api/pyqs/pyqs.api";
+import { Syllabus } from "@/lib/api/syllabus/syllabus.api";
+
+type SearchResult = Note | Pyq | Syllabus;
 
 interface SearchComponentProps {
-  onResultsUpdate?: (results: any[]) => void;
+  onResultsUpdate?: (results: SearchResult[]) => void;
 }
 
 export default function SearchComponent({
@@ -24,7 +26,7 @@ export default function SearchComponent({
   const [selectedSemester, setSelectedSemester] = useState("");
   const [courseCode, setCourseCode] = useState("");
   const [isSearching, setIsSearching] = useState(false);
-  const [results, setResults] = useState<(Note | Pyq | Syllabus)[]>([]);
+  const [results, setResults] = useState<SearchResult[]>([]);
   const [showAdvanced, setShowAdvanced] = useState(false);
 
   const { searchNotes } = useNotesStore();
@@ -56,7 +58,7 @@ export default function SearchComponent({
 
     setIsSearching(true);
     try {
-      let searchResults: any[] = [];
+      let searchResults: SearchResult[] = [];
 
       if (selectedType === "notes") {
         await searchNotes({

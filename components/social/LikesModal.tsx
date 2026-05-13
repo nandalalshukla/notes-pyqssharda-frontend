@@ -70,7 +70,7 @@ export default function LikesModal({
 
   const fetchLikes = useCallback(
     async (page: number) => {
-      if (page < 1 || page > totalPages) return;
+      if (page < 1 || (page > totalPages && page !== 1)) return;
 
       setIsLoading(true);
       try {

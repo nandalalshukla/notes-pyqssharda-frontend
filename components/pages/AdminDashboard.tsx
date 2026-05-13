@@ -1,14 +1,42 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useAdminStore } from "@/stores/admin.store";
+import { useAdminStore } from "@/stores/admin/admin.store";
 import { toast } from "react-hot-toast";
-import useAuthStore from "@/stores/authStore";
+import useAuthStore from "@/stores/user/authStore";
 import ModDashboard from "./ModDashboard";
 import DashboardPage from "./DashboardPage";
 import { FaUserShield, FaUserTie, FaUser } from "react-icons/fa";
 
 type DashboardView = "admin" | "moderator" | "user";
+
+// Import types from admin store
+interface User {
+  _id: string;
+  name: string;
+  email: string;
+  role: string;
+  isActive: boolean;
+  isEmailVerified: boolean;
+  contributions: number;
+  createdAt: string;
+  contactNo?: string;
+  modRequest?: "pending" | "approved" | "rejected";
+  modMotivation?: string;
+  modRequestAt?: string;
+}
+
+interface ModRequest {
+  _id: string;
+  name: string;
+  email: string;
+  contactNo: string;
+  modMotivation: string;
+  modRequestAt: string;
+  role: string;
+  isActive: boolean;
+  contributions: number;
+}
 
 export default function AdminDashboard() {
   const { user } = useAuthStore();
@@ -358,7 +386,7 @@ function UserCard({
   onDeactivate,
   onDelete,
 }: {
-  user: any;
+  user: User;
   onDeactivate: () => void;
   onDelete: () => void;
 }) {
@@ -418,7 +446,7 @@ function UserCard({
   );
 }
 
-function ModCard({ mod, onRemove }: { mod: any; onRemove: () => void }) {
+function ModCard({ mod, onRemove }: { mod: User; onRemove: () => void }) {
   return (
     <div className="group bg-white p-4 rounded-xl border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all">
       <div className="mb-3">
@@ -456,7 +484,7 @@ function RequestCard({
   onApprove,
   onReject,
 }: {
-  req: any;
+  req: ModRequest;
   onApprove: () => void;
   onReject: () => void;
 }) {

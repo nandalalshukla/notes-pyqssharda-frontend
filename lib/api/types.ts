@@ -29,6 +29,15 @@ export interface PaginatedResponse<T> {
   totalPages: number;
 }
 
+// Pagination Info (used in comment responses)
+export interface PaginationInfo {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+  hasMore: boolean;
+}
+
 // File Upload Progress
 export interface UploadProgress {
   loaded: number;

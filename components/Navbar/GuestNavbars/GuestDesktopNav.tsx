@@ -3,62 +3,70 @@ import { FaGithub, FaLinkedin } from "react-icons/fa";
 
 const GuestDesktopNav = () => {
   return (
-    <div className="flex items-center justify-between w-full py-4 px-8 text-black">
+    <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between px-6 text-gray-950 lg:px-8">
       <div className="flex items-center gap-5">
-        <Link
-          href="/"
-          className="text-2xl font-black tracking-tighter hover:scale-105 transition-transform"
-        >
-          SOL
+        <Link href="/" className="flex items-center gap-3">
+          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-gray-950 text-sm font-black text-white shadow-sm">
+            S
+          </span>
+          <span className="text-xl font-black tracking-tight">SOL</span>
         </Link>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2 border-l border-gray-200 pl-5">
           <a
             href="https://www.linkedin.com/posts/nandalalshukla_shardauniversity-btech-engineering-activity-7417953428888293376-ToZ4?utm_source=social_share_send&utm_medium=member_desktop_web&rcm=ACoAAENPXPMBJ4aMSVhVHnrqUrH1E6gGnQdaGss"
             target="_blank"
             rel="noopener noreferrer"
             aria-label="LinkedIn"
-            className="text-black hover:scale-110 transition-all"
+            className="rounded-lg p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-950"
           >
-            <FaLinkedin className="w-6 h-6" />
+            <FaLinkedin className="h-5 w-5" />
           </a>
           <a
             href="https://github.com/nandalalshukla/notes-pyqssharda-frontend"
             target="_blank"
             rel="noopener noreferrer"
             aria-label="GitHub"
-            className="text-black hover:scale-110 transition-all"
+            className="rounded-lg p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-950"
           >
-            <FaGithub className="w-6 h-6" />
+            <FaGithub className="h-5 w-5" />
           </a>
         </div>
       </div>
-      <div className="flex items-center gap-8 font-bold text-sm">
+
+      <div className="flex items-center gap-2 rounded-2xl border border-gray-200 bg-gray-50 p-1">
         <Link
-          href="/dashboard"
-          className="hover:text-blue-600 transition-colors"
+          href="/"
+          className="rounded-xl bg-white px-4 py-2 text-sm font-semibold text-gray-950 shadow-sm"
+        >
+          Feed
+        </Link>
+        <Link
+          href="/library/dashboard"
+          className="rounded-xl px-4 py-2 text-sm font-semibold text-gray-600 transition-colors hover:bg-white/70 hover:text-gray-950"
         >
           Contribute
         </Link>
         <Link
           href="/about-us"
-          className="hover:text-blue-600 transition-colors"
+          className="rounded-xl px-4 py-2 text-sm font-semibold text-gray-600 transition-colors hover:bg-white/70 hover:text-gray-950"
         >
-          About Us
+          About
         </Link>
-        <div className="flex items-center gap-4">
-          <Link
-            href="/auth/login"
-            className="px-6 py-2 border-2 border-black rounded-full hover:bg-gray-100 transition-colors"
-          >
-            Login
-          </Link>
-          <Link
-            href="/auth/register"
-            className="px-6 py-2 bg-[#FF9F66] border-2 border-black rounded-full shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all"
-          >
-            Register
-          </Link>
-        </div>
+      </div>
+
+      <div className="flex items-center gap-3">
+        <Link
+          href="/auth/login"
+          className="rounded-2xl border border-gray-200 bg-white px-4 py-2 text-sm font-bold text-gray-700 shadow-sm transition-all hover:border-gray-300 hover:text-gray-950"
+        >
+          Login
+        </Link>
+        <Link
+          href="/auth/register"
+          className="rounded-2xl bg-gray-950 px-4 py-2 text-sm font-bold text-white shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-lg hover:shadow-gray-950/20"
+        >
+          Register
+        </Link>
       </div>
     </div>
   );

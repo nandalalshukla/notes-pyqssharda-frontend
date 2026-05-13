@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import useAuthStore from "@/stores/authStore";
+import useAuthStore from "@/stores/user/authStore";
 import AuthDesktopNav from "./AuthNavbars/AuthDesktopNav";
 import AuthMobileNav from "./AuthNavbars/AuthMobileNav";
 import GuestDesktopNav from "./GuestNavbars/GuestDesktopNav";
@@ -20,8 +20,10 @@ const Navbar = () => {
 
   return (
     <nav
-      className={`sticky top-0 z-50 bg-white transition-all duration-300 ${
-        isScrolled ? "border-b-2 border-black" : ""
+      className={`sticky top-0 z-50 border-b transition-all duration-300 ${
+        isScrolled
+          ? "border-gray-200 bg-white/90 shadow-sm backdrop-blur-xl"
+          : "border-transparent bg-white/80 backdrop-blur-xl"
       }`}
     >
       <div className="hidden md:block">

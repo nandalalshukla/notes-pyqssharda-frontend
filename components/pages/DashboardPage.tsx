@@ -7,10 +7,15 @@ import PyqsForm from "@/components/forms/pyqs";
 import SyllabusForm from "@/components/forms/Syllabus";
 import FileViewerModal from "@/components/FileViewerModal";
 import { toast } from "react-hot-toast";
-import useAuthStore from "@/stores/authStore";
-import { useNotesStore } from "@/stores/notes.store";
-import { usePYQsStore } from "@/stores/pyqs.store";
-import { useSyllabusStore } from "@/stores/syllabus.store";
+import useAuthStore from "@/stores/user/authStore";
+import { useNotesStore } from "@/stores/notes/notes.store";
+import { usePYQsStore } from "@/stores/pyqs/pyqs.store";
+import { useSyllabusStore } from "@/stores/syllabus/syllabus.store";
+import { Note } from "@/lib/api/notes/notes.api";
+import { Pyq } from "@/lib/api/pyqs/pyqs.api";
+import { Syllabus } from "@/lib/api/syllabus/syllabus.api";
+
+type ContentItem = Note | Pyq | Syllabus;
 
 export default function DashboardPage({
   isEmbedded = false,
@@ -41,7 +46,7 @@ export default function DashboardPage({
   const [activeModal, setActiveModal] = useState<
     "note" | "pyq" | "syllabus" | null
   >(null);
-  const [editingItem, setEditingItem] = useState<any>(null);
+  const [editingItem, setEditingItem] = useState<ContentItem | null>(null);
   const [selectedFile, setSelectedFile] = useState<{
     url: string;
     name: string;
@@ -83,7 +88,7 @@ export default function DashboardPage({
     }
   };
 
-  const openModal = (type: "note" | "pyq" | "syllabus", item?: any) => {
+  const openModal = (type: "note" | "pyq" | "syllabus", item?: ContentItem) => {
     setActiveModal(type);
     setEditingItem(item || null);
   };
@@ -195,21 +200,21 @@ export default function DashboardPage({
             {activeModal === "pyq" && (
               <PyqsForm
                 onClose={closeModal}
-                initialData={editingItem}
+                initialData={editingItem as Pyq | undefined}
                 onSuccess={fetchData}
               />
             )}
             {activeModal === "note" && (
               <NotesForm
                 onClose={closeModal}
-                initialData={editingItem}
+                initialData={editingItem as Note | undefined}
                 onSuccess={fetchData}
               />
             )}
             {activeModal === "syllabus" && (
               <SyllabusForm
                 onClose={closeModal}
-                initialData={editingItem}
+                initialData={editingItem as Syllabus | undefined}
                 onSuccess={fetchData}
               />
             )}
@@ -262,9 +267,9 @@ function Section({
   color,
 }: {
   title: string;
-  items: any[];
+  items: ContentItem[];
   onAdd: () => void;
-  onEdit: (item: any) => void;
+  onEdit: (item: ContentItem) => void;
   onDelete: (id: string) => void;
   onViewFile: (url: string, name: string) => void;
   type: "note" | "pyq" | "syllabus";

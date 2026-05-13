@@ -2,8 +2,8 @@
 
 import React, { useState, useEffect } from "react";
 import { toast } from "react-hot-toast";
-import { Note } from "@/lib/api/notes.api";
-import { useNotesStore } from "@/stores/notes.store";
+import { Note } from "@/lib/api/notes/notes.api";
+import { useNotesStore } from "@/stores/notes/notes.store";
 
 interface NotesFormProps {
   onClose?: () => void;

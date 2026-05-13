@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { toast } from "react-hot-toast";
 import { useRouter } from "next/navigation";
-import { verifyEmail } from "@/lib/api/auth.api";
+import { verifyEmail } from "@/lib/api/user/auth.api";
 
 const VerifyEmailForm = () => {
   const router = useRouter();

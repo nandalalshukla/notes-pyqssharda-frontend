@@ -2,7 +2,7 @@
 import toast from "react-hot-toast";
 import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import useAuthStore from "@/stores/authStore";
+import useAuthStore from "@/stores/user/authStore";
 
 export default function AuthGuard({ children }: { children: React.ReactNode }) {
   const router = useRouter();
