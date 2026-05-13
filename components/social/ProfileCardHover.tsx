@@ -8,17 +8,15 @@ import useAuthStore from "@/stores/user/authStore";
 import { FiUserPlus, FiUserMinus, FiLoader } from "react-icons/fi";
 import toast from "react-hot-toast";
 
-interface ProfileCardProps {
+interface ProfileCardHoverProps {
   userId: string;
-  position?: "top" | "bottom";
   onClose?: () => void;
   onMouseEnter?: () => void;
 }
 
-const ProfileCardHover = ({ userId, onClose, onMouseEnter }: ProfileCardProps) => {
+const ProfileCardHover = ({ userId, onClose, onMouseEnter }: ProfileCardHoverProps) => {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [isFollowLoading, setIsFollowLoading] = useState(false);
   const [isFollowing, setIsFollowing] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
@@ -37,7 +35,6 @@ const ProfileCardHover = ({ userId, onClose, onMouseEnter }: ProfileCardProps) =
         }
       } catch (err: unknown) {
         console.error("Failed to fetch profile:", err);
-        setError("Failed to load profile");
       } finally {
         setIsLoading(false);
       }
@@ -77,7 +74,7 @@ const ProfileCardHover = ({ userId, onClose, onMouseEnter }: ProfileCardProps) =
       if (onClose) {
         onClose();
       }
-    }, 300);
+    }, 250);
   };
 
   const handleMouseEnterLocal = () => {
@@ -87,141 +84,101 @@ const ProfileCardHover = ({ userId, onClose, onMouseEnter }: ProfileCardProps) =
     onMouseEnter?.();
   };
 
-  if (error) {
-    return (
-      <div className="w-80 rounded-lg border border-gray-200 bg-white p-4 text-center shadow-md">
-        <p className="text-sm text-gray-600">{error}</p>
-      </div>
-    );
-  }
-
   return (
     <div
       ref={cardRef}
       onMouseEnter={handleMouseEnterLocal}
       onMouseLeave={handleMouseLeave}
-      className="w-80 rounded-lg border border-gray-200 bg-white shadow-lg shadow-gray-200/60 animate-in fade-in zoom-in-95 duration-200 overflow-hidden"
+      className="w-72 rounded-2xl border border-gray-200 bg-white shadow-lg shadow-gray-300/40 animate-in fade-in zoom-in-95 duration-150 overflow-hidden pointer-events-auto"
     >
       {isLoading ? (
-        <div className="flex h-64 items-center justify-center">
-          <div className="flex flex-col items-center gap-3">
-            <FiLoader className="h-6 w-6 animate-spin text-gray-400" />
-            <p className="text-xs text-gray-500">Loading profile...</p>
-          </div>
+        <div className="flex h-48 items-center justify-center">
+          <FiLoader className="h-5 w-5 animate-spin text-gray-400" />
         </div>
       ) : profile ? (
-        <>
-          {/* Subtle Header Background */}
-          <div className="h-20 bg-gradient-to-r from-gray-50 via-blue-50 to-gray-50 border-b border-gray-100" />
-
-          {/* Profile Content */}
-          <div className="relative px-5 pb-5">
-            {/* Profile Picture Section */}
-            <div className="mb-4 flex items-end justify-between -mt-10 relative z-10">
-              <div className="flex-shrink-0">
-                <div className="flex h-24 w-24 items-center justify-center rounded-full border-4 border-white bg-gray-100 shadow-md hover:shadow-lg transition-shadow">
-                  {profile.profilePic?.url ? (
-                    <Image
-                      src={profile.profilePic.url}
-                      alt={profile.username}
-                      width={96}
-                      height={96}
-                      className="h-full w-full rounded-full object-cover"
-                    />
-                  ) : (
-                    <span className="flex h-full w-full items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-xl font-bold text-white">
-                      {profile.username[0]?.toUpperCase()}
-                    </span>
-                  )}
-                </div>
-              </div>
-
-              {/* Follow Button */}
-              {!profile.isOwnProfile && (
-                <button
-                  onClick={handleFollowToggle}
-                  disabled={isFollowLoading}
-                  className={`flex items-center gap-2 rounded-lg px-3.5 py-2 text-sm font-semibold transition-all duration-200 ${
-                    isFollowing
-                      ? "border border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400"
-                      : "bg-blue-600 text-white hover:bg-blue-700 active:scale-95"
-                  } ${isFollowLoading ? "opacity-60 cursor-not-allowed" : ""}`}
-                >
-                  {isFollowLoading ? (
-                    <FiLoader className="h-4 w-4 animate-spin" />
-                  ) : isFollowing ? (
-                    <>
-                      <FiUserMinus className="h-4 w-4" />
-                      Following
-                    </>
-                  ) : (
-                    <>
-                      <FiUserPlus className="h-4 w-4" />
-                      Follow
-                    </>
-                  )}
-                </button>
-              )}
-            </div>
-
-            {/* User Information */}
-            <div className="mb-4">
-              <Link
-                href={`/profile/${profile._id}`}
-                className="group mb-1 inline-block"
-                onClick={() => onClose?.()}
-              >
-                <h3 className="text-base font-bold text-gray-950 group-hover:text-blue-600 transition-colors line-clamp-1">
-                  {profile.name}
-                </h3>
-              </Link>
-              <p className="text-sm text-gray-500 mb-2">@{profile.username}</p>
-              {profile.bio && (
-                <p className="text-sm text-gray-700 line-clamp-2 leading-relaxed">
-                  {profile.bio}
-                </p>
-              )}
-            </div>
-
-            {/* Course Info */}
-            {profile.course && (
-              <div className="mb-4 text-sm">
-                <span className="text-gray-600">{profile.course}</span>
-              </div>
-            )}
-
-            {/* Stats Grid */}
-            <div className="mb-4 grid grid-cols-3 gap-3 rounded-lg bg-gray-50 p-3">
-              <div className="text-center">
-                <p className="text-base font-bold text-gray-950">
-                  {profile.stats.postsCount}
-                </p>
-                <p className="text-xs font-medium text-gray-600">Posts</p>
-              </div>
-              <div className="text-center border-l border-r border-gray-200">
-                <p className="text-base font-bold text-gray-950">
-                  {profile.stats.followersCount}
-                </p>
-                <p className="text-xs font-medium text-gray-600">Followers</p>
-              </div>
-              <div className="text-center">
-                <p className="text-base font-bold text-gray-950">
-                  {profile.stats.followingCount}
-                </p>
-                <p className="text-xs font-medium text-gray-600">Following</p>
-              </div>
-            </div>
-
-            {/* View Profile Button */}
+        <div className="px-4 py-5">
+          {/* Profile Header: Picture + Follow Button */}
+          <div className="flex items-start justify-between gap-3 mb-3">
             <Link
               href={`/profile/${profile._id}`}
               onClick={() => onClose?.()}
-              className="block w-full rounded-lg bg-gray-900 py-2.5 text-center text-sm font-semibold text-white transition-all duration-200 hover:bg-gray-800 active:scale-95"
+              className="flex-shrink-0 hover:opacity-80 transition-opacity"
             >
-              View Full Profile
+              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gray-100 shadow-sm hover:shadow-md transition-shadow overflow-hidden">
+                {profile.profilePic?.url ? (
+                  <Image
+                    src={profile.profilePic.url}
+                    alt={profile.username}
+                    width={64}
+                    height={64}
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <span className="flex h-full w-full items-center justify-center bg-gradient-to-br from-blue-500 to-purple-600 text-lg font-bold text-white">
+                    {profile.username[0]?.toUpperCase()}
+                  </span>
+                )}
+              </div>
             </Link>
+
+            {/* Follow Button */}
+            {!profile.isOwnProfile && (
+              <button
+                onClick={handleFollowToggle}
+                disabled={isFollowLoading}
+                className={`flex-1 rounded-lg px-4 py-2 text-xs font-bold transition-all duration-200 ${
+                  isFollowing
+                    ? "border border-gray-300 text-gray-900 hover:bg-gray-50"
+                    : "bg-blue-600 text-white hover:bg-blue-700"
+                } ${isFollowLoading ? "opacity-60 cursor-not-allowed" : ""}`}
+              >
+                {isFollowLoading ? (
+                  <FiLoader className="h-3 w-3 animate-spin inline" />
+                ) : isFollowing ? (
+                  "Following"
+                ) : (
+                  "Follow"
+                )}
+              </button>
+            )}
           </div>
-        </>
+
+          {/* User Name */}
+          <Link
+            href={`/profile/${profile._id}`}
+            onClick={() => onClose?.()}
+            className="group block mb-0.5"
+          >
+            <h3 className="text-sm font-bold text-gray-900 group-hover:text-blue-600 transition-colors line-clamp-1">
+              {profile.name}
+            </h3>
+          </Link>
+
+          {/* Username */}
+          <p className="text-xs text-gray-500 mb-2 line-clamp-1">@{profile.username}</p>
+
+          {/* Bio */}
+          {profile.bio && (
+            <p className="text-xs text-gray-700 leading-relaxed line-clamp-2 mb-3">
+              {profile.bio}
+            </p>
+          )}
+
+          {/* Followers Count */}
+          <div className="text-xs text-gray-600 mb-3">
+            <span className="font-bold text-gray-900">{profile.stats.followersCount}</span>{" "}
+            followers
+          </div>
+
+          {/* View Profile Link */}
+          <Link
+            href={`/profile/${profile._id}`}
+            onClick={() => onClose?.()}
+            className="block w-full text-center text-xs font-semibold text-blue-600 hover:text-blue-700 py-2 rounded-lg hover:bg-blue-50 transition-colors"
+          >
+            View Profile
+          </Link>
+        </div>
       ) : null}
     </div>
   );
