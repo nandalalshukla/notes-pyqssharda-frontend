@@ -19,7 +19,7 @@ export const PYQ4_DATA_2024_25 = [
   {
     subject: "Management for Engineers",
     code: "HMM 305",
-    credits: 4,
+    credits: 3,
     semester: 4,
     year: "2024-25",
     src: "/PYQs/BtechCS/4thsem/HMM 305 MANAGEMENT FOR ENGINEERS 2024-25.pdf",
