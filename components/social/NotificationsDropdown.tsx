@@ -24,7 +24,9 @@ export default function NotificationsDropdown() {
 
   // Update unread count when notifications change
   useEffect(() => {
-    const count = notifications.filter((n) => !n.read).length;
+    const count = Array.isArray(notifications)
+      ? notifications.filter((n) => n && !n.read).length
+      : 0;
     setUnreadCount(count);
   }, [notifications]);
 
@@ -57,13 +59,22 @@ export default function NotificationsDropdown() {
     setIsLoading(true);
     try {
       const response = await getNotifications(page, 10);
-      if (response.success && response.data) {
-        setNotifications(response.data.data);
-        setTotalPages(response.data.totalPages);
+      // Handle API response - ensure we always have an array
+      if (response && response.data) {
+        const notificationsList = Array.isArray(response.data.data)
+          ? response.data.data
+          : Array.isArray(response.data)
+            ? response.data
+            : [];
+        setNotifications(notificationsList);
+        setTotalPages(response.data.totalPages || 1);
         setCurrentPage(page);
+      } else {
+        setNotifications([]);
       }
     } catch (error) {
       console.error("Failed to fetch notifications:", error);
+      setNotifications([]);
       toast.error("Failed to load notifications");
     } finally {
       setIsLoading(false);
@@ -183,7 +194,11 @@ export default function NotificationsDropdown() {
               </div>
             ) : (
               <div>
-                {notifications.map((notification) => (
+                {notifications.map((notification) => {
+                  // Ensure actor exists before rendering
+                  if (!notification.actor) return null;
+                  
+                  return (
                   <div
                     key={notification._id}
                     className={`w-full border-b border-gray-100 hover:bg-gray-50 transition-colors flex items-start gap-3 px-4 py-3 group ${
@@ -248,7 +263,8 @@ export default function NotificationsDropdown() {
                       )}
                     </div>
                   </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
