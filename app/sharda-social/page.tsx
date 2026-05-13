@@ -1,4 +1,10 @@
 import React from "react";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Sharda Social Network",
+  description: "The Social Networking Platform for Sharda University Students!",
+};
 
 const ShardaSocial = () => {
   return (
