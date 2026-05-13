@@ -16,6 +16,7 @@ export interface User {
     publicId?: string;
   };
   avatar?: string;
+  isFollowedByCurrentUser?: boolean;
 }
 
 export interface Post {
@@ -211,6 +212,22 @@ export const toggleLike = async (
   >("/social/likes/toggle", {
     targetId,
     targetType,
+  });
+  return response.data;
+};
+
+export const getPostLikes = async (
+  postId: string,
+  page: number = 1,
+  limit: number = 20,
+) => {
+  const response = await api.get<
+    ApiResponse<{
+      likes: User[];
+      pagination: PaginationInfo;
+    }>
+  >(`/social/posts/${postId}/likes`, {
+    params: { page, limit },
   });
   return response.data;
 };
