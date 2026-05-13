@@ -35,6 +35,7 @@ export interface PaginationInfo {
   limit: number;
   total: number;
   totalPages: number;
+  pages?: number;
   hasMore: boolean;
 }
 

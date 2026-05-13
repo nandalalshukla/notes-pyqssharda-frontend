@@ -246,6 +246,20 @@ const removeCommentEverywhere = (
   return { comments: nextComments, replies: nextReplies };
 };
 
+const normalizePost = (
+  post: Post & {
+    media?: { url: string; publicId?: string }[];
+    commentsCount?: number;
+    comments?: number;
+  },
+) => ({
+  ...post,
+  files: post.files || post.media?.map((media) => media.url) || [],
+  publicIds:
+    post.publicIds || post.media?.map((media) => media.publicId || "") || [],
+  commentCount: post.commentCount ?? post.commentsCount ?? post.comments ?? 0,
+});
+
 /**
  * ═══════════════════════════════════════════════════════════════════════════════
  * ZUSTAND STORE
@@ -265,12 +279,13 @@ export const useSocialStore = create<SocialStore>((set, get) => ({
     set({ isLoadingFeed: true, error: null });
     try {
       const res = await getFeed(page, 10);
-      set({
-        feed: res.data?.data || [],
+      const posts = (res.data?.data || []).map(normalizePost);
+      set((state) => ({
+        feed: page > 1 ? [...state.feed, ...posts] : posts,
         feedPage: page,
         feedTotalPages: res.data?.totalPages || 0,
         isLoadingFeed: false,
-      });
+      }));
     } catch (error: unknown) {
       set({
         error: getErrorMessage(error) || "Failed to fetch feed",
@@ -287,14 +302,7 @@ export const useSocialStore = create<SocialStore>((set, get) => ({
     try {
       const res = await getUserPosts(userId, page, 10);
       const rawPosts = Array.isArray(res.data?.data) ? res.data.data : [];
-      const posts = rawPosts.map((post: any) => ({
-        ...post,
-        files: post.files || post.media?.map((m: any) => m.url) || [],
-        publicIds:
-          post.publicIds || post.media?.map((m: any) => m.publicId) || [],
-        commentCount:
-          post.commentCount ?? post.commentsCount ?? post.comments ?? 0,
-      }));
+      const posts = rawPosts.map(normalizePost);
       const totalPages = res.data?.totalPages || 1;
 
       set((state) => {
@@ -330,7 +338,7 @@ export const useSocialStore = create<SocialStore>((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       const res = await createPost(data);
-      const newPost = res.data?.post;
+      const newPost = res.data?.post ? normalizePost(res.data.post) : null;
       if (newPost) {
         set((state) => ({
           feed: [newPost, ...state.feed],
@@ -350,7 +358,7 @@ export const useSocialStore = create<SocialStore>((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       const res = await editPost(postId, data);
-      const updatedPost = res.data?.post;
+      const updatedPost = res.data?.post ? normalizePost(res.data.post) : null;
       if (updatedPost) {
         set((state) => ({
           feed: state.feed.map((p) => (p._id === postId ? updatedPost : p)),
@@ -578,7 +586,11 @@ export const useSocialStore = create<SocialStore>((set, get) => ({
   togglePostLike: async (postId: string) => {
     set({ error: null });
 
-    const previousPost = get().feed.find((p) => p._id === postId);
+    const previousPost =
+      get().feed.find((p) => p._id === postId) ||
+      Array.from(get().userPosts.values())
+        .flat()
+        .find((p) => p._id === postId);
     if (!previousPost) return;
 
     const optimisticLiked = !previousPost.likedByCurrentUser;
@@ -597,6 +609,11 @@ export const useSocialStore = create<SocialStore>((set, get) => ({
             }
           : p,
       ),
+      userPosts: updatePostEverywhere(state.userPosts, postId, (p) => ({
+        ...p,
+        likedByCurrentUser: optimisticLiked,
+        likes: optimisticLikeCount,
+      })),
     }));
 
     try {
@@ -616,11 +633,19 @@ export const useSocialStore = create<SocialStore>((set, get) => ({
               ? { ...p, likedByCurrentUser, likes: likeCount }
               : p,
           ),
+          userPosts: updatePostEverywhere(state.userPosts, postId, (p) => ({
+            ...p,
+            likedByCurrentUser,
+            likes: likeCount,
+          })),
         };
       });
     } catch (error: unknown) {
       set((state) => ({
         feed: state.feed.map((p) => (p._id === postId ? previousPost : p)),
+        userPosts: updatePostEverywhere(state.userPosts, postId, (p) =>
+          p._id === postId ? previousPost : p,
+        ),
         error: getErrorMessage(error) || "Failed to toggle like",
       }));
       throw error;

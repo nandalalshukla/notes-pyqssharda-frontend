@@ -1,94 +1,68 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
-import { FiMenu, FiX } from "react-icons/fi";
-import { FaGithub, FaLinkedin } from "react-icons/fa";
+import { usePathname } from "next/navigation";
+
+const navLinks = [
+  { href: "/", label: "Social" },
+  { href: "/library/explore", label: "Library" },
+  { href: "/about-us", label: "About" },
+];
 
 const GuestMobileNav = () => {
-  const [isOpen, setIsOpen] = useState(false);
+  const pathname = usePathname();
 
   return (
     <div className="w-full px-4 py-3 text-gray-950">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Link href="/" className="flex items-center gap-2">
-            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gray-950 text-sm font-black text-white">
-              S
-            </span>
-            <span className="text-xl font-black tracking-tight">SOL</span>
-          </Link>
-          <div className="flex items-center gap-1">
-            <a
-              href="https://www.linkedin.com/posts/nandalalshukla_shardauniversity-btech-engineering-activity-7417953428888293376-ToZ4?utm_source=social_share_send&utm_medium=member_desktop_web&rcm=ACoAAENPXPMBJ4aMSVhVHnrqUrH1E6gGnQdaGss"
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="LinkedIn"
-              className="rounded-lg p-2 text-gray-500"
-            >
-              <FaLinkedin className="h-5 w-5" />
-            </a>
-            <a
-              href="https://github.com/nandalalshukla/notes-pyqssharda-frontend"
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="GitHub"
-              className="rounded-lg p-2 text-gray-500"
-            >
-              <FaGithub className="h-5 w-5" />
-            </a>
-          </div>
-        </div>
-        <button
-          onClick={() => setIsOpen(!isOpen)}
-          className="rounded-xl border border-gray-200 bg-white p-2.5 shadow-sm"
-          aria-label="Navigation menu"
-        >
-          {isOpen ? <FiX className="h-5 w-5" /> : <FiMenu className="h-5 w-5" />}
-        </button>
+      <div className="flex items-center justify-between gap-3 mb-3">
+        {/* Logo */}
+        <Link href="/" className="flex items-center gap-2 flex-shrink-0">
+          <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-gray-950 to-gray-800 text-sm font-black text-white">
+            S
+          </span>
+          <span className="text-lg font-black tracking-tight">SOL</span>
+        </Link>
       </div>
 
-      {isOpen && (
-        <div className="mt-3 grid gap-2 rounded-2xl border border-gray-200 bg-white p-2 shadow-sm">
-          <Link
-            href="/"
-            className="rounded-xl bg-gray-950 px-3 py-2.5 text-sm font-semibold text-white"
-            onClick={() => setIsOpen(false)}
-          >
-            Feed
-          </Link>
-          <Link
-            href="/library/dashboard"
-            className="rounded-xl px-3 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50"
-            onClick={() => setIsOpen(false)}
-          >
-            Contribute
-          </Link>
-          <Link
-            href="/about-us"
-            className="rounded-xl px-3 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50"
-            onClick={() => setIsOpen(false)}
-          >
-            About
-          </Link>
-          <div className="grid grid-cols-2 gap-2 pt-1">
+      {/* Navigation Links - Always Visible */}
+      <div className="flex gap-1.5 mb-3 overflow-x-auto pb-1 rounded-lg bg-white/50 border border-gray-200 p-1 backdrop-blur-sm">
+        {navLinks.map((link) => {
+          const active =
+            link.href === "/"
+              ? pathname === "/"
+              : pathname.startsWith(link.href);
+
+          return (
             <Link
-              href="/auth/login"
-              className="rounded-xl border border-gray-200 px-3 py-2.5 text-center text-sm font-bold text-gray-700"
-              onClick={() => setIsOpen(false)}
+              key={link.href}
+              href={link.href}
+              className={`rounded-lg px-3 py-1.5 text-xs font-semibold whitespace-nowrap transition-all duration-200 flex-shrink-0 ${
+                active
+                  ? "bg-white text-gray-950 shadow-sm"
+                  : "text-gray-600 hover:text-gray-950"
+              }`}
             >
-              Login
+              {link.label}
             </Link>
-            <Link
-              href="/auth/register"
-              className="rounded-xl bg-gray-950 px-3 py-2.5 text-center text-sm font-bold text-white"
-              onClick={() => setIsOpen(false)}
-            >
-              Register
-            </Link>
-          </div>
-        </div>
-      )}
+          );
+        })}
+      </div>
+
+      {/* Auth Buttons */}
+      <div className="flex gap-2">
+        <Link
+          href="/auth/login"
+          className="flex-1 rounded-lg border border-gray-200 bg-white px-3 py-2 text-center text-xs font-semibold text-gray-700 transition-all hover:border-gray-300 hover:bg-gray-50"
+        >
+          Login
+        </Link>
+        <Link
+          href="/auth/register"
+          className="flex-1 rounded-lg bg-gray-950 px-3 py-2 text-center text-xs font-semibold text-white shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
+        >
+          Register
+        </Link>
+      </div>
     </div>
   );
 };

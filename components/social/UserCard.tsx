@@ -8,6 +8,7 @@ import { FiUserPlus, FiUserCheck } from "react-icons/fi";
 import toast from "react-hot-toast";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 interface UserCardProps {
   user: User;
@@ -20,6 +21,7 @@ export default function UserCard({
 }: UserCardProps) {
   const { isAuthenticated, user: currentUser } = useAuthStore();
   const { toggleUserFollow } = useSocialStore();
+  const router = useRouter();
   const [isFollowing, setIsFollowing] = useState(initialFollowing);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -28,6 +30,7 @@ export default function UserCard({
   const handleToggleFollow = useCallback(async () => {
     if (!isAuthenticated) {
       toast.error("Please sign in to follow");
+      router.push("/auth/login");
       return;
     }
 
@@ -41,15 +44,20 @@ export default function UserCard({
     } finally {
       setIsLoading(false);
     }
-  }, [user._id, isFollowing, isAuthenticated, toggleUserFollow]);
+  }, [user._id, isFollowing, isAuthenticated, toggleUserFollow, router]);
+
+  const avatarUrl = user.profilePic?.url || user.avatar || "";
 
   return (
     <div className="bg-white border-2 border-black rounded-xl p-4 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all">
       <div className="flex items-center gap-3 mb-3">
-        <div className="w-12 h-12 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full border-2 border-black flex items-center justify-center flex-shrink-0 overflow-hidden">
-          {user.avatar ? (
+        <Link
+          href={`/profile/${user._id}`}
+          className="w-12 h-12 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full border-2 border-black flex items-center justify-center flex-shrink-0 overflow-hidden"
+        >
+          {avatarUrl ? (
             <Image
-              src={user.avatar}
+              src={avatarUrl}
               alt={user.username || "User"}
               width={48}
               height={48}
@@ -60,11 +68,14 @@ export default function UserCard({
               {(user.username || "U")[0].toUpperCase()}
             </span>
           )}
-        </div>
+        </Link>
         <div className="flex-1 min-w-0">
-          <h3 className="font-bold text-sm truncate">
+          <Link
+            href={`/profile/${user._id}`}
+            className="block font-bold text-sm truncate hover:text-blue-600"
+          >
             {user.username || "Anonymous"}
-          </h3>
+          </Link>
           <p className="text-xs text-gray-500 truncate">
             {user.email || "No email"}
           </p>

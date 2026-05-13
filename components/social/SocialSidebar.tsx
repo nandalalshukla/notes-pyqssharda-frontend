@@ -1,33 +1,31 @@
 "use client";
 
 import React from "react";
-import { FiHome, FiBell, FiBookmark, FiSettings } from "react-icons/fi";
-import { useRouter } from "next/navigation";
+import { FiHome, FiBell, FiBookOpen, FiSettings } from "react-icons/fi";
 import useAuthStore from "@/stores/user/authStore";
 import Link from "next/link";
 
 export default function SocialSidebar() {
   const { isAuthenticated } = useAuthStore();
-  const router = useRouter();
 
   const menuItems = [
     { label: "Home", icon: FiHome, href: "/", show: true },
     {
       label: "Notifications",
       icon: FiBell,
-      href: "/notifications",
+      href: "/",
       show: isAuthenticated,
     },
     {
-      label: "Bookmarks",
-      icon: FiBookmark,
-      href: "/bookmarks",
+      label: "Library",
+      icon: FiBookOpen,
+      href: "/library",
       show: isAuthenticated,
     },
     {
       label: "Settings",
       icon: FiSettings,
-      href: "/settings",
+      href: "/profile-settings",
       show: isAuthenticated,
     },
   ];

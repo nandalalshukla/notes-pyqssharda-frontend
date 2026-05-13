@@ -15,12 +15,13 @@ import {
 } from "react-icons/fi";
 import { FaGithub, FaLinkedin } from "react-icons/fa";
 import ModRequestForm from "@/components/forms/ModRequestForm";
+import NotificationsDropdown from "@/components/social/NotificationsDropdown";
 import { resendOtp } from "@/lib/api/user/auth.api";
 import useAuthStore from "@/stores/user/authStore";
 
 const navLinks = [
-  { href: "/", label: "Feed" },
-  { href: "/library/explore", label: "Explore" },
+  { href: "/", label: "Social" },
+  { href: "/library", label: "Library" },
   { href: "/library/dashboard", label: "Dashboard" },
   { href: "/about-us", label: "About" },
 ];
@@ -82,37 +83,16 @@ const AuthDesktopNav = () => {
 
   return (
     <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between px-6 text-gray-950 lg:px-8">
-      <div className="flex items-center gap-5">
-        <Link href="/" className="flex items-center gap-3">
-          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-gray-950 text-sm font-black text-white shadow-sm">
-            S
-          </span>
-          <span className="text-xl font-black tracking-tight">SOL</span>
-        </Link>
+      {/* Logo */}
+      <Link href="/" className="flex items-center gap-3 flex-shrink-0">
+        <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-gray-950 to-gray-800 text-sm font-black text-white shadow-md">
+          S
+        </span>
+        <span className="text-lg font-black tracking-tight">SOL</span>
+      </Link>
 
-        <div className="flex items-center gap-2 border-l border-gray-200 pl-5">
-          <a
-            href="https://www.linkedin.com/posts/nandalalshukla_shardauniversity-btech-engineering-activity-7417953428888293376-ToZ4?utm_source=social_share_send&utm_medium=member_desktop_web&rcm=ACoAAENPXPMBJ4aMSVhVHnrqUrH1E6gGnQdaGss"
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="LinkedIn"
-            className="rounded-lg p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-950"
-          >
-            <FaLinkedin className="h-5 w-5" />
-          </a>
-          <a
-            href="https://github.com/nandalalshukla/notes-pyqssharda-frontend"
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="GitHub"
-            className="rounded-lg p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-950"
-          >
-            <FaGithub className="h-5 w-5" />
-          </a>
-        </div>
-      </div>
-
-      <div className="flex items-center gap-2 rounded-2xl border border-gray-200 bg-gray-50 p-1">
+      {/* Main Navigation Links */}
+      <div className="flex items-center gap-1 rounded-full border border-gray-200 bg-white/50 p-1 backdrop-blur-sm">
         {navLinks.map((link) => {
           const active =
             link.href === "/"
@@ -123,10 +103,10 @@ const AuthDesktopNav = () => {
             <Link
               key={link.href}
               href={link.href}
-              className={`rounded-xl px-4 py-2 text-sm font-semibold transition-all ${
+              className={`rounded-lg px-3.5 py-1.5 text-sm font-semibold transition-all duration-200 ${
                 active
                   ? "bg-white text-gray-950 shadow-sm"
-                  : "text-gray-600 hover:bg-white/70 hover:text-gray-950"
+                  : "text-gray-600 hover:text-gray-950"
               }`}
             >
               {link.label}
@@ -135,91 +115,96 @@ const AuthDesktopNav = () => {
         })}
       </div>
 
-      <div className="relative" ref={wrapperRef}>
-        <button
-          onClick={() => setIsProfileOpen(!isProfileOpen)}
-          className="flex items-center gap-3 rounded-2xl border border-gray-200 bg-white px-2.5 py-2 text-left shadow-sm transition-all hover:border-gray-300 hover:shadow-md"
-        >
-          <span className="relative flex h-9 w-9 overflow-hidden rounded-full bg-gray-100">
-            {profileImage ? (
-              <Image
-                src={profileImage}
-                alt={displayName}
-                width={36}
-                height={36}
-                className="h-full w-full object-cover"
-              />
-            ) : (
-              <span className="flex h-full w-full items-center justify-center bg-gray-950 text-sm font-bold text-white">
-                {displayName[0]?.toUpperCase() || "U"}
-              </span>
-            )}
-          </span>
-          <span className="max-w-28 truncate text-sm font-semibold">
-            {displayName}
-          </span>
-          <FiChevronDown
-            className={`h-4 w-4 text-gray-500 transition-transform ${
-              isProfileOpen ? "rotate-180" : ""
-            }`}
-          />
-        </button>
+      {/* Right Section: Notifications & Profile */}
+      <div className="flex items-center gap-3">
+        {/* Notifications Dropdown */}
+        <NotificationsDropdown />
 
-        {isProfileOpen && (
-          <div className="absolute right-0 mt-3 w-64 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-xl shadow-gray-950/10">
-            <div className="border-b border-gray-100 px-4 py-3">
-              <p className="truncate text-sm font-bold text-gray-950">
-                {displayName}
-              </p>
-              <p className="truncate text-xs text-gray-500">{user?.email}</p>
-            </div>
-            <div className="p-2">
-              <button
-                type="button"
-                onClick={handleVerifyEmail}
-                className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-gray-700 hover:bg-gray-50"
-              >
-                <FiMail className="h-4 w-4" />
-                {user?.isEmailVerified ? "Email Verified" : "Verify Email"}
-              </button>
-              <Link
-                href="/profile-settings"
-                onClick={() => setIsProfileOpen(false)}
-                className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50"
-              >
-                <FiSettings className="h-4 w-4" />
-                Profile Settings
-              </Link>
-              <Link
-                href="/auth/change-password"
-                onClick={() => setIsProfileOpen(false)}
-                className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50"
-              >
-                <FiKey className="h-4 w-4" />
-                Change Password
-              </Link>
-              {user?.role === "user" && (
-                <button
-                  onClick={() => {
-                    setShowModRequestModal(true);
-                    setIsProfileOpen(false);
-                  }}
-                  className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-gray-700 hover:bg-gray-50"
-                >
-                  <FiShield className="h-4 w-4" />
-                  Become Moderator
-                </button>
+        {/* Profile Button */}
+        <div className="relative" ref={wrapperRef}>
+          <button
+            onClick={() => setIsProfileOpen(!isProfileOpen)}
+            className="flex items-center gap-2.5 rounded-full border border-gray-200 bg-white px-2 py-1.5 shadow-sm transition-all hover:border-gray-300 hover:shadow-md"
+          >
+            <span className="relative flex h-8 w-8 overflow-hidden rounded-full bg-gray-100">
+              {profileImage ? (
+                <Image
+                  src={profileImage}
+                  alt={displayName}
+                  width={32}
+                  height={32}
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                <span className="flex h-full w-full items-center justify-center bg-gray-950 text-xs font-bold text-white">
+                  {displayName[0]?.toUpperCase() || "U"}
+                </span>
               )}
-              <button
-                onClick={handleLogout}
-                className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-red-600 hover:bg-red-50"
-              >
-                <FiLogOut className="h-4 w-4" />
-                Logout
-              </button>
+            </span>
+            <FiChevronDown
+              className={`h-4 w-4 text-gray-500 transition-transform duration-200 ${
+                isProfileOpen ? "rotate-180" : ""
+              }`}
+            />
+          </button>
+
+          {/* Profile Dropdown Menu */}
+          {isProfileOpen && (
+            <div className="absolute right-0 mt-2 w-56 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-lg shadow-gray-950/10 z-50">
+              <div className="border-b border-gray-100 px-4 py-3">
+                <p className="truncate text-sm font-bold text-gray-950">
+                  {displayName}
+                </p>
+                <p className="truncate text-xs text-gray-500">{user?.email}</p>
+              </div>
+              <div className="p-2">
+                <button
+                  type="button"
+                  onClick={handleVerifyEmail}
+                  className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-50"
+                >
+                  <FiMail className="h-4 w-4 flex-shrink-0" />
+                  {user?.isEmailVerified ? "Email Verified" : "Verify Email"}
+                </button>
+                <Link
+                  href="/profile-settings"
+                  onClick={() => setIsProfileOpen(false)}
+                  className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-50"
+                >
+                  <FiSettings className="h-4 w-4 flex-shrink-0" />
+                  Profile Settings
+                </Link>
+                <Link
+                  href="/auth/change-password"
+                  onClick={() => setIsProfileOpen(false)}
+                  className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-50"
+                >
+                  <FiKey className="h-4 w-4 flex-shrink-0" />
+                  Change Password
+                </Link>
+                {user?.role === "user" && (
+                  <button
+                    onClick={() => {
+                      setShowModRequestModal(true);
+                      setIsProfileOpen(false);
+                    }}
+                    className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-50"
+                  >
+                    <FiShield className="h-4 w-4 flex-shrink-0" />
+                    Become Moderator
+                  </button>
+                )}
+                <button
+                  onClick={handleLogout}
+                  className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-semibold text-red-600 transition-colors hover:bg-red-50"
+                >
+                  <FiLogOut className="h-4 w-4 flex-shrink-0" />
+                  Logout
+                </button>
+              </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
       <ModRequestForm

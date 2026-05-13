@@ -20,6 +20,8 @@ import { FaHeart } from "react-icons/fa";
 import toast from "react-hot-toast";
 import CommentsSection from "./CommentsSection";
 import EditPostModal from "./EditPostModal";
+import LikesModal from "./LikesModal";
+import ProfileCardHover from "./ProfileCardHover";
 import ConfirmationDialog from "@/components/shared/ConfirmationDialog";
 import Image from "next/image";
 import { Menu, Transition } from "@headlessui/react";
@@ -39,6 +41,7 @@ export default function PostCard({ post }: PostCardProps) {
     toggleUserFollow,
     followStats,
     feed,
+    userPosts,
   } = useSocialStore();
 
   const [showComments, setShowComments] = useState(false);
@@ -47,11 +50,22 @@ export default function PostCard({ post }: PostCardProps) {
   const [isLiking, setIsLiking] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isFollowLoading, setIsFollowLoading] = useState(false);
+  const [showLikesModal, setShowLikesModal] = useState(false);
+  const [showProfileHover, setShowProfileHover] = useState(false);
+  const [hoverCloseTimer, setHoverCloseTimer] = useState<NodeJS.Timeout | null>(
+    null,
+  );
 
   // Get the current post from feed to ensure state is in sync with store
   const currentPost = useMemo(() => {
-    return feed.find((p) => p._id === post._id) || post;
-  }, [feed, post]);
+    return (
+      feed.find((p) => p._id === post._id) ||
+      Array.from(userPosts.values())
+        .flat()
+        .find((p) => p._id === post._id) ||
+      post
+    );
+  }, [feed, post, userPosts]);
 
   const authorId =
     typeof (currentPost.author as unknown) === "string"
@@ -134,8 +148,25 @@ export default function PostCard({ post }: PostCardProps) {
   }, [post._id]);
 
   const handleViewProfile = useCallback(() => {
-    router.push(`/profile/${authorId}`);
+    if (authorId) {
+      router.push(`/profile/${authorId}`);
+    }
   }, [authorId, router]);
+
+  const openProfileHover = useCallback(() => {
+    if (hoverCloseTimer) {
+      clearTimeout(hoverCloseTimer);
+    }
+    setShowProfileHover(true);
+  }, [hoverCloseTimer]);
+
+  const scheduleProfileHoverClose = useCallback(() => {
+    if (hoverCloseTimer) {
+      clearTimeout(hoverCloseTimer);
+    }
+    const timer = setTimeout(() => setShowProfileHover(false), 250);
+    setHoverCloseTimer(timer);
+  }, [hoverCloseTimer]);
 
   const handleFollow = useCallback(async () => {
     if (!user) {
@@ -183,8 +214,10 @@ export default function PostCard({ post }: PostCardProps) {
         {/* Header Section */}
         <div className="px-5 pt-4 pb-3 border-b border-gray-100 flex items-center justify-between">
           <div
-            className="flex items-center gap-3 flex-1 min-w-0 cursor-pointer hover:opacity-80 transition-opacity"
+            className="relative flex items-center gap-3 flex-1 min-w-0 cursor-pointer hover:opacity-80 transition-opacity"
             onClick={handleViewProfile}
+            onMouseEnter={openProfileHover}
+            onMouseLeave={scheduleProfileHoverClose}
           >
             <Image
               src={authorImage || "/images/default-avatar.png"}
@@ -204,6 +237,18 @@ export default function PostCard({ post }: PostCardProps) {
                 {formatDate(currentPost.createdAt)}
               </p>
             </div>
+            {showProfileHover && authorId && (
+              <div
+                className="absolute left-0 top-12 z-40"
+                onClick={(event) => event.stopPropagation()}
+              >
+                <ProfileCardHover
+                  userId={authorId}
+                  onClose={() => setShowProfileHover(false)}
+                  onMouseEnter={openProfileHover}
+                />
+              </div>
+            )}
           </div>
 
           {/* More Menu */}
@@ -351,9 +396,14 @@ export default function PostCard({ post }: PostCardProps) {
 
         {/* Stats Bar */}
         <div className="px-5 py-3 border-t border-gray-100 flex justify-between text-xs font-semibold text-gray-600 bg-gray-50">
-          <span className="hover:text-red-600 cursor-pointer transition-colors">
+          <button
+            type="button"
+            onClick={() => setShowLikesModal(true)}
+            className="hover:text-red-600 cursor-pointer transition-colors"
+            disabled={likeCount === 0}
+          >
             {likeCount} {likeCount === 1 ? "like" : "likes"}
-          </span>
+          </button>
           <span className="hover:text-blue-600 cursor-pointer transition-colors">
             {post.commentCount}{" "}
             {post.commentCount === 1 ? "comment" : "comments"}
@@ -421,6 +471,13 @@ export default function PostCard({ post }: PostCardProps) {
         isLoading={isDeleting}
         onConfirm={handleDelete}
         onCancel={() => setShowDeleteDialog(false)}
+      />
+
+      <LikesModal
+        postId={post._id}
+        likeCount={likeCount}
+        isOpen={showLikesModal}
+        onClose={() => setShowLikesModal(false)}
       />
     </>
   );

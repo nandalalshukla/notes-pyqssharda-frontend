@@ -81,7 +81,11 @@ export default function LikesModal({
               ? response.data!.likes
               : [...prev, ...response.data!.likes],
           );
-          setTotalPages(response.data!.pagination.totalPages);
+          setTotalPages(
+            response.data!.pagination.totalPages ??
+              response.data!.pagination.pages ??
+              1,
+          );
           setCurrentPage(page);
 
           // Initialize following states from the backend response
