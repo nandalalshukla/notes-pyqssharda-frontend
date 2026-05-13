@@ -1,4 +1,4 @@
-"useClient";
+"use client";
 import VerifyEmailForm from "@/components/forms/verifyEmailForm";
 
 const VerifyEmailPage = () => {

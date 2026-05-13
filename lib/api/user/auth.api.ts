@@ -24,6 +24,9 @@ export const resetPassword = (data: {
 export const verifyEmail = (data: { otp: string; email: string }) =>
   api.post("/auth/verify-email", data);
 
+export const resendOtp = (data: { email: string }) =>
+  api.post("/auth/resend-otp", data);
+
 export const logout = () => api.post("/auth/logout", {});
 
 export const changePassword = (data: {

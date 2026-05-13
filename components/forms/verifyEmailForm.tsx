@@ -16,7 +16,7 @@ const VerifyEmailForm = () => {
     const storedEmail = sessionStorage.getItem("verifyEmail");
 
     if (!storedEmail) {
-      router.push("/register");
+      router.push("/auth/register");
       return;
     }
 

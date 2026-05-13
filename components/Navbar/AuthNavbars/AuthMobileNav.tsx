@@ -16,6 +16,7 @@ import {
 } from "react-icons/fi";
 import { FaGithub, FaLinkedin } from "react-icons/fa";
 import ModRequestForm from "@/components/forms/ModRequestForm";
+import { resendOtp } from "@/lib/api/user/auth.api";
 import useAuthStore from "@/stores/user/authStore";
 
 const navLinks = [
@@ -60,6 +61,31 @@ const AuthMobileNav = () => {
     router.push("/auth/login");
     setIsOpen(false);
     setIsProfileOpen(false);
+  };
+
+  const handleVerifyEmail = async () => {
+    if (!user?.email) {
+      toast.error("Could not find your email address");
+      return;
+    }
+
+    if (user.isEmailVerified) {
+      toast.success("Your email is already verified");
+      setIsProfileOpen(false);
+      return;
+    }
+
+    try {
+      sessionStorage.setItem("verifyEmail", user.email);
+      await resendOtp({ email: user.email });
+      toast.success("OTP sent to your email");
+      router.push("/auth/verify-email");
+    } catch {
+      toast.error("Could not send OTP. Please try again.");
+    } finally {
+      setIsProfileOpen(false);
+      setIsOpen(false);
+    }
   };
 
   return (
@@ -139,14 +165,14 @@ const AuthMobileNav = () => {
             <p className="truncate text-xs text-gray-500">{user?.email}</p>
           </div>
           <div className="p-2">
-            <Link
-              href="/auth/verify-email"
-              onClick={() => setIsProfileOpen(false)}
-              className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50"
+            <button
+              type="button"
+              onClick={handleVerifyEmail}
+              className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-gray-700 hover:bg-gray-50"
             >
               <FiMail className="h-4 w-4" />
-              Verify Email
-            </Link>
+              {user?.isEmailVerified ? "Email Verified" : "Verify Email"}
+            </button>
             <Link
               href="/profile-settings"
               onClick={() => setIsProfileOpen(false)}
