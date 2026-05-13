@@ -5,7 +5,6 @@ import { FiBell, FiCheck } from "react-icons/fi";
 import Image from "next/image";
 import {
   getNotifications,
-  getUnreadCount,
   markNotificationAsRead,
   markAllNotificationsAsRead,
   Notification,
@@ -23,12 +22,11 @@ export default function NotificationsDropdown() {
   const [totalPages, setTotalPages] = useState(1);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Fetch unread count on mount
+  // Update unread count when notifications change
   useEffect(() => {
-    fetchUnreadCount();
-    const interval = setInterval(fetchUnreadCount, 30000); // Poll every 30 seconds
-    return () => clearInterval(interval);
-  }, []);
+    const count = notifications.filter((n) => !n.read).length;
+    setUnreadCount(count);
+  }, [notifications]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -55,24 +53,13 @@ export default function NotificationsDropdown() {
     }
   }, [showDropdown, notifications.length]);
 
-  const fetchUnreadCount = async () => {
-    try {
-      const response = await getUnreadCount();
-      if (response.success) {
-        setUnreadCount(response.data!.unreadCount);
-      }
-    } catch (error) {
-      console.error("Failed to fetch unread count:", error);
-    }
-  };
-
   const fetchNotifications = async (page: number) => {
     setIsLoading(true);
     try {
       const response = await getNotifications(page, 10);
       if (response.success && response.data) {
-        setNotifications(response.data.notifications);
-        setTotalPages(response.data.pagination.totalPages);
+        setNotifications(response.data.data);
+        setTotalPages(response.data.totalPages);
         setCurrentPage(page);
       }
     } catch (error) {
@@ -86,20 +73,22 @@ export default function NotificationsDropdown() {
   const handleNotificationClick = async (notification: Notification) => {
     try {
       // Mark as read if unread
-      if (!notification.isRead) {
+      if (!notification.read) {
         await markNotificationAsRead(notification._id);
         setNotifications((prev) =>
           prev.map((n) =>
-            n._id === notification._id ? { ...n, isRead: true } : n,
+            n._id === notification._id ? { ...n, read: true } : n,
           ),
         );
-        setUnreadCount((prev) => Math.max(0, prev - 1));
       }
 
-      // Navigate to the action link
-      if (notification.actionLink) {
+      // Navigate based on notification type
+      if (notification.targetPost) {
         setShowDropdown(false);
-        router.push(notification.actionLink);
+        router.push(`/post/${notification.targetPost}`);
+      } else if (notification.targetUser) {
+        setShowDropdown(false);
+        router.push(`/profile/${notification.targetUser}`);
       }
     } catch (error) {
       console.error("Failed to mark notification as read:", error);
@@ -109,8 +98,7 @@ export default function NotificationsDropdown() {
   const handleMarkAllAsRead = async () => {
     try {
       await markAllNotificationsAsRead();
-      setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
-      setUnreadCount(0);
+      setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
       toast.success("All notifications marked as read");
     } catch (error) {
       console.error("Failed to mark all as read:", error);
@@ -126,11 +114,8 @@ export default function NotificationsDropdown() {
     try {
       await markNotificationAsRead(notificationId);
       setNotifications((prev) =>
-        prev.map((n) =>
-          n._id === notificationId ? { ...n, isRead: true } : n,
-        ),
+        prev.map((n) => (n._id === notificationId ? { ...n, read: true } : n)),
       );
-      setUnreadCount((prev) => Math.max(0, prev - 1));
       toast.success("Marked as read");
     } catch (error) {
       console.error("Failed to mark as read:", error);
@@ -202,7 +187,7 @@ export default function NotificationsDropdown() {
                   <div
                     key={notification._id}
                     className={`w-full border-b border-gray-100 hover:bg-gray-50 transition-colors flex items-start gap-3 px-4 py-3 group ${
-                      !notification.isRead ? "bg-blue-50" : ""
+                      !notification.read ? "bg-blue-50" : ""
                     }`}
                   >
                     {/* Actor Avatar */}
@@ -239,14 +224,6 @@ export default function NotificationsDropdown() {
                         {notification.message}
                       </p>
 
-                      {/* Post preview for like/comment notifications */}
-                      {notification.post && (
-                        <p className="text-xs text-gray-600 mt-1 line-clamp-2">
-                          {notification.post.content ||
-                            "[Post with image/video]"}
-                        </p>
-                      )}
-
                       {/* Time */}
                       <p className="text-xs text-gray-500 mt-1">
                         {formatTimeAgo(notification.createdAt)}
@@ -255,7 +232,7 @@ export default function NotificationsDropdown() {
 
                     {/* Actions: Check button and unread indicator */}
                     <div className="flex-shrink-0 flex items-center gap-2">
-                      {!notification.isRead && (
+                      {!notification.read && (
                         <button
                           onClick={(e) =>
                             handleMarkOneAsRead(e, notification._id)
@@ -266,7 +243,7 @@ export default function NotificationsDropdown() {
                           <FiCheck size={18} />
                         </button>
                       )}
-                      {!notification.isRead && (
+                      {!notification.read && (
                         <div className="w-2 h-2 bg-blue-500 rounded-full" />
                       )}
                     </div>
