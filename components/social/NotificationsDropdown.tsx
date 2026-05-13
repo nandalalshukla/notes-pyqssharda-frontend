@@ -53,7 +53,7 @@ export default function NotificationsDropdown() {
     if (showDropdown && notifications.length === 0) {
       fetchNotifications(1);
     }
-  }, [showDropdown]);
+  }, [showDropdown, notifications.length]);
 
   const fetchUnreadCount = async () => {
     try {
