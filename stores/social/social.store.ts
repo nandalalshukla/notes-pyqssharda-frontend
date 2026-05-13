@@ -868,14 +868,24 @@ export const useSocialStore = create<SocialStore>((set, get) => ({
     set({ isLoadingNotifications: true, error: null });
     try {
       const res = await getNotifications(page, 20, read);
-      const unreadCount = res.data?.data?.filter((n) => !n.read).length || 0;
-      set({
-        notifications: res.data?.data || [],
-        notificationsPage: page,
-        notificationsTotalPages: res.data?.totalPages || 0,
-        unreadCount,
-        isLoadingNotifications: false,
-      });
+      if (res && res.data) {
+        const notificationsList = res.data.notifications || [];
+        const paginationInfo = res.data.pagination;
+        const calculatedTotalPages = paginationInfo?.total
+          ? Math.ceil(paginationInfo.total / (paginationInfo?.limit || 20))
+          : 0;
+        const unreadCount = notificationsList.filter(
+          (n) => !n.isRead && !n.read,
+        ).length;
+
+        set({
+          notifications: notificationsList,
+          notificationsPage: page,
+          notificationsTotalPages: calculatedTotalPages,
+          unreadCount,
+          isLoadingNotifications: false,
+        });
+      }
     } catch (error: unknown) {
       set({
         error: getErrorMessage(error) || "Failed to fetch notifications",

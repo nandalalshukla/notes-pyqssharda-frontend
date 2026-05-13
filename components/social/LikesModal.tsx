@@ -75,24 +75,21 @@ export default function LikesModal({
       setIsLoading(true);
       try {
         const response = await getPostLikes(postId, page, 20);
-        if (response.success && response.data) {
-          setLikes((prev) =>
-            page === 1
-              ? response.data!.likes
-              : [...prev, ...response.data!.likes],
-          );
-          setTotalPages(
-            response.data!.pagination.totalPages ??
-              response.data!.pagination.pages ??
-              1,
-          );
+        if (response && response.data) {
+          const likes = response.data.likes || [];
+          const pagination = response.data.pagination;
+
+          setLikes((prev) => (page === 1 ? likes : [...prev, ...likes]));
+          setTotalPages(pagination?.totalPages ?? pagination?.pages ?? 1);
           setCurrentPage(page);
 
           // Initialize following states from the backend response
           const newFollowingStates: Record<string, boolean> = {};
-          response.data!.likes.forEach((like) => {
-            newFollowingStates[like._id] =
-              like.isFollowedByCurrentUser ?? false;
+          likes.forEach((like) => {
+            if (like) {
+              newFollowingStates[like._id] =
+                like.isFollowedByCurrentUser ?? false;
+            }
           });
           setFollowingStates((prev) => {
             if (page === 1) {
@@ -211,17 +208,17 @@ export default function LikesModal({
               leaveFrom="opacity-100 scale-100"
               leaveTo="opacity-0 scale-95"
             >
-              <Dialog.Panel className="bg-white rounded-xl shadow-xl w-full max-w-md max-h-[80vh] flex flex-col overflow-hidden">
+              <Dialog.Panel className="bg-white rounded-2xl shadow-xl w-full max-w-md max-h-[80vh] flex flex-col overflow-hidden">
                 {/* Header */}
-                <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between z-10 shrink-0">
+                <div className="sticky top-0 bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between z-10 shrink-0">
                   <Dialog.Title className="text-lg font-bold text-gray-900">
                     {likeCount === 1 ? "1 Like" : `${likeCount} Likes`}
                   </Dialog.Title>
                   <button
                     onClick={onClose}
-                    className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+                    className="p-1.5 hover:bg-gray-100 rounded-full transition-colors text-gray-600 hover:text-gray-900"
                   >
-                    <FiX size={24} className="text-gray-600" />
+                    <FiX size={24} />
                   </button>
                 </div>
 
@@ -236,29 +233,34 @@ export default function LikesModal({
                       {likes.map((like) => (
                         <div
                           key={like._id}
-                          className="px-6 py-4 border-b border-gray-100 flex items-center justify-between hover:bg-gray-50 transition-colors"
+                          className="px-6 py-3 border-b border-gray-50 flex items-center justify-between hover:bg-gray-50 transition-colors duration-200"
                         >
                           <div
                             className="flex items-center gap-3 flex-1 min-w-0 cursor-pointer"
                             onClick={() => handleViewProfile(like._id)}
                           >
-                            <Image
-                              src={
-                                like.profilePic?.url ||
-                                like.avatar ||
-                                "/images/default-avatar.png"
-                              }
-                              alt={like.username}
-                              width={40}
-                              height={40}
-                              className="rounded-full object-cover flex-shrink-0"
-                            />
+                            <div className="flex-shrink-0">
+                              <Image
+                                src={
+                                  like.profilePic?.url ||
+                                  like.avatar ||
+                                  "/images/default-avatar.png"
+                                }
+                                alt={like.username}
+                                width={40}
+                                height={40}
+                                className="rounded-full object-cover"
+                              />
+                            </div>
                             <div className="min-w-0">
                               <p className="font-semibold text-gray-900 text-sm truncate">
                                 {like.username}
                               </p>
                               <p className="text-xs text-gray-500 truncate">
-                                {like.email}
+                                @
+                                {like.username
+                                  .toLowerCase()
+                                  .replace(/\s+/g, "_")}
                               </p>
                             </div>
                           </div>
@@ -272,11 +274,11 @@ export default function LikesModal({
                                 )
                               }
                               disabled={followingLoads[like._id]}
-                              className={`ml-3 px-3 py-1.5 rounded-lg text-sm font-semibold transition-all flex-shrink-0 ${
+                              className={`ml-3 px-4 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 flex-shrink-0 ${
                                 followingStates[like._id] || false
-                                  ? "bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-300"
-                                  : "bg-blue-500 text-white hover:bg-blue-600 border border-blue-500"
-                              } ${followingLoads[like._id] ? "opacity-50 cursor-not-allowed" : ""}`}
+                                  ? "bg-gray-100 text-gray-900 hover:bg-gray-200 border border-gray-300"
+                                  : "bg-blue-600 text-white hover:bg-blue-700 border border-blue-600 shadow-sm"
+                              } ${followingLoads[like._id] ? "opacity-60 cursor-not-allowed" : ""}`}
                             >
                               {followingLoads[like._id]
                                 ? "..."
@@ -291,15 +293,18 @@ export default function LikesModal({
                       {/* Loading indicator or end of list */}
                       <div ref={observerTarget} className="p-4 text-center">
                         {isLoading && (
-                          <div className="inline-block">
-                            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500" />
+                          <div className="flex justify-center items-center gap-2">
+                            <div className="animate-spin rounded-full h-5 w-5 border-2 border-gray-300 border-t-blue-600" />
+                            <span className="text-sm text-gray-500">
+                              Loading...
+                            </span>
                           </div>
                         )}
                         {!isLoading &&
                           currentPage >= totalPages &&
                           likes.length > 0 && (
                             <p className="text-xs text-gray-400">
-                              No more likes
+                              End of likes
                             </p>
                           )}
                       </div>

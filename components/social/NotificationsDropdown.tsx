@@ -25,7 +25,7 @@ export default function NotificationsDropdown() {
   // Update unread count when notifications change
   useEffect(() => {
     const count = Array.isArray(notifications)
-      ? notifications.filter((n) => n && !n.read).length
+      ? notifications.filter((n) => n && !(n.isRead || n.read)).length
       : 0;
     setUnreadCount(count);
   }, [notifications]);
@@ -48,7 +48,20 @@ export default function NotificationsDropdown() {
     }
   }, [showDropdown]);
 
-  // Fetch notifications when dropdown opens
+  // Fetch notifications on mount and poll periodically
+  useEffect(() => {
+    // Fetch immediately on mount
+    fetchNotifications(1);
+
+    // Then set up polling for background updates every 30 seconds
+    const interval = setInterval(() => {
+      fetchNotifications(1);
+    }, 30000); // 30 seconds
+
+    return () => clearInterval(interval);
+  }, []);
+
+  // Fetch notifications when dropdown opens if not already fetched
   useEffect(() => {
     if (showDropdown && notifications.length === 0) {
       fetchNotifications(1);
@@ -59,15 +72,24 @@ export default function NotificationsDropdown() {
     setIsLoading(true);
     try {
       const response = await getNotifications(page, 10);
-      // Handle API response - ensure we always have an array
+      // Correctly map backend response structure
       if (response && response.data) {
-        const notificationsList = Array.isArray(response.data.data)
-          ? response.data.data
-          : Array.isArray(response.data)
-            ? response.data
-            : [];
-        setNotifications(notificationsList);
-        setTotalPages(response.data.totalPages || 1);
+        // Backend returns: { data: { notifications: [...], unreadCount, pagination: {...} } }
+        const notificationsList = response.data.notifications || [];
+        const paginationInfo = response.data.pagination;
+
+        // Normalize isRead to read for consistency
+        const normalizedNotifications = notificationsList.map((n: any) => ({
+          ...n,
+          read: n.isRead ?? n.read ?? false,
+        }));
+
+        setNotifications(normalizedNotifications);
+        // Calculate total pages from pagination info (total / limit)
+        const calculatedTotalPages = paginationInfo?.total
+          ? Math.ceil(paginationInfo.total / (paginationInfo?.limit || 10))
+          : 1;
+        setTotalPages(calculatedTotalPages);
         setCurrentPage(page);
       } else {
         setNotifications([]);
@@ -84,22 +106,26 @@ export default function NotificationsDropdown() {
   const handleNotificationClick = async (notification: Notification) => {
     try {
       // Mark as read if unread
-      if (!notification.read) {
+      const isRead = notification.isRead ?? notification.read ?? false;
+      if (!isRead) {
         await markNotificationAsRead(notification._id);
         setNotifications((prev) =>
           prev.map((n) =>
-            n._id === notification._id ? { ...n, read: true } : n,
+            n._id === notification._id ? { ...n, isRead: true, read: true } : n,
           ),
         );
       }
 
-      // Navigate based on notification type
-      if (notification.targetPost) {
+      // Navigate based on notification type and available data
+      if (notification.post?._id) {
         setShowDropdown(false);
-        router.push(`/post/${notification.targetPost}`);
-      } else if (notification.targetUser) {
+        router.push(`/?postId=${notification.post._id}`);
+      } else if (notification.comment?.post) {
         setShowDropdown(false);
-        router.push(`/profile/${notification.targetUser}`);
+        router.push(`/?postId=${notification.comment.post}`);
+      } else if (notification.type === "follow") {
+        setShowDropdown(false);
+        router.push(`/profile/${notification.actor._id}`);
       }
     } catch (error) {
       console.error("Failed to mark notification as read:", error);
@@ -109,7 +135,9 @@ export default function NotificationsDropdown() {
   const handleMarkAllAsRead = async () => {
     try {
       await markAllNotificationsAsRead();
-      setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+      setNotifications((prev) =>
+        prev.map((n) => ({ ...n, isRead: true, read: true })),
+      );
       toast.success("All notifications marked as read");
     } catch (error) {
       console.error("Failed to mark all as read:", error);
@@ -125,9 +153,10 @@ export default function NotificationsDropdown() {
     try {
       await markNotificationAsRead(notificationId);
       setNotifications((prev) =>
-        prev.map((n) => (n._id === notificationId ? { ...n, read: true } : n)),
+        prev.map((n) =>
+          n._id === notificationId ? { ...n, isRead: true, read: true } : n,
+        ),
       );
-      toast.success("Marked as read");
     } catch (error) {
       console.error("Failed to mark as read:", error);
       toast.error("Failed to mark as read");
@@ -197,72 +226,74 @@ export default function NotificationsDropdown() {
                 {notifications.map((notification) => {
                   // Ensure actor exists before rendering
                   if (!notification.actor) return null;
-                  
+
                   return (
-                  <div
-                    key={notification._id}
-                    className={`w-full border-b border-gray-100 hover:bg-gray-50 transition-colors flex items-start gap-3 px-4 py-3 group ${
-                      !notification.read ? "bg-blue-50" : ""
-                    }`}
-                  >
-                    {/* Actor Avatar */}
-                    <button
-                      onClick={() => {
-                        setShowDropdown(false);
-                        router.push(`/profile/${notification.actor._id}`);
-                      }}
-                      className="flex-shrink-0 hover:opacity-80 transition-opacity rounded-full"
-                      title="View profile"
+                    <div
+                      key={notification._id}
+                      className={`w-full border-b border-gray-100 hover:bg-gray-50 transition-colors flex items-start gap-3 px-4 py-3 group ${
+                        !(notification.isRead ?? notification.read)
+                          ? "bg-blue-50"
+                          : ""
+                      }`}
                     >
-                      <Image
-                        src={
-                          notification.actor.profilePic?.url ||
-                          notification.actor.avatar ||
-                          "/images/default-avatar.png"
-                        }
-                        alt={notification.actor.username}
-                        width={40}
-                        height={40}
-                        className="rounded-full object-cover cursor-pointer"
-                      />
-                    </button>
-
-                    {/* Notification Content */}
-                    <button
-                      onClick={() => handleNotificationClick(notification)}
-                      className="flex-1 min-w-0 text-left hover:opacity-80 transition-opacity"
-                    >
-                      <p className="text-sm text-gray-900">
-                        <span className="font-semibold">
-                          {notification.actor.username}
-                        </span>{" "}
-                        {notification.message}
-                      </p>
-
-                      {/* Time */}
-                      <p className="text-xs text-gray-500 mt-1">
-                        {formatTimeAgo(notification.createdAt)}
-                      </p>
-                    </button>
-
-                    {/* Actions: Check button and unread indicator */}
-                    <div className="flex-shrink-0 flex items-center gap-2">
-                      {!notification.read && (
-                        <button
-                          onClick={(e) =>
-                            handleMarkOneAsRead(e, notification._id)
+                      {/* Actor Avatar */}
+                      <button
+                        onClick={() => {
+                          setShowDropdown(false);
+                          router.push(`/profile/${notification.actor._id}`);
+                        }}
+                        className="flex-shrink-0 hover:opacity-80 transition-opacity rounded-full"
+                        title="View profile"
+                      >
+                        <Image
+                          src={
+                            notification.actor.profilePic?.url ||
+                            notification.actor.avatar ||
+                            "/images/default-avatar.png"
                           }
-                          className="p-1.5 rounded-full hover:bg-gray-200 transition-colors text-gray-600 hover:text-blue-600"
-                          title="Mark as read"
-                        >
-                          <FiCheck size={18} />
-                        </button>
-                      )}
-                      {!notification.read && (
-                        <div className="w-2 h-2 bg-blue-500 rounded-full" />
-                      )}
+                          alt={notification.actor.username}
+                          width={40}
+                          height={40}
+                          className="rounded-full object-cover cursor-pointer"
+                        />
+                      </button>
+
+                      {/* Notification Content */}
+                      <button
+                        onClick={() => handleNotificationClick(notification)}
+                        className="flex-1 min-w-0 text-left hover:opacity-80 transition-opacity"
+                      >
+                        <p className="text-sm text-gray-900">
+                          <span className="font-semibold">
+                            {notification.actor.username}
+                          </span>{" "}
+                          {notification.message}
+                        </p>
+
+                        {/* Time */}
+                        <p className="text-xs text-gray-500 mt-1">
+                          {formatTimeAgo(notification.createdAt)}
+                        </p>
+                      </button>
+
+                      {/* Actions: Check button and unread indicator */}
+                      <div className="flex-shrink-0 flex items-center gap-2">
+                        {!(notification.isRead ?? notification.read) && (
+                          <button
+                            onClick={(e) =>
+                              handleMarkOneAsRead(e, notification._id)
+                            }
+                            className="p-1.5 rounded-full hover:bg-gray-200 transition-colors text-gray-600 hover:text-blue-600"
+                            title="Mark as read"
+                          >
+                            <FiCheck size={18} />
+                          </button>
+                        )}
+                        {!(notification.isRead ?? notification.read) && (
+                          <div className="w-2 h-2 bg-blue-500 rounded-full" />
+                        )}
+                      </div>
                     </div>
-                  </div>
                   );
                 })}
               </div>

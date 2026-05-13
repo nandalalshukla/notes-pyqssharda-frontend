@@ -115,7 +115,7 @@ const ProfileCard = ({
         onMouseEnter?.();
       }}
       onMouseLeave={handleMouseLeave}
-      className="w-80 rounded-xl border border-slate-300 bg-gradient-to-br from-white to-slate-50 shadow-[0_20px_50px_rgba(0,0,0,0.15)] animate-in fade-in zoom-in-95 duration-200 pointer-events-auto overflow-hidden"
+      className="w-80 rounded-2xl border border-gray-200 bg-white shadow-lg hover:shadow-xl transition-shadow duration-300 animate-in fade-in zoom-in-95 duration-200 pointer-events-auto overflow-hidden"
     >
       {/* Loading State */}
       {isLoading ? (
@@ -157,10 +157,10 @@ const ProfileCard = ({
                 <button
                   onClick={handleFollowToggle}
                   disabled={isFollowLoading}
-                  className={`mt-2 flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-all duration-200 ${
+                  className={`mt-2 flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition-all duration-200 ${
                     isFollowing
-                      ? "border border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400"
-                      : "bg-blue-600 text-white hover:bg-blue-700 active:scale-95"
+                      ? "bg-gray-100 text-gray-900 hover:bg-gray-200 border border-gray-300"
+                      : "bg-blue-600 text-white hover:bg-blue-700 active:scale-95 shadow-sm hover:shadow-md"
                   } ${isFollowLoading ? "opacity-60 cursor-not-allowed" : ""}`}
                 >
                   {isFollowLoading ? (
@@ -201,8 +201,8 @@ const ProfileCard = ({
 
             {/* Course/Role Info */}
             {profile.course && (
-              <div className="mb-4 rounded-md bg-gray-50 px-3 py-2 border border-gray-100">
-                <p className="text-xs text-gray-600">
+              <div className="mb-4 rounded-lg bg-blue-50 px-3 py-2 border border-blue-100">
+                <p className="text-xs text-blue-900">
                   <span className="font-semibold">Course:</span>{" "}
                   {profile.course}
                 </p>
@@ -210,24 +210,24 @@ const ProfileCard = ({
             )}
 
             {/* Stats Grid with Dividers */}
-            <div className="mb-4 grid grid-cols-3 gap-0 rounded-md bg-gray-50 border border-gray-100 overflow-hidden">
-              <div className="px-3 py-3 text-center border-r border-gray-100 last:border-r-0">
+            <div className="mb-4 grid grid-cols-3 gap-0 rounded-lg bg-gray-50 border border-gray-100 overflow-hidden">
+              <div className="px-3 py-3 text-center border-r border-gray-200 last:border-r-0 hover:bg-gray-100 transition-colors">
                 <p className="text-sm font-bold text-gray-900">
                   {profile.stats.postsCount}
                 </p>
-                <p className="text-xs text-gray-500 mt-0.5">Posts</p>
+                <p className="text-xs text-gray-600 mt-1">Posts</p>
               </div>
-              <div className="px-3 py-3 text-center border-r border-gray-100 last:border-r-0">
+              <div className="px-3 py-3 text-center border-r border-gray-200 last:border-r-0 hover:bg-gray-100 transition-colors">
                 <p className="text-sm font-bold text-gray-900">
                   {profile.stats.followersCount}
                 </p>
-                <p className="text-xs text-gray-500 mt-0.5">Followers</p>
+                <p className="text-xs text-gray-600 mt-1">Followers</p>
               </div>
-              <div className="px-3 py-3 text-center">
+              <div className="px-3 py-3 text-center hover:bg-gray-100 transition-colors">
                 <p className="text-sm font-bold text-gray-900">
                   {profile.stats.followingCount}
                 </p>
-                <p className="text-xs text-gray-500 mt-0.5">Following</p>
+                <p className="text-xs text-gray-600 mt-1">Following</p>
               </div>
             </div>
 
@@ -235,7 +235,7 @@ const ProfileCard = ({
             <Link
               href={`/profile/${profile._id}`}
               onClick={() => onClose?.()}
-              className="block w-full rounded-md bg-gray-900 py-2.5 text-center text-sm font-semibold text-white transition-all duration-200 hover:bg-gray-800 active:scale-95"
+              className="block w-full rounded-lg bg-gradient-to-r from-blue-600 to-blue-700 py-2.5 text-center text-sm font-semibold text-white transition-all duration-200 hover:from-blue-700 hover:to-blue-800 hover:shadow-md active:scale-95"
             >
               View Full Profile
             </Link>

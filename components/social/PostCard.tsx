@@ -18,7 +18,7 @@ import {
 } from "react-icons/fi";
 import { FaHeart } from "react-icons/fa";
 import toast from "react-hot-toast";
-import CommentsSection from "./CommentsSection";
+import CommentsModal from "./CommentsModal";
 import EditPostModal from "./EditPostModal";
 import LikesModal from "./LikesModal";
 import ProfileCardHover from "./ProfileCardHover";
@@ -37,7 +37,6 @@ export default function PostCard({ post }: PostCardProps) {
   const {
     togglePostLike,
     removePost,
-    fetchPostComments,
     toggleUserFollow,
     followStats,
     feed,
@@ -55,6 +54,8 @@ export default function PostCard({ post }: PostCardProps) {
   const [hoverCloseTimer, setHoverCloseTimer] = useState<NodeJS.Timeout | null>(
     null,
   );
+  const [doubleTapLikeAnimation, setDoubleTapLikeAnimation] = useState(false);
+  const lastTapRef = React.useRef<number>(0);
 
   // Get the current post from feed to ensure state is in sync with store
   const currentPost = useMemo(() => {
@@ -110,6 +111,23 @@ export default function PostCard({ post }: PostCardProps) {
     }
   }, [post._id, isLiking, isLiked, user, togglePostLike, router]);
 
+  const handleDoubleTap = useCallback(async () => {
+    const now = Date.now();
+    const DOUBLE_TAP_DELAY = 300;
+
+    if (now - lastTapRef.current < DOUBLE_TAP_DELAY) {
+      // Double tap detected
+      if (!isLiked) {
+        setDoubleTapLikeAnimation(true);
+        setTimeout(() => setDoubleTapLikeAnimation(false), 600);
+        await handleLike();
+      }
+      lastTapRef.current = 0;
+    } else {
+      lastTapRef.current = now;
+    }
+  }, [isLiked, handleLike]);
+
   const handleComment = useCallback(async () => {
     if (!user) {
       toast.error("Please login to comment");
@@ -117,14 +135,8 @@ export default function PostCard({ post }: PostCardProps) {
       return;
     }
 
-    try {
-      await fetchPostComments(post._id);
-      setShowComments(!showComments);
-    } catch (error) {
-      console.error("Failed to load comments", error);
-      toast.error("Failed to load comments");
-    }
-  }, [post._id, showComments, fetchPostComments, user, router]);
+    setShowComments(true);
+  }, [user, router]);
 
   const handleDelete = useCallback(async () => {
     setIsDeleting(true);
@@ -213,41 +225,50 @@ export default function PostCard({ post }: PostCardProps) {
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden">
         {/* Header Section */}
         <div className="px-5 pt-4 pb-3 border-b border-gray-100 flex items-center justify-between">
-          <div
-            className="relative flex items-center gap-3 flex-1 min-w-0 cursor-pointer hover:opacity-80 transition-opacity"
-            onClick={handleViewProfile}
-            onMouseEnter={openProfileHover}
-            onMouseLeave={scheduleProfileHoverClose}
-          >
-            <Image
-              src={authorImage || "/images/default-avatar.png"}
-              alt={
-                (currentPost.author as { username?: string })?.username ||
-                "User"
-              }
-              width={44}
-              height={44}
-              className="rounded-full object-cover flex-shrink-0"
-            />
-            <div className="min-w-0">
-              <p className="font-semibold text-gray-900 text-sm truncate">
+          <div className="relative flex items-center gap-3 flex-1 min-w-0">
+            {/* Profile Image - Hover Trigger */}
+            <div
+              onClick={handleViewProfile}
+              onMouseEnter={openProfileHover}
+              onMouseLeave={scheduleProfileHoverClose}
+              className="cursor-pointer hover:opacity-80 transition-opacity flex-shrink-0"
+            >
+              <Image
+                src={authorImage || "/images/default-avatar.png"}
+                alt={
+                  (currentPost.author as { username?: string })?.username ||
+                  "User"
+                }
+                width={44}
+                height={44}
+                className="rounded-full object-cover"
+              />
+            </div>
+
+            {/* Username & Date - Username is also a hover trigger */}
+            <div
+              className="min-w-0 flex-1"
+              onMouseEnter={openProfileHover}
+              onMouseLeave={scheduleProfileHoverClose}
+            >
+              <p
+                className="font-semibold text-gray-900 text-sm truncate cursor-pointer hover:opacity-80 transition-opacity"
+                onClick={handleViewProfile}
+              >
                 {(currentPost.author as { username?: string })?.username}
               </p>
               <p className="text-xs text-gray-500">
                 {formatDate(currentPost.createdAt)}
               </p>
             </div>
+
+            {/* Profile Card Portal - positioned absolutely at top level */}
             {showProfileHover && authorId && (
-              <div
-                className="absolute left-0 top-12 z-40"
-                onClick={(event) => event.stopPropagation()}
-              >
-                <ProfileCardHover
-                  userId={authorId}
-                  onClose={() => setShowProfileHover(false)}
-                  onMouseEnter={openProfileHover}
-                />
-              </div>
+              <ProfileCardHover
+                userId={authorId}
+                onClose={() => setShowProfileHover(false)}
+                onMouseEnter={openProfileHover}
+              />
             )}
           </div>
 
@@ -341,7 +362,7 @@ export default function PostCard({ post }: PostCardProps) {
 
         {/* Media Gallery */}
         {post.files && post.files.length > 0 && (
-          <div className="px-5 py-3">
+          <div className="px-5 py-3 bg-gray-50 border-t border-b border-gray-100">
             <div
               className={`grid gap-2 rounded-lg overflow-hidden ${
                 post.files.length === 1
@@ -352,11 +373,13 @@ export default function PostCard({ post }: PostCardProps) {
                       ? "grid-cols-3"
                       : "grid-cols-2 sm:grid-cols-3"
               }`}
+              onDoubleClick={handleDoubleTap}
             >
               {post.files.map((file, idx) => (
                 <div
                   key={idx}
-                  className="group/media relative overflow-hidden rounded-lg bg-gray-100 aspect-square"
+                  className="group/media relative overflow-hidden rounded-lg bg-gray-100 aspect-square cursor-pointer"
+                  onDoubleClick={handleDoubleTap}
                 >
                   {file.match(/\.(jpg|jpeg|png|gif|webp)$/i) ? (
                     <>
@@ -369,6 +392,18 @@ export default function PostCard({ post }: PostCardProps) {
                         priority={idx === 0}
                       />
                       <div className="absolute inset-0 bg-black opacity-0 group-hover/media:opacity-10 transition-opacity" />
+
+                      {/* Double-tap like animation */}
+                      {doubleTapLikeAnimation && idx === 0 && (
+                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                          <div className="animate-bounce">
+                            <FaHeart
+                              size={80}
+                              className="text-white drop-shadow-lg fill-current"
+                            />
+                          </div>
+                        </div>
+                      )}
                     </>
                   ) : file.match(/\.mp4$/i) ? (
                     <video
@@ -449,8 +484,12 @@ export default function PostCard({ post }: PostCardProps) {
         </div>
       </div>
 
-      {/* Comments Section */}
-      {showComments && <CommentsSection postId={post._id} />}
+      {/* Comments Modal */}
+      <CommentsModal
+        postId={post._id}
+        isOpen={showComments}
+        onClose={() => setShowComments(false)}
+      />
 
       {/* Edit Modal */}
       {showEditModal && (

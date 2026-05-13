@@ -46,15 +46,39 @@ export interface Comment {
 
 export interface Notification {
   _id: string;
-  type: "like" | "comment" | "follow" | "post";
+  type: "like" | "comment" | "follow" | "post" | "share";
   actor: User;
-  targetPost?: string;
-  targetComment?: string;
-  targetUser?: string;
+  post?: {
+    _id: string;
+    content: string;
+    author: { _id: string; username: string };
+    createdAt: string;
+  } | null;
+  comment?: {
+    _id: string;
+    content: string;
+    post: string;
+    author: { _id: string; username: string };
+    createdAt: string;
+  } | null;
   message: string;
-  read: boolean;
+  isRead: boolean; // Backend uses isRead, not read
+  read?: boolean; // Add optional read for backward compatibility
   createdAt: string;
   updatedAt: string;
+  actionLink?: string; // Used for navigation
+}
+
+// Custom type for notification response from backend
+export interface NotificationsResponse {
+  notifications: Notification[];
+  unreadCount: number;
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    hasMore: boolean;
+  };
 }
 
 export interface FollowStats {
@@ -315,7 +339,7 @@ export const getNotifications = async (
   limit: number = 20,
   read?: "true" | "false",
 ) => {
-  const response = await api.get<ApiResponse<PaginatedResponse<Notification>>>(
+  const response = await api.get<ApiResponse<NotificationsResponse>>(
     "/social/notifications",
     {
       params: { page, limit, ...(read && { read }) },
