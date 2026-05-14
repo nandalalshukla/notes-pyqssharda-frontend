@@ -6,7 +6,6 @@ import useAuthStore from "@/stores/user/authStore";
 import { getAllNotes } from "@/lib/api/notes/notes.api";
 import { getAllPyqs } from "@/lib/api/pyqs/pyqs.api";
 import { getAllSyllabus } from "@/lib/api/syllabus/syllabus.api";
-import FileViewerModal from "./FileViewerModal";
 
 interface ContentItem {
   _id: string;
@@ -27,10 +26,6 @@ export default function HomeContentShowcase() {
   const [pyqs, setPyqs] = useState<ContentItem[]>([]);
   const [syllabus, setSyllabus] = useState<ContentItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedFile, setSelectedFile] = useState<{
-    url: string;
-    name: string;
-  } | null>(null);
 
   useEffect(() => {
     fetchContent();
@@ -142,17 +137,14 @@ export default function HomeContentShowcase() {
                   {item.program} • Sem {item.semester}
                   {item.year && ` • ${item.year}`}
                 </div>
-                <button
-                  onClick={() =>
-                    setSelectedFile({
-                      url: item.fileUrl,
-                      name: item.title,
-                    })
-                  }
-                  className="text-xs font-black underline decoration-2 hover:text-blue-600 transition-colors text-black cursor-pointer"
+                <a
+                  href={item.fileUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs font-black underline decoration-2 hover:text-blue-600 transition-colors text-black"
                 >
                   VIEW FILE →
-                </button>
+                </a>
               </div>
             </div>
           ))}
@@ -181,15 +173,6 @@ export default function HomeContentShowcase() {
         </div>
       </div>
 
-      {/* File Viewer Modal */}
-      {selectedFile && (
-        <FileViewerModal
-          isOpen={!!selectedFile}
-          onClose={() => setSelectedFile(null)}
-          fileUrl={selectedFile.url}
-          fileName={selectedFile.name}
-        />
-      )}
     </>
   );
 }
