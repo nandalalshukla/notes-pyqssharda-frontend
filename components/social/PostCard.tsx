@@ -12,7 +12,6 @@ import {
   FiMoreVertical,
   FiEdit2,
   FiTrash2,
-  FiLink2,
   FiUserPlus,
   FiUserMinus,
 } from "react-icons/fi";
@@ -55,6 +54,31 @@ export default function PostCard({ post }: PostCardProps) {
     null,
   );
   const [doubleTapLikeAnimation, setDoubleTapLikeAnimation] = useState(false);
+
+  const getAuthorFollowStatus = useCallback((sourcePost: Post) => {
+    return typeof sourcePost.author === "object"
+      ? sourcePost.author?.isFollowedByCurrentUser
+      : undefined;
+  }, []);
+
+  // Initialize isFollowingLocal - will be synced with store
+  const [isFollowingLocal, setIsFollowingLocal] = useState(() => {
+    // Try to get initial value from store
+    const initialAuthorId =
+      typeof (post.author as unknown) === "string"
+        ? (post.author as unknown as string)
+        : (post.author as { _id?: string })?._id;
+
+    if (initialAuthorId) {
+      return (
+        followStats.get(initialAuthorId)?.isFollowedByCurrentUser ??
+        getAuthorFollowStatus(post) ??
+        false
+      );
+    }
+    return getAuthorFollowStatus(post) ?? false;
+  });
+
   const lastTapRef = React.useRef<number>(0);
 
   // Get the current post from feed to ensure state is in sync with store
@@ -68,16 +92,22 @@ export default function PostCard({ post }: PostCardProps) {
     );
   }, [feed, post, userPosts]);
 
-  const authorId =
-    typeof (currentPost.author as unknown) === "string"
+  // Consistently extract authorId - single source of truth
+  const authorId = useMemo(() => {
+    return typeof (currentPost.author as unknown) === "string"
       ? (currentPost.author as unknown as string)
       : (currentPost.author as { _id?: string })?._id;
+  }, [currentPost.author]);
 
   const isAuthor =
     user?._id && authorId ? String(user._id) === String(authorId) : false;
-
+  const currentAuthorFollowStatus = getAuthorFollowStatus(currentPost);
   const isFollowing =
-    followStats.get(authorId || "")?.isFollowedByCurrentUser || false;
+    (authorId
+      ? followStats.get(authorId)?.isFollowedByCurrentUser
+      : undefined) ??
+    currentAuthorFollowStatus ??
+    isFollowingLocal;
 
   const likeCount = currentPost.likes || 0;
   const isLiked = currentPost.likedByCurrentUser || false;
@@ -190,10 +220,17 @@ export default function PostCard({ post }: PostCardProps) {
     if (isAuthor) return;
 
     setIsFollowLoading(true);
+    const previousFollowingState = isFollowing;
+
     try {
-      await toggleUserFollow(authorId || "");
+      // Optimistically update UI
+      setIsFollowingLocal(!isFollowing);
+
+      await toggleUserFollow(authorId || "", isFollowing);
       toast.success(isFollowing ? "User unfollowed" : "User followed!");
     } catch (error: unknown) {
+      // Revert on error
+      setIsFollowingLocal(previousFollowingState);
       console.error("Failed to update follow status", error);
       toast.error("Failed to update follow status");
     } finally {
@@ -222,7 +259,7 @@ export default function PostCard({ post }: PostCardProps) {
 
   return (
     <>
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden">
+      <div className="bg-white border-gray-600 border-2 rounded-xl border border-gray-200 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden">
         {/* Header Section */}
         <div className="px-5 pt-4 pb-3 border-b border-gray-100 flex items-center justify-between">
           <div className="relative flex items-center gap-3 flex-1 min-w-0">
@@ -231,7 +268,7 @@ export default function PostCard({ post }: PostCardProps) {
               onClick={handleViewProfile}
               onMouseEnter={openProfileHover}
               onMouseLeave={scheduleProfileHoverClose}
-              className="cursor-pointer hover:opacity-80 transition-opacity flex-shrink-0"
+              className="cursor-pointer flex-shrink-0"
             >
               <Image
                 src={authorImage || "/images/default-avatar.png"}
@@ -252,7 +289,7 @@ export default function PostCard({ post }: PostCardProps) {
               onMouseLeave={scheduleProfileHoverClose}
             >
               <p
-                className="font-semibold text-gray-900 text-sm truncate cursor-pointer hover:opacity-80 transition-opacity"
+                className="font-semibold text-gray-900 text-sm truncate cursor-pointer hover:underline underline-offset-2 decoration-2 transition-opacity"
                 onClick={handleViewProfile}
               >
                 {(currentPost.author as { username?: string })?.username}
@@ -355,7 +392,7 @@ export default function PostCard({ post }: PostCardProps) {
 
         {/* Content Section */}
         <div className="px-5 py-4">
-          <p className="text-base leading-relaxed text-gray-900 whitespace-pre-wrap break-words">
+          <p className="text-base leading-relaxed text-black whitespace-pre-wrap break-words">
             {post.content}
           </p>
         </div>
@@ -429,57 +466,69 @@ export default function PostCard({ post }: PostCardProps) {
           </div>
         )}
 
-        {/* Stats Bar */}
-        <div className="px-5 py-3 border-t border-gray-100 flex justify-between text-xs font-semibold text-gray-600 bg-gray-50">
-          <button
-            type="button"
-            onClick={() => setShowLikesModal(true)}
-            className="hover:text-red-600 cursor-pointer transition-colors"
-            disabled={likeCount === 0}
-          >
-            {likeCount} {likeCount === 1 ? "like" : "likes"}
-          </button>
-          <span className="hover:text-blue-600 cursor-pointer transition-colors">
-            {post.commentCount}{" "}
-            {post.commentCount === 1 ? "comment" : "comments"}
-          </span>
-        </div>
+        <div className="px-5 py-3 border-t border-gray-100 flex items-center gap-6 text-sm font-semibold text-gray-700">
+          {/* Like Section */}
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={handleLike}
+              disabled={isLiking}
+              className="flex items-center hover:text-red-600 transition-colors group disabled:opacity-50 cursor-pointer"
+            >
+              {isLiked ? (
+                <FaHeart
+                  size={20}
+                  className="text-red-600 group-hover:scale-110 transition-transform"
+                />
+              ) : (
+                <FiHeart
+                  size={20}
+                  className="group-hover:scale-110 transition-transform"
+                />
+              )}
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowLikesModal(true)}
+              disabled={likeCount === 0}
+              className="font-bold text-gray-900 hover:text-red-600 transition-colors disabled:opacity-50 cursor-pointer"
+            >
+              {likeCount > 1000
+                ? (likeCount / 1000).toFixed(1) + "K"
+                : likeCount}
+            </button>
+          </div>
 
-        {/* Action Buttons */}
-        <div className="px-5 py-3 flex gap-2">
-          <button
-            onClick={handleLike}
-            disabled={isLiking}
-            className={`flex-1 flex items-center justify-center gap-2 py-2.5 font-semibold rounded-lg transition-all duration-200 text-sm ${
-              isLiked
-                ? "bg-red-50 text-red-600 border border-red-200 hover:bg-red-100"
-                : "bg-gray-50 text-gray-700 border border-gray-200 hover:bg-gray-100 hover:border-gray-300"
-            } ${isLiking ? "opacity-50 cursor-not-allowed" : ""}`}
-          >
-            {isLiked ? (
-              <FaHeart size={16} className="fill-current" />
-            ) : (
-              <FiHeart size={16} />
-            )}
-            <span className="hidden sm:inline">
-              {isLiked ? "Liked" : "Like"}
-            </span>
-          </button>
+          {/* Comment Section */}
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={handleComment}
+              className="flex items-center hover:text-blue-600 transition-colors group cursor-pointer"
+            >
+              <FiMessageCircle
+                size={20}
+                className="group-hover:scale-110 transition-transform"
+              />
+            </button>
+            <button
+              type="button"
+              onClick={handleComment}
+              className="font-bold text-gray-900 hover:text-blue-600 transition-colors cursor-pointer"
+            >
+              {post.commentCount}
+            </button>
+          </div>
 
-          <button
-            onClick={handleComment}
-            className="flex-1 flex items-center justify-center gap-2 py-2.5 font-semibold rounded-lg bg-gray-50 text-gray-700 border border-gray-200 hover:bg-blue-50 hover:border-blue-200 transition-all duration-200 text-sm"
-          >
-            <FiMessageCircle size={16} />
-            <span className="hidden sm:inline">Reply</span>
-          </button>
-
+          {/* Share Section */}
           <button
             onClick={handleShare}
-            className="flex-1 flex items-center justify-center gap-2 py-2.5 font-semibold rounded-lg bg-gray-50 text-gray-700 border border-gray-200 hover:bg-green-50 hover:border-green-200 transition-all duration-200 text-sm"
+            className="flex items-center hover:text-green-600 transition-colors group cursor-pointer"
           >
-            <FiLink2 size={16} />
-            <span className="hidden sm:inline">Share</span>
+            <FiShare2
+              size={20}
+              className="group-hover:scale-110 transition-transform"
+            />
           </button>
         </div>
       </div>

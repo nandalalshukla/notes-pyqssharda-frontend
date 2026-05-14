@@ -97,7 +97,7 @@ interface SocialStore
   toggleCommentLike: (commentId: string) => Promise<void>;
 
   // Follow actions
-  toggleUserFollow: (userId: string) => Promise<void>;
+  toggleUserFollow: (userId: string, currentFollowing?: boolean) => Promise<void>;
   fetchUserFollowers: (userId: string, page?: number) => Promise<void>;
   fetchUserFollowing: (userId: string, page?: number) => Promise<void>;
 
@@ -260,6 +260,79 @@ const normalizePost = (
   commentCount: post.commentCount ?? post.commentsCount ?? post.comments ?? 0,
 });
 
+const getPostAuthorId = (post: Post) =>
+  typeof (post.author as unknown) === "string"
+    ? (post.author as unknown as string)
+    : post.author?._id;
+
+const getPostAuthorFollowStatus = (post: Post) =>
+  typeof post.author === "object"
+    ? post.author?.isFollowedByCurrentUser
+    : undefined;
+
+const mergeFollowStatsFromPosts = (
+  currentStats: Map<string, FollowStats>,
+  posts: Post[],
+) => {
+  const nextStats = new Map(currentStats);
+
+  posts.forEach((post) => {
+    const authorId = getPostAuthorId(post);
+    const isFollowedByCurrentUser = getPostAuthorFollowStatus(post);
+
+    if (!authorId || isFollowedByCurrentUser === undefined) return;
+
+    const existing = nextStats.get(authorId);
+    nextStats.set(authorId, {
+      followerCount: existing?.followerCount ?? 0,
+      followingCount: existing?.followingCount ?? 0,
+      ...existing,
+      isFollowedByCurrentUser,
+    });
+  });
+
+  return nextStats;
+};
+
+const updateAuthorFollowState = (
+  post: Post,
+  userId: string,
+  isFollowedByCurrentUser: boolean,
+) => {
+  const authorId = getPostAuthorId(post);
+
+  if (String(authorId) !== String(userId) || typeof post.author !== "object") {
+    return post;
+  }
+
+  return {
+    ...post,
+    author: {
+      ...post.author,
+      isFollowedByCurrentUser,
+    },
+  };
+};
+
+const updateAuthorFollowEverywhere = (
+  userPosts: Map<string, Post[]>,
+  userId: string,
+  isFollowedByCurrentUser: boolean,
+) => {
+  const nextUserPosts = new Map(userPosts);
+
+  for (const [profileUserId, posts] of nextUserPosts.entries()) {
+    nextUserPosts.set(
+      profileUserId,
+      posts.map((post) =>
+        updateAuthorFollowState(post, userId, isFollowedByCurrentUser),
+      ),
+    );
+  }
+
+  return nextUserPosts;
+};
+
 /**
  * ═══════════════════════════════════════════════════════════════════════════════
  * ZUSTAND STORE
@@ -282,6 +355,7 @@ export const useSocialStore = create<SocialStore>((set, get) => ({
       const posts = (res.data?.data || []).map(normalizePost);
       set((state) => ({
         feed: page > 1 ? [...state.feed, ...posts] : posts,
+        followStats: mergeFollowStatsFromPosts(state.followStats, posts),
         feedPage: page,
         feedTotalPages: res.data?.totalPages || 0,
         isLoadingFeed: false,
@@ -311,6 +385,7 @@ export const useSocialStore = create<SocialStore>((set, get) => ({
 
         return {
           userPosts: new Map(state.userPosts).set(userId, nextPosts),
+          followStats: mergeFollowStatsFromPosts(state.followStats, posts),
           userPostsPage: new Map(state.userPostsPage).set(userId, page),
           userPostsTotalPages: new Map(state.userPostsTotalPages).set(
             userId,
@@ -791,20 +866,79 @@ export const useSocialStore = create<SocialStore>((set, get) => ({
    * ───────────────────────────────────────────────────────────────────────────────
    */
 
-  toggleUserFollow: async (userId: string) => {
+  toggleUserFollow: async (userId: string, currentFollowing?: boolean) => {
     set({ error: null });
+    const previousStats = get().followStats.get(userId);
+    const previousFeed = get().feed;
+    const previousUserPosts = get().userPosts;
+    const optimisticFollowing = !(
+      currentFollowing ?? previousStats?.isFollowedByCurrentUser ?? false
+    );
+
+    set((state) => {
+      const optimisticStats: FollowStats = {
+        followerCount: Math.max(
+          0,
+          (previousStats?.followerCount ?? 0) + (optimisticFollowing ? 1 : -1),
+        ),
+        followingCount: previousStats?.followingCount ?? 0,
+        ...previousStats,
+        isFollowedByCurrentUser: optimisticFollowing,
+      };
+
+      return {
+        followStats: new Map(state.followStats).set(userId, optimisticStats),
+        feed: state.feed.map((post) =>
+          updateAuthorFollowState(post, userId, optimisticFollowing),
+        ),
+        userPosts: updateAuthorFollowEverywhere(
+          state.userPosts,
+          userId,
+          optimisticFollowing,
+        ),
+      };
+    });
+
     try {
       const res = await toggleFollow(userId);
-      const stats = res.data?.followStats;
-      if (stats) {
+      const isFollowedByCurrentUser =
+        res.data?.followStats?.isFollowedByCurrentUser ?? res.data?.following;
+      const stats =
+        res.data?.followStats && isFollowedByCurrentUser !== undefined
+          ? {
+              ...res.data.followStats,
+              isFollowedByCurrentUser,
+            }
+          : undefined;
+
+      if (stats && isFollowedByCurrentUser !== undefined) {
         set((state) => ({
           followStats: new Map(state.followStats).set(userId, stats),
+          feed: state.feed.map((post) =>
+            updateAuthorFollowState(post, userId, isFollowedByCurrentUser),
+          ),
+          userPosts: updateAuthorFollowEverywhere(
+            state.userPosts,
+            userId,
+            isFollowedByCurrentUser,
+          ),
         }));
       }
     } catch (error: unknown) {
+      const restoredStats = new Map(get().followStats);
+      if (previousStats) {
+        restoredStats.set(userId, previousStats);
+      } else {
+        restoredStats.delete(userId);
+      }
+
       set({
+        followStats: restoredStats,
+        feed: previousFeed,
+        userPosts: previousUserPosts,
         error: getErrorMessage(error) || "Failed to toggle follow",
       });
+      throw error;
     }
   },
 

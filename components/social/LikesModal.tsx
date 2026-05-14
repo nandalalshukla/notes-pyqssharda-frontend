@@ -157,7 +157,7 @@ export default function LikesModal({
 
       setFollowingLoads((prev) => ({ ...prev, [userId]: true }));
       try {
-        await toggleUserFollow(userId);
+        await toggleUserFollow(userId, currentFollowing);
         // Immediately update the local state
         setFollowingStates((prev) => ({
           ...prev,

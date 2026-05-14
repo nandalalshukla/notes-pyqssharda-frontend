@@ -20,12 +20,16 @@ export default function UserCard({
   isFollowing: initialFollowing = false,
 }: UserCardProps) {
   const { isAuthenticated, user: currentUser } = useAuthStore();
-  const { toggleUserFollow } = useSocialStore();
+  const { toggleUserFollow, followStats } = useSocialStore();
   const router = useRouter();
   const [isFollowing, setIsFollowing] = useState(initialFollowing);
   const [isLoading, setIsLoading] = useState(false);
 
   const isCurrentUser = currentUser?._id === user._id;
+  const isFollowingCurrent =
+    followStats.get(user._id)?.isFollowedByCurrentUser ??
+    user.isFollowedByCurrentUser ??
+    isFollowing;
 
   const handleToggleFollow = useCallback(async () => {
     if (!isAuthenticated) {
@@ -36,15 +40,21 @@ export default function UserCard({
 
     setIsLoading(true);
     try {
-      await toggleUserFollow(user._id);
-      setIsFollowing(!isFollowing);
-      toast.success(isFollowing ? "Unfollowed" : "Followed");
-    } catch (error) {
+      await toggleUserFollow(user._id, isFollowingCurrent);
+      setIsFollowing(!isFollowingCurrent);
+      toast.success(isFollowingCurrent ? "Unfollowed" : "Followed");
+    } catch {
       toast.error("Failed to follow user");
     } finally {
       setIsLoading(false);
     }
-  }, [user._id, isFollowing, isAuthenticated, toggleUserFollow, router]);
+  }, [
+    user._id,
+    isFollowingCurrent,
+    isAuthenticated,
+    toggleUserFollow,
+    router,
+  ]);
 
   const avatarUrl = user.profilePic?.url || user.avatar || "";
 
@@ -87,12 +97,12 @@ export default function UserCard({
           onClick={handleToggleFollow}
           disabled={isLoading}
           className={`w-full py-2 px-3 rounded-lg font-bold border-2 border-black transition-all flex items-center justify-center gap-2 text-sm ${
-            isFollowing
+            isFollowingCurrent
               ? "bg-white text-black hover:bg-gray-100"
               : "bg-black text-white hover:bg-white hover:text-black hover:border-black"
           } disabled:opacity-50`}
         >
-          {isFollowing ? (
+          {isFollowingCurrent ? (
             <>
               <FiUserCheck size={16} />
               Following

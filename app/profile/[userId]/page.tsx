@@ -4,8 +4,6 @@ import React, { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import {
   getUserProfile,
-  toggleFollow,
-  Post,
   UserProfile,
 } from "@/lib/api/social/social.api";
 import useAuthStore from "@/stores/user/authStore";
@@ -16,6 +14,27 @@ import { FeedLoadingState } from "@/components/social/LoadingSkeletons";
 import toast from "react-hot-toast";
 import { FiArrowLeft } from "react-icons/fi";
 import Link from "next/link";
+
+const getRequestErrorMessage = (error: unknown, fallback: string) => {
+  if (
+    typeof error === "object" &&
+    error !== null &&
+    "response" in error &&
+    typeof error.response === "object" &&
+    error.response !== null &&
+    "data" in error.response &&
+    typeof error.response.data === "object" &&
+    error.response.data !== null &&
+    "message" in error.response.data &&
+    typeof error.response.data.message === "string"
+  ) {
+    return error.response.data.message;
+  }
+
+  if (error instanceof Error) return error.message;
+
+  return fallback;
+};
 
 export default function UserProfilePage() {
   const params = useParams();
@@ -28,6 +47,8 @@ export default function UserProfilePage() {
     userPostsTotalPages,
     isLoadingUserPosts,
     fetchUserPosts,
+    toggleUserFollow,
+    followStats,
   } = useSocialStore();
 
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -39,6 +60,22 @@ export default function UserProfilePage() {
   const currentPage = userPostsPage.get(userId) || 1;
   const totalPages = userPostsTotalPages.get(userId) || 1;
   const isPostsLoading = isLoadingUserPosts.get(userId) ?? true;
+  const profileFollowStats = followStats.get(userId);
+  const displayedProfile = profile
+    ? {
+        ...profile,
+        isFollowedByCurrentUser:
+          profileFollowStats?.isFollowedByCurrentUser ??
+          profile.isFollowedByCurrentUser,
+        stats: {
+          ...profile.stats,
+          followersCount:
+            profileFollowStats?.followerCount ?? profile.stats.followersCount,
+          followingCount:
+            profileFollowStats?.followingCount ?? profile.stats.followingCount,
+        },
+      }
+    : null;
 
   useEffect(() => {
     const fetchInitialData = async () => {
@@ -57,11 +94,11 @@ export default function UserProfilePage() {
         }
 
         setError(null);
-      } catch (err: any) {
-        const errorMsg =
-          err?.response?.data?.message ||
-          err.message ||
-          "Failed to load profile data";
+      } catch (err: unknown) {
+        const errorMsg = getRequestErrorMessage(
+          err,
+          "Failed to load profile data",
+        );
         setError(errorMsg);
         toast.error(errorMsg);
       } finally {
@@ -91,35 +128,47 @@ export default function UserProfilePage() {
       return;
     }
 
-    if (!profile) return;
+    if (!displayedProfile) return;
 
     setIsFollowLoading(true);
+    const wasFollowing = displayedProfile.isFollowedByCurrentUser;
     try {
-      const res = await toggleFollow(userId);
+      setProfile((prev) =>
+        prev
+          ? {
+              ...prev,
+              isFollowedByCurrentUser: !wasFollowing,
+              stats: {
+                ...prev.stats,
+                followersCount: Math.max(
+                  0,
+                  prev.stats.followersCount + (wasFollowing ? -1 : 1),
+                ),
+              },
+            }
+          : null,
+      );
 
-      if (res.success) {
-        setProfile((prev) =>
-          prev
-            ? {
-                ...prev,
-                isFollowedByCurrentUser: !prev.isFollowedByCurrentUser,
-                stats: {
-                  ...prev.stats,
-                  followersCount: prev.isFollowedByCurrentUser
-                    ? prev.stats.followersCount - 1
-                    : prev.stats.followersCount + 1,
-                },
-              }
-            : null,
-        );
-
-        toast.success(
-          profile.isFollowedByCurrentUser ? "Unfollowed" : "Followed",
-        );
-      }
-    } catch (err: any) {
+      await toggleUserFollow(userId, wasFollowing);
+      toast.success(wasFollowing ? "Unfollowed" : "Followed");
+    } catch (err: unknown) {
+      setProfile((prev) =>
+        prev
+          ? {
+              ...prev,
+              isFollowedByCurrentUser: wasFollowing,
+              stats: {
+                ...prev.stats,
+                followersCount: Math.max(
+                  0,
+                  prev.stats.followersCount + (wasFollowing ? 1 : -1),
+                ),
+              },
+            }
+          : null,
+      );
       toast.error(
-        err?.response?.data?.message || "Failed to update follow status",
+        getRequestErrorMessage(err, "Failed to update follow status"),
       );
     } finally {
       setIsFollowLoading(false);
@@ -134,7 +183,7 @@ export default function UserProfilePage() {
     );
   }
 
-  if (error || !profile) {
+  if (error || !displayedProfile) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
@@ -145,7 +194,7 @@ export default function UserProfilePage() {
             {error || "Profile not found"}
           </h1>
           <p className="text-slate-500 mb-6">
-            The profile you're looking for doesn't exist.
+            The profile you&apos;re looking for doesn&apos;t exist.
           </p>
           <Link
             href="/library"
@@ -174,7 +223,7 @@ export default function UserProfilePage() {
       </div>
 
       <ProfileHeader
-        profile={profile}
+        profile={displayedProfile}
         onFollowToggle={handleFollowToggle}
         isFollowLoading={isFollowLoading}
       />
@@ -199,7 +248,7 @@ export default function UserProfilePage() {
                 No posts yet
               </h3>
               <p className="text-slate-500">
-                This user hasn't shared any posts.
+                This user hasn&apos;t shared any posts.
               </p>
             </div>
           )}

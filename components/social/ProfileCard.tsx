@@ -3,12 +3,9 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import {
-  getUserProfile,
-  UserProfile,
-  toggleFollow,
-} from "@/lib/api/social/social.api";
+import { getUserProfile, UserProfile } from "@/lib/api/social/social.api";
 import useAuthStore from "@/stores/user/authStore";
+import { useSocialStore } from "@/stores/social/social.store";
 import { FiUserPlus, FiUserMinus, FiLoader } from "react-icons/fi";
 import toast from "react-hot-toast";
 
@@ -21,7 +18,6 @@ interface ProfileCardProps {
 
 const ProfileCard = ({
   userId,
-  position = "top",
   onClose,
   onMouseEnter,
 }: ProfileCardProps) => {
@@ -29,10 +25,15 @@ const ProfileCard = ({
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isFollowLoading, setIsFollowLoading] = useState(false);
-  const [isFollowing, setIsFollowing] = useState(false);
+  const [isFollowingLocal, setIsFollowingLocal] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
   const closeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const { user: currentUser } = useAuthStore();
+
+  // Subscribe to store for follow status sync
+  const { toggleUserFollow, followStats } = useSocialStore();
+  const storeFollowStatus = followStats.get(userId)?.isFollowedByCurrentUser;
+  const isFollowing = storeFollowStatus ?? isFollowingLocal;
 
   // Fetch profile data on component mount
   useEffect(() => {
@@ -43,7 +44,7 @@ const ProfileCard = ({
         if (response.data?.profile) {
           const profileData = response.data.profile;
           setProfile(profileData);
-          setIsFollowing(profileData.isFollowedByCurrentUser || false);
+          setIsFollowingLocal(profileData.isFollowedByCurrentUser || false);
         }
       } catch (err: unknown) {
         console.error("Failed to fetch profile:", err);
@@ -56,7 +57,7 @@ const ProfileCard = ({
     fetchProfile();
   }, [userId]);
 
-  // Handle follow/unfollow
+  // Handle follow/unfollow - use store action for sync
   const handleFollowToggle = useCallback(async () => {
     if (!currentUser) {
       toast.error("Please login to follow users");
@@ -68,17 +69,30 @@ const ProfileCard = ({
     }
 
     setIsFollowLoading(true);
+    const previousFollowingState = isFollowing;
+
     try {
-      await toggleFollow(userId);
-      setIsFollowing(!isFollowing);
+      // Optimistically update UI
+      setIsFollowingLocal(!isFollowing);
+
+      // Use store action to keep everything in sync
+      await toggleUserFollow(userId, isFollowing);
       toast.success(isFollowing ? "User unfollowed" : "User followed!");
     } catch (error) {
+      // Revert on error
+      setIsFollowingLocal(previousFollowingState);
       console.error("Failed to update follow status:", error);
       toast.error("Failed to update follow status");
     } finally {
       setIsFollowLoading(false);
     }
-  }, [userId, currentUser, profile?.isOwnProfile, isFollowing]);
+  }, [
+    userId,
+    currentUser,
+    profile?.isOwnProfile,
+    isFollowing,
+    toggleUserFollow,
+  ]);
 
   // Handle mouse leave with delay
   const handleMouseLeave = () => {

@@ -7,9 +7,9 @@ import Link from "next/link";
 import {
   getUserProfile,
   UserProfile,
-  toggleFollow,
 } from "@/lib/api/social/social.api";
 import useAuthStore from "@/stores/user/authStore";
+import { useSocialStore } from "@/stores/social/social.store";
 import { FiLoader, FiMessageCircle } from "react-icons/fi";
 import toast from "react-hot-toast";
 
@@ -28,14 +28,13 @@ const ProfileCardHover = ({
   const [isLoading, setIsLoading] = useState(true);
   const [isFollowLoading, setIsFollowLoading] = useState(false);
   const [isFollowing, setIsFollowing] = useState(false);
-  const [mounted, setMounted] = useState(false);
+  const mounted = typeof document !== "undefined";
   const cardRef = useRef<HTMLDivElement>(null);
   const closeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const { user: currentUser } = useAuthStore();
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const { toggleUserFollow, followStats } = useSocialStore();
+  const storeFollowStatus = followStats.get(userId)?.isFollowedByCurrentUser;
+  const isFollowingCurrent = storeFollowStatus ?? isFollowing;
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -68,17 +67,25 @@ const ProfileCardHover = ({
     }
 
     setIsFollowLoading(true);
+    const previousFollowingState = isFollowingCurrent;
     try {
-      await toggleFollow(userId);
-      setIsFollowing(!isFollowing);
-      toast.success(isFollowing ? "User unfollowed" : "User followed!");
+      setIsFollowing(!isFollowingCurrent);
+      await toggleUserFollow(userId, isFollowingCurrent);
+      toast.success(isFollowingCurrent ? "User unfollowed" : "User followed!");
     } catch (error) {
+      setIsFollowing(previousFollowingState);
       console.error("Failed to update follow status:", error);
       toast.error("Failed to update follow status");
     } finally {
       setIsFollowLoading(false);
     }
-  }, [userId, currentUser, profile?.isOwnProfile, isFollowing]);
+  }, [
+    userId,
+    currentUser,
+    profile?.isOwnProfile,
+    isFollowingCurrent,
+    toggleUserFollow,
+  ]);
 
   const handleMouseLeave = () => {
     if (closeTimeoutRef.current) {
@@ -155,14 +162,14 @@ const ProfileCardHover = ({
                   onClick={handleFollowToggle}
                   disabled={isFollowLoading}
                   className={`flex-1 rounded-lg px-4 py-2 text-sm font-bold transition-all duration-200 ${
-                    isFollowing
+                    isFollowingCurrent
                       ? "border-2 border-gray-300 text-gray-900 bg-white hover:bg-gray-50"
                       : "bg-blue-600 text-white hover:bg-blue-700"
                   } ${isFollowLoading ? "opacity-60 cursor-not-allowed" : ""}`}
                 >
                   {isFollowLoading ? (
                     <FiLoader className="h-4 w-4 animate-spin inline" />
-                  ) : isFollowing ? (
+                  ) : isFollowingCurrent ? (
                     "Following"
                   ) : (
                     "Follow"
