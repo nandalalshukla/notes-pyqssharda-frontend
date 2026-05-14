@@ -12,19 +12,19 @@ export default function HomePage() {
       <div className="flex flex-wrap justify-center gap-4 mb-8 animate-fade-in-up">
         <Link
           className="px-8 py-3 rounded-full bg-[#FF9F66] border-2 border-black ring-2 ring-white/30 ring-inset font-bold text-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all cursor-default hover:cursor-pointer"
-          href="/pyqs"
+          href="/library/pyqs"
         >
           PYQs
         </Link>
         <Link
           className="px-8 py-3 rounded-full bg-[#4ADE80] border-2 border-black ring-2 ring-white/30 ring-inset font-bold text-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all cursor-default hover:cursor-pointer"
-          href="/notes"
+          href="/library/notes"
         >
           Notes
         </Link>
         <Link
           className="px-8 py-3 rounded-full bg-[#C084FC] border-2 border-black ring-2 ring-white/30 ring-inset font-bold text-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all cursor-default hover:cursor-pointer"
-          href="/syllabus"
+          href="/library/syllabus"
         >
           Syllabus
         </Link>

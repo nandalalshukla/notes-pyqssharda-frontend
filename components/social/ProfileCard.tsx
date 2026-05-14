@@ -1,9 +1,8 @@
 "use client";
 
-import React, { useEffect, useState, useRef, useCallback } from "react";
+import React, { useEffect, useRef, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { getUserProfile, UserProfile } from "@/lib/api/social/social.api";
 import useAuthStore from "@/stores/user/authStore";
 import { useSocialStore } from "@/stores/social/social.store";
 import { FiUserPlus, FiUserMinus, FiLoader } from "react-icons/fi";
@@ -16,46 +15,51 @@ interface ProfileCardProps {
   onMouseEnter?: () => void;
 }
 
-const ProfileCard = ({
-  userId,
-  onClose,
-  onMouseEnter,
-}: ProfileCardProps) => {
-  const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [isFollowLoading, setIsFollowLoading] = useState(false);
-  const [isFollowingLocal, setIsFollowingLocal] = useState(false);
+const ProfileCard = ({ userId, onClose, onMouseEnter }: ProfileCardProps) => {
   const cardRef = useRef<HTMLDivElement>(null);
   const closeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const { user: currentUser } = useAuthStore();
 
-  // Subscribe to store for follow status sync
-  const { toggleUserFollow, followStats } = useSocialStore();
+  // Subscribe to store for profile, follow status, and loading states
+  const {
+    toggleUserFollow,
+    followStats,
+    userProfiles,
+    isLoadingUserProfiles,
+    fetchUserProfile,
+    error,
+  } = useSocialStore();
+
+  // Get profile from store cache
+  const profile = userProfiles.get(userId);
+  const isLoading = isLoadingUserProfiles.get(userId) ?? true;
+
   const storeFollowStatus = followStats.get(userId)?.isFollowedByCurrentUser;
-  const isFollowing = storeFollowStatus ?? isFollowingLocal;
+  const profileFollowStats = followStats.get(userId);
 
-  // Fetch profile data on component mount
-  useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        setIsLoading(true);
-        const response = await getUserProfile(userId);
-        if (response.data?.profile) {
-          const profileData = response.data.profile;
-          setProfile(profileData);
-          setIsFollowingLocal(profileData.isFollowedByCurrentUser || false);
-        }
-      } catch (err: unknown) {
-        console.error("Failed to fetch profile:", err);
-        setError("Failed to load profile");
-      } finally {
-        setIsLoading(false);
+  // Client-side validation of own profile (backup for API)
+  const isOwnProfileLocal = currentUser?._id === userId;
+
+  // Merge store stats with profile data for consistent display
+  const displayedProfile = profile
+    ? {
+        ...profile,
+        isFollowedByCurrentUser:
+          storeFollowStatus ?? profile.isFollowedByCurrentUser,
+        stats: {
+          ...profile.stats,
+          followersCount:
+            profileFollowStats?.followerCount ?? profile.stats.followersCount,
+          followingCount:
+            profileFollowStats?.followingCount ?? profile.stats.followingCount,
+        },
       }
-    };
+    : null;
 
-    fetchProfile();
-  }, [userId]);
+  // Fetch profile on mount or when userId changes
+  useEffect(() => {
+    fetchUserProfile(userId);
+  }, [userId, fetchUserProfile]);
 
   // Handle follow/unfollow - use store action for sync
   const handleFollowToggle = useCallback(async () => {
@@ -64,33 +68,26 @@ const ProfileCard = ({
       return;
     }
 
-    if (profile?.isOwnProfile) {
+    // Don't allow following own profile (client-side validation is primary)
+    if (isOwnProfileLocal) {
       return;
     }
 
-    setIsFollowLoading(true);
-    const previousFollowingState = isFollowing;
-
     try {
-      // Optimistically update UI
-      setIsFollowingLocal(!isFollowing);
-
-      // Use store action to keep everything in sync
-      await toggleUserFollow(userId, isFollowing);
-      toast.success(isFollowing ? "User unfollowed" : "User followed!");
-    } catch (error) {
-      // Revert on error
-      setIsFollowingLocal(previousFollowingState);
-      console.error("Failed to update follow status:", error);
+      const isCurrentlyFollowing = storeFollowStatus ?? false;
+      await toggleUserFollow(userId, isCurrentlyFollowing);
+      toast.success(
+        isCurrentlyFollowing ? "User unfollowed" : "User followed!",
+      );
+    } catch (err) {
+      console.error("Failed to update follow status:", err);
       toast.error("Failed to update follow status");
-    } finally {
-      setIsFollowLoading(false);
     }
   }, [
     userId,
     currentUser,
-    profile?.isOwnProfile,
-    isFollowing,
+    isOwnProfileLocal,
+    storeFollowStatus,
     toggleUserFollow,
   ]);
 
@@ -166,20 +163,17 @@ const ProfileCard = ({
                 </div>
               </div>
 
-              {/* Follow Button */}
-              {!profile.isOwnProfile && (
+              {/* Follow Button - Skip if own profile (client-side or API) */}
+              {!isOwnProfileLocal && !displayedProfile?.isOwnProfile && (
                 <button
                   onClick={handleFollowToggle}
-                  disabled={isFollowLoading}
                   className={`mt-2 flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition-all duration-200 ${
-                    isFollowing
+                    storeFollowStatus
                       ? "bg-gray-100 text-gray-900 hover:bg-gray-200 border border-gray-300"
                       : "bg-blue-600 text-white hover:bg-blue-700 active:scale-95 shadow-sm hover:shadow-md"
-                  } ${isFollowLoading ? "opacity-60 cursor-not-allowed" : ""}`}
+                  }`}
                 >
-                  {isFollowLoading ? (
-                    <FiLoader className="h-4 w-4 animate-spin" />
-                  ) : isFollowing ? (
+                  {storeFollowStatus ? (
                     <>
                       <FiUserMinus className="h-4 w-4" />
                       <span>Following</span>
@@ -227,19 +221,19 @@ const ProfileCard = ({
             <div className="mb-4 grid grid-cols-3 gap-0 rounded-lg bg-gray-50 border border-gray-100 overflow-hidden">
               <div className="px-3 py-3 text-center border-r border-gray-200 last:border-r-0 hover:bg-gray-100 transition-colors">
                 <p className="text-sm font-bold text-gray-900">
-                  {profile.stats.postsCount}
+                  {displayedProfile?.stats.postsCount}
                 </p>
                 <p className="text-xs text-gray-600 mt-1">Posts</p>
               </div>
               <div className="px-3 py-3 text-center border-r border-gray-200 last:border-r-0 hover:bg-gray-100 transition-colors">
                 <p className="text-sm font-bold text-gray-900">
-                  {profile.stats.followersCount}
+                  {displayedProfile?.stats.followersCount}
                 </p>
                 <p className="text-xs text-gray-600 mt-1">Followers</p>
               </div>
               <div className="px-3 py-3 text-center hover:bg-gray-100 transition-colors">
                 <p className="text-sm font-bold text-gray-900">
-                  {profile.stats.followingCount}
+                  {displayedProfile?.stats.followingCount}
                 </p>
                 <p className="text-xs text-gray-600 mt-1">Following</p>
               </div>

@@ -2,10 +2,6 @@
 
 import React, { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import {
-  getUserProfile,
-  UserProfile,
-} from "@/lib/api/social/social.api";
 import useAuthStore from "@/stores/user/authStore";
 import { useSocialStore } from "@/stores/social/social.store";
 import PostCard from "@/components/social/PostCard";
@@ -14,27 +10,6 @@ import { FeedLoadingState } from "@/components/social/LoadingSkeletons";
 import toast from "react-hot-toast";
 import { FiArrowLeft } from "react-icons/fi";
 import Link from "next/link";
-
-const getRequestErrorMessage = (error: unknown, fallback: string) => {
-  if (
-    typeof error === "object" &&
-    error !== null &&
-    "response" in error &&
-    typeof error.response === "object" &&
-    error.response !== null &&
-    "data" in error.response &&
-    typeof error.response.data === "object" &&
-    error.response.data !== null &&
-    "message" in error.response.data &&
-    typeof error.response.data.message === "string"
-  ) {
-    return error.response.data.message;
-  }
-
-  if (error instanceof Error) return error.message;
-
-  return fallback;
-};
 
 export default function UserProfilePage() {
   const params = useParams();
@@ -47,23 +22,34 @@ export default function UserProfilePage() {
     userPostsTotalPages,
     isLoadingUserPosts,
     fetchUserPosts,
+    fetchUserProfile,
     toggleUserFollow,
     followStats,
+    userProfiles,
+    isLoadingUserProfiles,
   } = useSocialStore();
 
-  const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
   const [isFollowLoading, setIsFollowLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+
+  // Get profile from store cache
+  const profile = userProfiles.get(userId);
+  const isLoadingProfile = isLoadingUserProfiles.get(userId) ?? true;
 
   const posts = userPosts.get(userId) || [];
   const currentPage = userPostsPage.get(userId) || 1;
   const totalPages = userPostsTotalPages.get(userId) || 1;
   const isPostsLoading = isLoadingUserPosts.get(userId) ?? true;
   const profileFollowStats = followStats.get(userId);
+
+  // Client-side validation of own profile (backup for API)
+  const isOwnProfileLocal = currentUser?._id === userId;
+
+  // Use profile from store with followStats overrides
   const displayedProfile = profile
     ? {
         ...profile,
+        // Override with client-side validation as backup
+        isOwnProfile: isOwnProfileLocal || profile.isOwnProfile,
         isFollowedByCurrentUser:
           profileFollowStats?.isFollowedByCurrentUser ??
           profile.isFollowedByCurrentUser,
@@ -78,38 +64,11 @@ export default function UserProfilePage() {
     : null;
 
   useEffect(() => {
-    const fetchInitialData = async () => {
-      setIsLoading(true);
-      try {
-        // Fetch profile and posts in parallel
-        const profilePromise = getUserProfile(userId);
-        const postsPromise = fetchUserPosts(userId, 1);
-
-        const [profileRes] = await Promise.all([profilePromise, postsPromise]);
-
-        if (profileRes.success) {
-          setProfile(profileRes.data?.profile || null);
-        } else {
-          throw new Error(profileRes.message || "Failed to load profile");
-        }
-
-        setError(null);
-      } catch (err: unknown) {
-        const errorMsg = getRequestErrorMessage(
-          err,
-          "Failed to load profile data",
-        );
-        setError(errorMsg);
-        toast.error(errorMsg);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
+    // Fetch profile and posts in parallel from store
     if (userId) {
-      fetchInitialData();
+      Promise.all([fetchUserProfile(userId), fetchUserPosts(userId, 1)]);
     }
-  }, [userId, fetchUserPosts]);
+  }, [userId, fetchUserProfile, fetchUserPosts]);
 
   const handleLoadMore = async () => {
     if (currentPage >= totalPages || isPostsLoading) return;
@@ -175,7 +134,7 @@ export default function UserProfilePage() {
     }
   };
 
-  if (isLoading) {
+  if (isLoadingProfile && !displayedProfile) {
     return (
       <div className="min-h-screen bg-white">
         <FeedLoadingState />
@@ -183,7 +142,7 @@ export default function UserProfilePage() {
     );
   }
 
-  if (error || !displayedProfile) {
+  if (!displayedProfile) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
@@ -191,7 +150,7 @@ export default function UserProfilePage() {
             <span className="text-4xl">⚠️</span>
           </div>
           <h1 className="text-2xl font-bold text-slate-900 mb-3">
-            {error || "Profile not found"}
+            Profile not found
           </h1>
           <p className="text-slate-500 mb-6">
             The profile you&apos;re looking for doesn&apos;t exist.

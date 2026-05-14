@@ -5,6 +5,7 @@ import {
   deletePost,
   getFeed,
   getUserPosts,
+  getUserProfile,
   getComments,
   getCommentReplies,
   createComment,
@@ -22,6 +23,7 @@ import {
   FollowStats,
   Notification,
   User,
+  UserProfile,
 } from "@/lib/api/social/social.api";
 import { getErrorMessage } from "@/lib/utils/errorHandler";
 
@@ -63,6 +65,8 @@ interface FollowState {
   following: Map<string, User[]>;
   isLoadingFollowers: Map<string, boolean>;
   isLoadingFollowing: Map<string, boolean>;
+  userProfiles: Map<string, UserProfile>;
+  isLoadingUserProfiles: Map<string, boolean>;
 }
 
 interface SocialStore
@@ -97,9 +101,13 @@ interface SocialStore
   toggleCommentLike: (commentId: string) => Promise<void>;
 
   // Follow actions
-  toggleUserFollow: (userId: string, currentFollowing?: boolean) => Promise<void>;
+  toggleUserFollow: (
+    userId: string,
+    currentFollowing?: boolean,
+  ) => Promise<void>;
   fetchUserFollowers: (userId: string, page?: number) => Promise<void>;
   fetchUserFollowing: (userId: string, page?: number) => Promise<void>;
+  fetchUserProfile: (userId: string) => Promise<void>;
 
   // Notifications actions
   fetchNotifications: (page?: number, read?: "true" | "false") => Promise<void>;
@@ -135,6 +143,7 @@ const initialState: Omit<
     toggleUserFollow: unknown;
     fetchUserFollowers: unknown;
     fetchUserFollowing: unknown;
+    fetchUserProfile: unknown;
     fetchNotifications: unknown;
     markAllAsRead: unknown;
     markOneAsRead: unknown;
@@ -171,6 +180,8 @@ const initialState: Omit<
   following: new Map(),
   isLoadingFollowers: new Map(),
   isLoadingFollowing: new Map(),
+  userProfiles: new Map(),
+  isLoadingUserProfiles: new Map(),
 
   // General
   isLoading: false,
@@ -872,7 +883,9 @@ export const useSocialStore = create<SocialStore>((set, get) => ({
     const previousFeed = get().feed;
     const previousUserPosts = get().userPosts;
     const optimisticFollowing = !(
-      currentFollowing ?? previousStats?.isFollowedByCurrentUser ?? false
+      currentFollowing ??
+      previousStats?.isFollowedByCurrentUser ??
+      false
     );
 
     set((state) => {
@@ -985,6 +998,51 @@ export const useSocialStore = create<SocialStore>((set, get) => ({
       set((state) => ({
         error: getErrorMessage(error) || "Failed to fetch following",
         isLoadingFollowing: new Map(state.isLoadingFollowing).set(
+          userId,
+          false,
+        ),
+      }));
+    }
+  },
+
+  fetchUserProfile: async (userId: string) => {
+    set((state) => ({
+      isLoadingUserProfiles: new Map(state.isLoadingUserProfiles).set(
+        userId,
+        true,
+      ),
+      error: null,
+    }));
+    try {
+      const res = await getUserProfile(userId);
+      const profile = res.data?.profile;
+      if (profile) {
+        set((state) => {
+          const nextProfiles = new Map(state.userProfiles);
+          nextProfiles.set(userId, profile);
+
+          // Update followStats with data from profile
+          const nextFollowStats = new Map(state.followStats);
+          nextFollowStats.set(userId, {
+            followerCount: profile.stats.followersCount,
+            followingCount: profile.stats.followingCount,
+            isFollowedByCurrentUser: profile.isFollowedByCurrentUser,
+          });
+
+          return {
+            userProfiles: nextProfiles,
+            followStats: nextFollowStats,
+            isLoadingUserProfiles: new Map(state.isLoadingUserProfiles).set(
+              userId,
+              false,
+            ),
+          };
+        });
+      }
+    } catch (error: unknown) {
+      set((state) => ({
+        error: getErrorMessage(error) || "Failed to fetch profile",
+        isLoadingUserProfiles: new Map(state.isLoadingUserProfiles).set(
           userId,
           false,
         ),
