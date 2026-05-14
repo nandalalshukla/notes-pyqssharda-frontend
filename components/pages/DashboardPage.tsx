@@ -151,7 +151,9 @@ export default function DashboardPage({
             onAdd={() => openModal("pyq")}
             onEdit={(item) => openModal("pyq", item)}
             onDelete={(id) => handleDelete("pyq", id)}
-            onViewFile={(url) => window.open(url, "_blank", "noopener,noreferrer")}
+            onViewFile={(url) =>
+              window.open(url, "_blank", "noopener,noreferrer")
+            }
             type="pyq"
             color="#FF9F66"
           />
@@ -163,7 +165,9 @@ export default function DashboardPage({
             onAdd={() => openModal("note")}
             onEdit={(item) => openModal("note", item)}
             onDelete={(id) => handleDelete("note", id)}
-            onViewFile={(url) => window.open(url, "_blank", "noopener,noreferrer")}
+            onViewFile={(url) =>
+              window.open(url, "_blank", "noopener,noreferrer")
+            }
             type="note"
             color="#4ADE80"
           />
@@ -175,7 +179,9 @@ export default function DashboardPage({
             onAdd={() => openModal("syllabus")}
             onEdit={(item) => openModal("syllabus", item)}
             onDelete={(id) => handleDelete("syllabus", id)}
-            onViewFile={(url) => window.open(url, "_blank", "noopener,noreferrer")}
+            onViewFile={(url) =>
+              window.open(url, "_blank", "noopener,noreferrer")
+            }
             type="syllabus"
             color="#C084FC"
           />
@@ -216,7 +222,6 @@ export default function DashboardPage({
           </div>
         </div>
       )}
-
     </div>
   );
 }

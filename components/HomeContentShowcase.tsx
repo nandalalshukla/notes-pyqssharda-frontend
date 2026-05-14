@@ -172,7 +172,6 @@ export default function HomeContentShowcase() {
           <ContentCard title="Syllabus" items={syllabus} type="syllabus" />
         </div>
       </div>
-
     </>
   );
 }

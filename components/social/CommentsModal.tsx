@@ -425,9 +425,11 @@ export default function CommentsModal({
         cancelText="Cancel"
         isDangerous={true}
         isLoading={isDeleting}
-        onConfirm={() =>
-          showDeleteConfirm ? confirmDeleteComment(showDeleteConfirm) : null
-        }
+        onConfirm={() => {
+          if (showDeleteConfirm) {
+            confirmDeleteComment(showDeleteConfirm);
+          }
+        }}
         onCancel={() => setShowDeleteConfirm(null)}
       />
     </Transition>
