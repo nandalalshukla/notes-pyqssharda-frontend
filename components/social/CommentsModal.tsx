@@ -510,7 +510,7 @@ export default function CommentsModal({
     const isCommentAuthor = user?._id === authorId;
 
     return (
-        <div key={comment._id} className="flex gap-3 group/comment">
+      <div key={comment._id} className="flex gap-3 group/comment">
         {/* Avatar */}
         <button
           type="button"
@@ -790,7 +790,7 @@ export default function CommentsModal({
                         user ? "Add a comment..." : "Login to comment"
                       }
                       disabled={!user || isSubmitting}
-                      className="flex-1 rounded-full bg-gray-100 px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-colors disabled:opacity-50"
+                      className="flex-1 rounded-full bg-gray-100 px-4 py-2.5 text-sm text-gray-900 outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-colors disabled:opacity-50"
                     />
                     <button
                       type="submit"

@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useEffect, useState, useRef, useCallback } from "react";
-import { createPortal } from "react-dom";
 import Image from "next/image";
 import Link from "next/link";
 import { getUserProfile, UserProfile } from "@/lib/api/social/social.api";
@@ -12,22 +11,21 @@ import toast from "react-hot-toast";
 
 interface ProfileCardHoverProps {
   userId: string;
-  anchorRect?: DOMRect | null;
   onClose?: () => void;
   onMouseEnter?: () => void;
+  className?: string;
 }
 
 const ProfileCardHover = ({
   userId,
-  anchorRect,
   onClose,
   onMouseEnter,
+  className = "",
 }: ProfileCardHoverProps) => {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isFollowLoading, setIsFollowLoading] = useState(false);
   const [isFollowing, setIsFollowing] = useState(false);
-  const mounted = typeof document !== "undefined";
   const cardRef = useRef<HTMLDivElement>(null);
   const closeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const { user: currentUser } = useAuthStore();
@@ -104,57 +102,12 @@ const ProfileCardHover = ({
     onMouseEnter?.();
   };
 
-  const computedPositionStyle = (() => {
-    if (!anchorRect || typeof window === "undefined") {
-      return {
-        position: "fixed" as const,
-        top: "50%",
-        left: "50%",
-        transform: "translate(-50%, -50%)",
-      };
-    }
-
-    const cardWidth = 320;
-    const cardHeight = 384;
-    const margin = 12;
-    const offset = 8;
-
-    let left = anchorRect.left;
-    let top = anchorRect.bottom + offset;
-    let translateY = "translateY(0)";
-
-    if (left + cardWidth > window.innerWidth - margin) {
-      left = window.innerWidth - cardWidth - margin;
-    }
-    if (left < margin) {
-      left = margin;
-    }
-
-    if (top + cardHeight > window.innerHeight - margin) {
-      top = anchorRect.top - offset;
-      translateY = "translateY(-100%)";
-    }
-
-    return {
-      position: "fixed" as const,
-      top,
-      left,
-      transform: translateY,
-    };
-  })();
-
-  const profileCard = (
+  return (
     <div
       ref={cardRef}
       onMouseEnter={handleMouseEnterLocal}
       onMouseLeave={handleMouseLeave}
-      className="w-80 bg-white border border-gray-200 rounded-lg shadow-2xl animate-in fade-in zoom-in-95 duration-200 overflow-hidden"
-      style={{
-        ...computedPositionStyle,
-        zIndex: 9999,
-        backgroundColor: "#FFFFFF",
-        opacity: 1,
-      }}
+      className={`w-80 bg-white border border-gray-200 rounded-lg shadow-2xl animate-in fade-in zoom-in-95 duration-200 overflow-hidden z-20 ${className}`}
     >
       {isLoading ? (
         <div className="flex h-96 items-center justify-center bg-white">
@@ -273,10 +226,6 @@ const ProfileCardHover = ({
       ) : null}
     </div>
   );
-
-  if (!mounted) return null;
-
-  return createPortal(profileCard, document.body);
 };
 
 export default ProfileCardHover;

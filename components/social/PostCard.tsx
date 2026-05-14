@@ -50,9 +50,6 @@ export default function PostCard({ post }: PostCardProps) {
   const [isFollowLoading, setIsFollowLoading] = useState(false);
   const [showLikesModal, setShowLikesModal] = useState(false);
   const [showProfileHover, setShowProfileHover] = useState(false);
-  const [profileAnchorRect, setProfileAnchorRect] = useState<DOMRect | null>(
-    null,
-  );
   const [hoverCloseTimer, setHoverCloseTimer] = useState<NodeJS.Timeout | null>(
     null,
   );
@@ -198,18 +195,12 @@ export default function PostCard({ post }: PostCardProps) {
     }
   }, [authorId, router]);
 
-  const openProfileHover = useCallback(
-    (anchorRect?: DOMRect | null) => {
-      if (hoverCloseTimer) {
-        clearTimeout(hoverCloseTimer);
-      }
-      if (anchorRect !== undefined) {
-        setProfileAnchorRect(anchorRect);
-      }
-      setShowProfileHover(true);
-    },
-    [hoverCloseTimer],
-  );
+  const openProfileHover = useCallback(() => {
+    if (hoverCloseTimer) {
+      clearTimeout(hoverCloseTimer);
+    }
+    setShowProfileHover(true);
+  }, [hoverCloseTimer]);
 
   const scheduleProfileHoverClose = useCallback(() => {
     if (hoverCloseTimer) {
@@ -268,15 +259,13 @@ export default function PostCard({ post }: PostCardProps) {
 
   return (
     <>
-      <div className="bg-white border-gray-600 border-2 rounded-xl border border-gray-200 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden">
+      <div className="bg-white border-gray-600 border-2 rounded-xl border border-gray-200 shadow-sm hover:shadow-lg transition-all duration-300">
         {/* Header Section */}
         <div className="px-5 pt-4 pb-3 border-b border-gray-100 flex items-center justify-between">
           <div className="relative flex items-center gap-3 flex-1 min-w-0">
             <span
               onClick={handleViewProfile}
-              onMouseEnter={(event) =>
-                openProfileHover(event.currentTarget.getBoundingClientRect())
-              }
+              onMouseEnter={openProfileHover}
               onMouseLeave={scheduleProfileHoverClose}
               className="cursor-pointer flex-shrink-0"
             >
@@ -293,10 +282,8 @@ export default function PostCard({ post }: PostCardProps) {
             </span>
             <div className="min-w-0 flex-1">
               <span
-                className="inline-flex w-fit flex-col min-w-0"
-                onMouseEnter={(event) =>
-                  openProfileHover(event.currentTarget.getBoundingClientRect())
-                }
+                className="relative inline-flex w-fit flex-col min-w-0"
+                onMouseEnter={openProfileHover}
                 onMouseLeave={scheduleProfileHoverClose}
               >
                 <p
@@ -308,18 +295,17 @@ export default function PostCard({ post }: PostCardProps) {
                 <p className="text-xs text-gray-500">
                   {formatDate(currentPost.createdAt)}
                 </p>
+
+                {showProfileHover && authorId && (
+                  <ProfileCardHover
+                    userId={authorId}
+                    className="absolute left-0 top-full mt-2 z-30"
+                    onClose={() => setShowProfileHover(false)}
+                    onMouseEnter={openProfileHover}
+                  />
+                )}
               </span>
             </div>
-
-            {/* Profile Card Portal - positioned absolutely at top level */}
-            {showProfileHover && authorId && (
-              <ProfileCardHover
-                userId={authorId}
-                anchorRect={profileAnchorRect}
-                onClose={() => setShowProfileHover(false)}
-                onMouseEnter={() => openProfileHover(profileAnchorRect)}
-              />
-            )}
           </div>
 
           {/* More Menu */}

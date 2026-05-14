@@ -545,13 +545,29 @@ export const useSocialStore = create<SocialStore>((set, get) => ({
       const newComment = res.data?.comment;
       if (newComment) {
         set((state) => {
+          const updatePostCount = (post: Post) => ({
+            ...post,
+            commentCount: (post.commentCount || 0) + 1,
+          });
+
           if (parentComment) {
             const commentReplies = state.replies.get(parentComment) || [];
             const updatedReplies = new Map(state.replies).set(parentComment, [
               ...commentReplies,
               newComment,
             ]);
-            return { replies: updatedReplies, isLoading: false };
+            return {
+              replies: updatedReplies,
+              feed: state.feed.map((post) =>
+                post._id === postId ? updatePostCount(post) : post,
+              ),
+              userPosts: updatePostEverywhere(
+                state.userPosts,
+                postId,
+                updatePostCount,
+              ),
+              isLoading: false,
+            };
           }
 
           const postComments = state.comments.get(postId) || [];
@@ -560,6 +576,14 @@ export const useSocialStore = create<SocialStore>((set, get) => ({
               newComment,
               ...postComments,
             ]),
+            feed: state.feed.map((post) =>
+              post._id === postId ? updatePostCount(post) : post,
+            ),
+            userPosts: updatePostEverywhere(
+              state.userPosts,
+              postId,
+              updatePostCount,
+            ),
             isLoading: false,
           };
         });
