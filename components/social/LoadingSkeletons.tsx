@@ -76,3 +76,55 @@ export function FeedLoadingState() {
     </div>
   );
 }
+
+export function ProfileHeaderSkeleton() {
+  return (
+    <div className="bg-white border-b border-slate-200">
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-8 animate-pulse">
+          <div className="w-32 h-32 rounded-xl bg-slate-200" />
+          <div className="flex-1 min-w-0 w-full">
+            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
+              <div className="w-full">
+                <div className="h-8 bg-slate-200 rounded w-48 mb-3" />
+                <div className="h-4 bg-slate-200 rounded w-32" />
+              </div>
+              <div className="h-10 w-28 bg-slate-200 rounded-lg" />
+            </div>
+
+            <div className="h-4 bg-slate-200 rounded w-2/3 mb-6" />
+
+            <div className="flex gap-8 mb-8 py-6 border-y border-slate-200">
+              {[1, 2, 3].map((i) => (
+                <div key={i}>
+                  <div className="h-6 bg-slate-200 rounded w-12 mb-2" />
+                  <div className="h-3 bg-slate-200 rounded w-16" />
+                </div>
+              ))}
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="h-4 bg-slate-200 rounded w-full" />
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export function ProfilePageLoadingState() {
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <ProfileHeaderSkeleton />
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        <div className="mb-8">
+          <div className="h-7 bg-slate-200 rounded w-28 mb-6 animate-pulse" />
+          <FeedLoadingState />
+        </div>
+      </div>
+    </div>
+  );
+}

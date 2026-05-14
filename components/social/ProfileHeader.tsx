@@ -24,7 +24,7 @@ export default function ProfileHeader({
 }: ProfileHeaderProps) {
   return (
     <div className="bg-white border-b border-slate-200">
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-8">
           {/* Profile Picture */}
           <div className="shrink-0">

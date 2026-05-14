@@ -6,7 +6,7 @@ import useAuthStore from "@/stores/user/authStore";
 import { useSocialStore } from "@/stores/social/social.store";
 import PostCard from "@/components/social/PostCard";
 import ProfileHeader from "@/components/social/ProfileHeader";
-import { FeedLoadingState } from "@/components/social/LoadingSkeletons";
+import { ProfilePageLoadingState } from "@/components/social/LoadingSkeletons";
 import toast from "react-hot-toast";
 import { FiArrowLeft } from "react-icons/fi";
 import Link from "next/link";
@@ -103,8 +103,8 @@ export default function UserProfilePage() {
 
   if (isLoadingProfile && !displayedProfile) {
     return (
-      <div className="min-h-screen bg-white">
-        <FeedLoadingState />
+      <div className="min-h-screen bg-gray-50">
+        <ProfilePageLoadingState />
       </div>
     );
   }
@@ -135,9 +135,9 @@ export default function UserProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-gray-50">
       <div className="sticky top-0 z-10 bg-white border-b border-slate-200">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <button
             onClick={() => router.back()}
             className="flex items-center gap-2 text-slate-600 hover:text-slate-900 font-medium transition-colors"
@@ -154,11 +154,11 @@ export default function UserProfilePage() {
         isFollowLoading={isFollowLoading}
       />
 
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <div className="mb-12">
           <h2 className="text-3xl font-bold text-slate-900 mb-8">Posts</h2>
           {isPostsLoading && posts.length === 0 ? (
-            <FeedLoadingState />
+            <ProfilePageLoadingState />
           ) : posts.length > 0 ? (
             <div className="space-y-6">
               {posts.map((post) => (
