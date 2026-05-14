@@ -92,43 +92,10 @@ export default function UserProfilePage() {
     setIsFollowLoading(true);
     const wasFollowing = displayedProfile.isFollowedByCurrentUser;
     try {
-      setProfile((prev) =>
-        prev
-          ? {
-              ...prev,
-              isFollowedByCurrentUser: !wasFollowing,
-              stats: {
-                ...prev.stats,
-                followersCount: Math.max(
-                  0,
-                  prev.stats.followersCount + (wasFollowing ? -1 : 1),
-                ),
-              },
-            }
-          : null,
-      );
-
       await toggleUserFollow(userId, wasFollowing);
       toast.success(wasFollowing ? "Unfollowed" : "Followed");
     } catch (err: unknown) {
-      setProfile((prev) =>
-        prev
-          ? {
-              ...prev,
-              isFollowedByCurrentUser: wasFollowing,
-              stats: {
-                ...prev.stats,
-                followersCount: Math.max(
-                  0,
-                  prev.stats.followersCount + (wasFollowing ? 1 : -1),
-                ),
-              },
-            }
-          : null,
-      );
-      toast.error(
-        getRequestErrorMessage(err, "Failed to update follow status"),
-      );
+      toast.error("Failed to update follow status");
     } finally {
       setIsFollowLoading(false);
     }
