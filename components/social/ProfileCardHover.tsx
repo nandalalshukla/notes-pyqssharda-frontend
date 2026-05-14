@@ -4,23 +4,22 @@ import React, { useEffect, useState, useRef, useCallback } from "react";
 import { createPortal } from "react-dom";
 import Image from "next/image";
 import Link from "next/link";
-import {
-  getUserProfile,
-  UserProfile,
-} from "@/lib/api/social/social.api";
+import { getUserProfile, UserProfile } from "@/lib/api/social/social.api";
 import useAuthStore from "@/stores/user/authStore";
 import { useSocialStore } from "@/stores/social/social.store";
-import { FiLoader, FiMessageCircle } from "react-icons/fi";
+import { FiLoader } from "react-icons/fi";
 import toast from "react-hot-toast";
 
 interface ProfileCardHoverProps {
   userId: string;
+  anchorRect?: DOMRect | null;
   onClose?: () => void;
   onMouseEnter?: () => void;
 }
 
 const ProfileCardHover = ({
   userId,
+  anchorRect,
   onClose,
   onMouseEnter,
 }: ProfileCardHoverProps) => {
@@ -105,6 +104,45 @@ const ProfileCardHover = ({
     onMouseEnter?.();
   };
 
+  const computedPositionStyle = (() => {
+    if (!anchorRect || typeof window === "undefined") {
+      return {
+        position: "fixed" as const,
+        top: "50%",
+        left: "50%",
+        transform: "translate(-50%, -50%)",
+      };
+    }
+
+    const cardWidth = 320;
+    const cardHeight = 384;
+    const margin = 12;
+    const offset = 8;
+
+    let left = anchorRect.left;
+    let top = anchorRect.bottom + offset;
+    let translateY = "translateY(0)";
+
+    if (left + cardWidth > window.innerWidth - margin) {
+      left = window.innerWidth - cardWidth - margin;
+    }
+    if (left < margin) {
+      left = margin;
+    }
+
+    if (top + cardHeight > window.innerHeight - margin) {
+      top = anchorRect.top - offset;
+      translateY = "translateY(-100%)";
+    }
+
+    return {
+      position: "fixed" as const,
+      top,
+      left,
+      transform: translateY,
+    };
+  })();
+
   const profileCard = (
     <div
       ref={cardRef}
@@ -112,10 +150,7 @@ const ProfileCardHover = ({
       onMouseLeave={handleMouseLeave}
       className="w-80 bg-white border border-gray-200 rounded-lg shadow-2xl animate-in fade-in zoom-in-95 duration-200 overflow-hidden"
       style={{
-        position: "fixed",
-        top: "50%",
-        left: "50%",
-        transform: "translate(-50%, -50%)",
+        ...computedPositionStyle,
         zIndex: 9999,
         backgroundColor: "#FFFFFF",
         opacity: 1,
@@ -224,33 +259,14 @@ const ProfileCardHover = ({
             </div>
 
             {/* Action Buttons */}
-            <div className="grid grid-cols-2 gap-2 mb-4">
-              {!profile.isOwnProfile ? (
-                <>
-                  <button
-                    disabled={isFollowLoading}
-                    className="flex items-center justify-center gap-1 py-2 px-3 bg-blue-600 text-white rounded-lg font-semibold text-sm hover:bg-blue-700 transition-colors disabled:opacity-60"
-                  >
-                    <FiMessageCircle className="h-4 w-4" />
-                    Message
-                  </button>
-                  <Link
-                    href={`/profile/${profile._id}`}
-                    onClick={() => onClose?.()}
-                    className="flex items-center justify-center py-2 px-3 border-2 border-gray-300 text-gray-900 rounded-lg font-semibold text-sm hover:bg-gray-50 transition-colors"
-                  >
-                    Profile
-                  </Link>
-                </>
-              ) : (
-                <Link
-                  href={`/profile/${profile._id}`}
-                  onClick={() => onClose?.()}
-                  className="col-span-2 flex items-center justify-center py-2 px-3 bg-gray-900 text-white rounded-lg font-semibold text-sm hover:bg-gray-800 transition-colors"
-                >
-                  View Profile
-                </Link>
-              )}
+            <div className="mb-4">
+              <Link
+                href={`/profile/${profile._id}`}
+                onClick={() => onClose?.()}
+                className="flex items-center justify-center py-2 px-3 border-2 border-gray-300 text-gray-900 rounded-lg font-semibold text-sm hover:bg-gray-50 transition-colors"
+              >
+                View Profile
+              </Link>
             </div>
           </div>
         </div>

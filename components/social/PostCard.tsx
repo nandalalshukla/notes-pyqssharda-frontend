@@ -50,6 +50,9 @@ export default function PostCard({ post }: PostCardProps) {
   const [isFollowLoading, setIsFollowLoading] = useState(false);
   const [showLikesModal, setShowLikesModal] = useState(false);
   const [showProfileHover, setShowProfileHover] = useState(false);
+  const [profileAnchorRect, setProfileAnchorRect] = useState<DOMRect | null>(
+    null,
+  );
   const [hoverCloseTimer, setHoverCloseTimer] = useState<NodeJS.Timeout | null>(
     null,
   );
@@ -195,12 +198,18 @@ export default function PostCard({ post }: PostCardProps) {
     }
   }, [authorId, router]);
 
-  const openProfileHover = useCallback(() => {
-    if (hoverCloseTimer) {
-      clearTimeout(hoverCloseTimer);
-    }
-    setShowProfileHover(true);
-  }, [hoverCloseTimer]);
+  const openProfileHover = useCallback(
+    (anchorRect?: DOMRect | null) => {
+      if (hoverCloseTimer) {
+        clearTimeout(hoverCloseTimer);
+      }
+      if (anchorRect !== undefined) {
+        setProfileAnchorRect(anchorRect);
+      }
+      setShowProfileHover(true);
+    },
+    [hoverCloseTimer],
+  );
 
   const scheduleProfileHoverClose = useCallback(() => {
     if (hoverCloseTimer) {
@@ -263,10 +272,11 @@ export default function PostCard({ post }: PostCardProps) {
         {/* Header Section */}
         <div className="px-5 pt-4 pb-3 border-b border-gray-100 flex items-center justify-between">
           <div className="relative flex items-center gap-3 flex-1 min-w-0">
-            {/* Profile Image - Hover Trigger */}
-            <div
+            <span
               onClick={handleViewProfile}
-              onMouseEnter={openProfileHover}
+              onMouseEnter={(event) =>
+                openProfileHover(event.currentTarget.getBoundingClientRect())
+              }
               onMouseLeave={scheduleProfileHoverClose}
               className="cursor-pointer flex-shrink-0"
             >
@@ -280,31 +290,34 @@ export default function PostCard({ post }: PostCardProps) {
                 height={44}
                 className="rounded-full object-cover"
               />
-            </div>
-
-            {/* Username & Date - Username is also a hover trigger */}
-            <div
-              className="min-w-0 flex-1"
-              onMouseEnter={openProfileHover}
-              onMouseLeave={scheduleProfileHoverClose}
-            >
-              <p
-                className="font-semibold text-gray-900 text-sm truncate cursor-pointer hover:underline underline-offset-2 decoration-2 transition-opacity"
-                onClick={handleViewProfile}
+            </span>
+            <div className="min-w-0 flex-1">
+              <span
+                className="inline-flex w-fit flex-col min-w-0"
+                onMouseEnter={(event) =>
+                  openProfileHover(event.currentTarget.getBoundingClientRect())
+                }
+                onMouseLeave={scheduleProfileHoverClose}
               >
-                {(currentPost.author as { username?: string })?.username}
-              </p>
-              <p className="text-xs text-gray-500">
-                {formatDate(currentPost.createdAt)}
-              </p>
+                <p
+                  className="font-semibold text-gray-900 text-sm truncate cursor-pointer hover:underline underline-offset-2 decoration-2 transition-opacity"
+                  onClick={handleViewProfile}
+                >
+                  {(currentPost.author as { username?: string })?.username}
+                </p>
+                <p className="text-xs text-gray-500">
+                  {formatDate(currentPost.createdAt)}
+                </p>
+              </span>
             </div>
 
             {/* Profile Card Portal - positioned absolutely at top level */}
             {showProfileHover && authorId && (
               <ProfileCardHover
                 userId={authorId}
+                anchorRect={profileAnchorRect}
                 onClose={() => setShowProfileHover(false)}
-                onMouseEnter={openProfileHover}
+                onMouseEnter={() => openProfileHover(profileAnchorRect)}
               />
             )}
           </div>

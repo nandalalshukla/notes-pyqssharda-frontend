@@ -15,13 +15,12 @@ import {
   FiEdit2,
   FiTrash2,
   FiLoader,
-  FiLogIn,
-  FiCornerDownRight,
 } from "react-icons/fi";
 import { FaHeart } from "react-icons/fa";
 import toast from "react-hot-toast";
 import Image from "next/image";
 import { useBodyScroll } from "@/hooks/useBodyScroll";
+import ConfirmationDialog from "@/components/shared/ConfirmationDialog";
 
 interface CommentsModalProps {
   postId: string;
@@ -46,20 +45,13 @@ export default function CommentsModal({
     updateComment,
     removeComment,
     toggleCommentLike,
-    fetchCommentReplies,
-    replies,
-    isLoadingReplies,
   } = useSocialStore();
 
   const [newCommentText, setNewCommentText] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
   const [editText, setEditText] = useState("");
-  const [replyingToId, setReplyingToId] = useState<string | null>(null);
-  const [replyText, setReplyText] = useState("");
-  const [expandedReplies, setExpandedReplies] = useState<Set<string>>(
-    new Set(),
-  );
+  const [showCommentMenu, setShowCommentMenu] = useState<string | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(
     null,
   );
@@ -130,7 +122,11 @@ export default function CommentsModal({
     [user, toggleCommentLike, router],
   );
 
-  const handleDeleteComment = useCallback(
+  const handleDeleteComment = useCallback(async (commentId: string) => {
+    setShowDeleteConfirm(commentId);
+  }, []);
+
+  const confirmDeleteComment = useCallback(
     async (commentId: string) => {
       setIsDeleting(true);
       try {
@@ -146,24 +142,28 @@ export default function CommentsModal({
     [postId, removeComment],
   );
 
-  const handleToggleReplies = useCallback(
+  const handleUpdateComment = useCallback(
     async (commentId: string) => {
-      const isExpanded = expandedReplies.has(commentId);
-      if (isExpanded) {
-        setExpandedReplies((prev) => {
-          const next = new Set(prev);
-          next.delete(commentId);
-          return next;
-        });
-      } else {
-        setExpandedReplies((prev) => new Set(prev).add(commentId));
-        const existingReplies = replies.get(commentId) || [];
-        if (existingReplies.length === 0) {
-          await fetchCommentReplies(postId, commentId);
-        }
+      if (!editText.trim()) {
+        toast.error("Comment cannot be empty");
+        return;
+      }
+
+      if (editText.trim().length > 1000) {
+        toast.error("Comment is too long (max 1000 characters)");
+        return;
+      }
+
+      try {
+        await updateComment(postId, commentId, editText);
+        setEditingCommentId(null);
+        setEditText("");
+        toast.success("Comment updated", { duration: 2000 });
+      } catch (error: unknown) {
+        toast.error("Failed to update comment");
       }
     },
-    [expandedReplies, replies, fetchCommentReplies, postId],
+    [postId, editText, updateComment],
   );
 
   const formatRelativeTime = (date: string) => {
@@ -185,7 +185,7 @@ export default function CommentsModal({
     });
   };
 
-  const renderComment = (comment: Comment, isReply?: boolean) => {
+  const renderComment = (comment: Comment) => {
     const authorId =
       typeof comment.author === "string" ? comment.author : comment.author?._id;
     const isCommentAuthor = user?._id === authorId;
@@ -217,17 +217,76 @@ export default function CommentsModal({
                 <p className="text-sm font-semibold text-gray-900">
                   {comment.author?.username || "Anonymous"}
                 </p>
-                <p className="text-sm text-gray-800 mt-0.5 break-words">
-                  {comment.text}
-                </p>
+                {editingCommentId === comment._id ? (
+                  <div className="mt-2">
+                    <textarea
+                      value={editText}
+                      onChange={(e) => setEditText(e.target.value)}
+                      className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      rows={2}
+                    />
+                    <div className="mt-2 flex gap-2">
+                      <button
+                        onClick={() => handleUpdateComment(comment._id)}
+                        className="rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-blue-700 transition-colors"
+                      >
+                        Save
+                      </button>
+                      <button
+                        onClick={() => {
+                          setEditingCommentId(null);
+                          setEditText("");
+                        }}
+                        className="rounded-lg border border-gray-300 px-3 py-1.5 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-sm text-gray-800 mt-0.5 break-words">
+                    {comment.text}
+                  </p>
+                )}
               </div>
-              {isCommentAuthor && (
-                <button
-                  onClick={() => setShowDeleteConfirm(comment._id)}
-                  className="opacity-0 group-hover/comment:opacity-100 transition-opacity p-1 hover:bg-gray-200 rounded"
-                >
-                  <FiTrash2 size={14} className="text-gray-500" />
-                </button>
+              {isCommentAuthor && editingCommentId !== comment._id && (
+                <div className="relative">
+                  <button
+                    onClick={() =>
+                      setShowCommentMenu(
+                        showCommentMenu === comment._id ? null : comment._id,
+                      )
+                    }
+                    className="opacity-0 group-hover/comment:opacity-100 transition-opacity p-1 hover:bg-gray-200 rounded"
+                  >
+                    <FiMoreVertical size={14} className="text-gray-500" />
+                  </button>
+                  {showCommentMenu === comment._id && (
+                    <div className="absolute right-0 top-full mt-2 min-w-[120px] overflow-hidden rounded-lg border border-gray-200 bg-white shadow-lg z-20">
+                      <button
+                        onClick={() => {
+                          setEditingCommentId(comment._id);
+                          setEditText(comment.text);
+                          setShowCommentMenu(null);
+                        }}
+                        className="flex w-full items-center gap-2 px-3 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50"
+                      >
+                        <FiEdit2 size={14} />
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => {
+                          handleDeleteComment(comment._id);
+                          setShowCommentMenu(null);
+                        }}
+                        className="flex w-full items-center gap-2 px-3 py-2 text-xs font-semibold text-red-600 hover:bg-red-50"
+                      >
+                        <FiTrash2 size={14} />
+                        Delete
+                      </button>
+                    </div>
+                  )}
+                </div>
               )}
             </div>
           </div>
@@ -358,6 +417,19 @@ export default function CommentsModal({
           </div>
         </div>
       </Dialog>
+      <ConfirmationDialog
+        isOpen={Boolean(showDeleteConfirm)}
+        title="Delete comment?"
+        message="This comment will be permanently deleted. You cannot undo this action."
+        confirmText="Delete"
+        cancelText="Cancel"
+        isDangerous={true}
+        isLoading={isDeleting}
+        onConfirm={() =>
+          showDeleteConfirm ? confirmDeleteComment(showDeleteConfirm) : null
+        }
+        onCancel={() => setShowDeleteConfirm(null)}
+      />
     </Transition>
   );
 }
