@@ -259,7 +259,11 @@ export default function PostCard({ post }: PostCardProps) {
 
   return (
     <>
-      <div className="bg-white border-gray-600 border-2 rounded-xl border border-gray-200 shadow-sm hover:shadow-lg transition-all duration-300">
+      <div
+        className={`relative bg-white border-gray-600 border-2 rounded-xl border border-gray-200 shadow-sm hover:shadow-lg transition-all duration-300 ${
+          showProfileHover ? "z-40" : "z-0"
+        }`}
+      >
         {/* Header Section */}
         <div className="px-5 pt-4 pb-3 border-b border-gray-100 flex items-center justify-between">
           <div className="relative flex items-center gap-3 flex-1 min-w-0">
@@ -299,7 +303,7 @@ export default function PostCard({ post }: PostCardProps) {
                 {showProfileHover && authorId && (
                   <ProfileCardHover
                     userId={authorId}
-                    className="absolute left-0 top-full mt-2 z-30"
+                    className="absolute left-0 top-full mt-2 z-50"
                     onClose={() => setShowProfileHover(false)}
                     onMouseEnter={openProfileHover}
                   />
