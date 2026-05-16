@@ -260,8 +260,8 @@ export default function PostCard({ post }: PostCardProps) {
   return (
     <>
       <div
-        className={`relative bg-white border-gray-600 border-2 rounded-xl border border-gray-200 shadow-sm hover:shadow-lg transition-all duration-300 ${
-          showProfileHover ? "z-40" : "z-0"
+        className={`relative isolate overflow-visible bg-white border-gray-600 border-2 rounded-xl border border-gray-200 shadow-sm hover:shadow-lg transition-all duration-300 ${
+          showProfileHover ? "z-50" : "z-0"
         }`}
       >
         {/* Header Section */}
@@ -303,7 +303,7 @@ export default function PostCard({ post }: PostCardProps) {
                 {showProfileHover && authorId && (
                   <ProfileCardHover
                     userId={authorId}
-                    className="absolute left-0 top-full mt-2 z-50"
+                    className="absolute left-0 top-full mt-2 z-[999]"
                     onClose={() => setShowProfileHover(false)}
                     onMouseEnter={openProfileHover}
                   />

@@ -107,7 +107,7 @@ const ProfileCardHover = ({
       ref={cardRef}
       onMouseEnter={handleMouseEnterLocal}
       onMouseLeave={handleMouseLeave}
-      className={`w-80 bg-white border border-gray-200 rounded-lg shadow-2xl animate-in fade-in zoom-in-95 duration-200 overflow-hidden z-20 ${className}`}
+      className={`w-80 bg-white border border-gray-200 rounded-lg shadow-2xl animate-in fade-in zoom-in-95 duration-200 overflow-hidden ${className}`}
     >
       {isLoading ? (
         <div className="flex h-96 items-center justify-center bg-white">
