@@ -95,15 +95,14 @@ export default function Feed() {
             {/* Posts Grid */}
             <div className="space-y-5">
               {feed.map((post, index) => (
-                <div
+                <PostCard
                   key={post._id}
+                  post={post}
                   className="animate-fade-in"
                   style={{
                     animationDelay: `${index * 0.05}s`,
                   }}
-                >
-                  <PostCard post={post} />
-                </div>
+                />
               ))}
             </div>
 

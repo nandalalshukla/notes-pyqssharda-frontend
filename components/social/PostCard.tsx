@@ -28,9 +28,15 @@ import { Fragment } from "react";
 
 interface PostCardProps {
   post: Post;
+  className?: string;
+  style?: React.CSSProperties;
 }
 
-export default function PostCard({ post }: PostCardProps) {
+export default function PostCard({
+  post,
+  className = "",
+  style,
+}: PostCardProps) {
   const router = useRouter();
   const { user } = useAuthStore();
   const {
@@ -260,9 +266,10 @@ export default function PostCard({ post }: PostCardProps) {
   return (
     <>
       <div
+        style={style}
         className={`relative isolate overflow-visible bg-white border-gray-600 border-2 rounded-xl border border-gray-200 shadow-sm hover:shadow-lg transition-all duration-300 ${
           showProfileHover ? "z-50" : "z-0"
-        }`}
+        } ${className}`}
       >
         {/* Header Section */}
         <div className="px-5 pt-4 pb-3 border-b border-gray-100 flex items-center justify-between">
