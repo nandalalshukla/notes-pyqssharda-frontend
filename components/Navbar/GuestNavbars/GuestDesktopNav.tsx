@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -9,15 +10,28 @@ const navLinks = [
 
 const GuestDesktopNav = () => {
   const pathname = usePathname();
+  const handleLogoClick = () => {
+    if (typeof window !== "undefined") {
+      window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
+    }
+  };
 
   return (
     <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between px-6 text-gray-950 lg:px-8">
       {/* Logo */}
-      <Link href="/" className="flex items-center gap-3 flex-shrink-0">
-        <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-gray-950 to-gray-800 text-sm font-black text-white shadow-md">
-          S
-        </span>
-        <span className="text-lg font-black tracking-tight">SOL</span>
+      <Link
+        href="/"
+        onClick={handleLogoClick}
+        className="flex items-center gap-3 flex-shrink-0"
+      >
+        <Image
+          src="/shardasocial.png"
+          alt="Sharda Social"
+          width={100}
+          height={100}
+          className="h-[100px] w-[100px] object-contain drop-shadow-md"
+          priority
+        />
       </Link>
 
       {/* Main Navigation Links */}

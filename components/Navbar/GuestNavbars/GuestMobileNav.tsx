@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -11,16 +12,29 @@ const navLinks = [
 
 const GuestMobileNav = () => {
   const pathname = usePathname();
+  const handleLogoClick = () => {
+    if (typeof window !== "undefined") {
+      window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
+    }
+  };
 
   return (
     <div className="w-full px-4 py-3 text-gray-950">
       <div className="flex items-center justify-between gap-3 mb-3">
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-2 flex-shrink-0">
-          <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-gray-950 to-gray-800 text-sm font-black text-white">
-            S
-          </span>
-          <span className="text-lg font-black tracking-tight">SOL</span>
+        <Link
+          href="/"
+          onClick={handleLogoClick}
+          className="flex items-center gap-2 flex-shrink-0"
+        >
+          <Image
+            src="/shardasocial.png"
+            alt="Sharda Social"
+            width={100}
+            height={100}
+            className="h-[100px] w-[100px] object-contain drop-shadow-md"
+            priority
+          />
         </Link>
       </div>
 

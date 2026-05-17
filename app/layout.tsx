@@ -23,6 +23,10 @@ export const metadata: Metadata = {
   },
   description:
     "Your one-stop destination for everything you need for Sharda University semester exams.",
+  icons: {
+    icon: "/shardasocial.png",
+    apple: "/shardasocial.png",
+  },
 };
 
 export default function RootLayout({
