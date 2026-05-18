@@ -91,7 +91,7 @@ const AuthMobileNav = () => {
   };
 
   return (
-    <div className="w-full px-4 py-3 text-gray-950">
+    <div className="w-full px-4 text-gray-950">
       <div className="flex items-center justify-between gap-3">
         {/* Logo */}
         <Link
@@ -104,7 +104,7 @@ const AuthMobileNav = () => {
             alt="Sharda Social"
             width={100}
             height={100}
-            className="h-[100px] w-[100px] object-contain drop-shadow-md"
+            className="h-[80px] w-[80px] object-contain drop-shadow-md"
             priority
           />
         </Link>
@@ -137,7 +137,7 @@ const AuthMobileNav = () => {
       </div>
 
       {/* Navigation Links - Always Visible */}
-      <div className="flex gap-1.5 mb-3 overflow-x-auto pb-1 rounded-lg bg-white/50 border border-gray-200 p-1 backdrop-blur-sm">
+      <div className="flex items-center justify-center border border-gray-500 p-1 backdrop-blur-sm">
         {navLinks.map((link) => {
           const active =
             link.href === "/"
