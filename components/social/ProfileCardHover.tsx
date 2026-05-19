@@ -8,6 +8,7 @@ import useAuthStore from "@/stores/user/authStore";
 import { useSocialStore } from "@/stores/social/social.store";
 import { FiLoader } from "react-icons/fi";
 import toast from "react-hot-toast";
+import VerifiedBadge from "./VerifiedBadge";
 
 interface ProfileCardHoverProps {
   userId: string;
@@ -172,9 +173,12 @@ const ProfileCardHover = ({
               onClick={() => onClose?.()}
               className="group inline-block mb-1"
             >
-              <h2 className="text-base font-bold text-gray-900 group-hover:text-blue-600 transition-colors line-clamp-1">
-                {profile.name}
-              </h2>
+              <div className="flex items-center gap-1">
+                <h2 className="text-base font-bold text-gray-900 group-hover:text-blue-600 transition-colors line-clamp-1">
+                  {profile.name}
+                </h2>
+                <VerifiedBadge role={profile.role} size={14} />
+              </div>
             </Link>
 
             {/* Username */}

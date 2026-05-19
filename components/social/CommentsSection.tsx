@@ -22,6 +22,7 @@ import { FaHeart } from "react-icons/fa";
 import toast from "react-hot-toast";
 import Image from "next/image";
 import ConfirmationDialog from "@/components/shared/ConfirmationDialog";
+import VerifiedBadge from "./VerifiedBadge";
 
 interface CommentsSectionProps {
   postId: string;
@@ -276,8 +277,11 @@ export default function CommentsSection({ postId }: CommentsSectionProps) {
                 <div className="bg-white border border-gray-200 rounded-xl p-3">
                   <div className="flex items-start justify-between mb-2">
                     <div className="flex-1 min-w-0">
-                      <h4 className="font-semibold text-xs text-gray-900">
-                        {reply.author.username || "Anonymous"}
+                      <h4 className="inline-flex max-w-full items-center gap-1 font-semibold text-xs text-gray-900">
+                        <span className="truncate">
+                          {reply.author.username || "Anonymous"}
+                        </span>
+                        <VerifiedBadge role={reply.author.role} size={11} />
                       </h4>
                       <p className="text-xs text-gray-500 mt-0.5">
                         {formatRelativeTime(reply.createdAt)}
@@ -320,22 +324,21 @@ export default function CommentsSection({ postId }: CommentsSectionProps) {
                   <div className="flex items-center gap-2 mt-2 flex-wrap">
                     <button
                       onClick={() => handleLikeComment(reply._id)}
-                      className={`flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-semibold transition-all ${
-                        reply.likedByCurrentUser
-                          ? "bg-red-50 text-red-600"
-                          : "text-gray-600 hover:bg-gray-100"
-                      }`}
+                      className="flex items-center p-1 hover:text-red-600 group cursor-pointer"
                     >
                       {reply.likedByCurrentUser ? (
-                        <FaHeart size={12} className="fill-current" />
+                        <FaHeart
+                          size={20}
+                          className="text-red-600 group-hover:scale-110"
+                        />
                       ) : (
-                        <FiHeart size={12} />
+                        <FiHeart size={20} className="group-hover:scale-110" />
                       )}
-                      <span>
-                        {reply.likes || 0}{" "}
-                        {(reply.likes || 0) === 1 ? "like" : "likes"}
-                      </span>
                     </button>
+                    <span className="text-xs font-semibold text-gray-600">
+                      {reply.likes || 0}{" "}
+                      {(reply.likes || 0) === 1 ? "like" : "likes"}
+                    </span>
 
                     <button
                       onClick={() => toggleReplyForm(reply._id)}
@@ -569,8 +572,14 @@ export default function CommentsSection({ postId }: CommentsSectionProps) {
                     {/* Header */}
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex-1 min-w-0">
-                        <h4 className="font-semibold text-sm text-gray-900">
-                          {comment.author.username || "Anonymous"}
+                        <h4 className="inline-flex max-w-full items-center gap-1 font-semibold text-sm text-gray-900">
+                          <span className="truncate">
+                            {comment.author.username || "Anonymous"}
+                          </span>
+                          <VerifiedBadge
+                            role={comment.author.role}
+                            size={12}
+                          />
                         </h4>
                         <p className="text-xs text-gray-500 mt-0.5">
                           {formatRelativeTime(comment.createdAt)}
@@ -666,29 +675,24 @@ export default function CommentsSection({ postId }: CommentsSectionProps) {
                     <div className="flex items-center gap-4 mt-3 px-2">
                       <button
                         onClick={() => handleLikeComment(comment._id)}
-                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
-                          comment.likedByCurrentUser
-                            ? "bg-red-50 text-red-600"
-                            : "text-gray-600 hover:bg-gray-100"
-                        } ${
-                          likeAnimating === comment._id
-                            ? "scale-110"
-                            : "scale-100"
-                        }`}
-                        style={{
-                          transitionDuration: "300ms",
-                        }}
+                        className="flex items-center p-1 hover:text-red-600 group cursor-pointer"
                       >
                         {comment.likedByCurrentUser ? (
-                          <FaHeart size={14} className="fill-current" />
+                          <FaHeart
+                            size={20}
+                            className="text-red-600 group-hover:scale-110"
+                          />
                         ) : (
-                          <FiHeart size={14} />
+                          <FiHeart
+                            size={20}
+                            className="group-hover:scale-110"
+                          />
                         )}
-                        <span>
-                          {comment.likes || 0}{" "}
-                          {(comment.likes || 0) === 1 ? "like" : "likes"}
-                        </span>
                       </button>
+                      <span className="text-xs font-semibold text-gray-600">
+                        {comment.likes || 0}{" "}
+                        {(comment.likes || 0) === 1 ? "like" : "likes"}
+                      </span>
 
                       <button
                         onClick={() => toggleReplyForm(comment._id)}

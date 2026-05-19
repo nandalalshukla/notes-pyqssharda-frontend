@@ -15,6 +15,7 @@ import {
 import { FaHeart } from "react-icons/fa";
 import toast from "react-hot-toast";
 import Image from "next/image";
+import VerifiedBadge from "./VerifiedBadge";
 
 interface CommentsSectionProps {
   postId: string;
@@ -302,8 +303,11 @@ export default function CommentsSection({ postId }: CommentsSectionProps) {
                   {/* Header */}
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex-1 min-w-0">
-                      <h4 className="font-semibold text-sm text-gray-900">
-                        {comment.author.username || "Anonymous"}
+                      <h4 className="inline-flex max-w-full items-center gap-1 font-semibold text-sm text-gray-900">
+                        <span className="truncate">
+                          {comment.author.username || "Anonymous"}
+                        </span>
+                        <VerifiedBadge role={comment.author.role} size={12} />
                       </h4>
                       <p className="text-xs text-gray-500 mt-0.5">
                         {formatRelativeTime(comment.createdAt)}

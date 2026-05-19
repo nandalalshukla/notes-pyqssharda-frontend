@@ -25,6 +25,7 @@ import ConfirmationDialog from "@/components/shared/ConfirmationDialog";
 import Image from "next/image";
 import { Menu, Transition } from "@headlessui/react";
 import { Fragment } from "react";
+import VerifiedBadge from "./VerifiedBadge";
 
 interface PostCardProps {
   post: Post;
@@ -122,6 +123,8 @@ export default function PostCard({
       ?.profilePic?.url ||
     (currentPost.author as { avatar?: string })?.avatar ||
     "";
+  const authorRole =
+    (currentPost.author as { role?: string } | undefined)?.role ?? undefined;
 
   const handleLike = useCallback(async () => {
     if (!user) {
@@ -301,7 +304,10 @@ export default function PostCard({
                   className="font-semibold text-gray-900 text-sm truncate cursor-pointer hover:underline underline-offset-2 decoration-2 transition-opacity"
                   onClick={handleViewProfile}
                 >
-                  {(currentPost.author as { username?: string })?.username}
+                  <span className="inline-flex items-center gap-1">
+                    {(currentPost.author as { username?: string })?.username}
+                    <VerifiedBadge role={authorRole} size={12} />
+                  </span>
                 </p>
                 <p className="text-xs text-gray-500">
                   {formatDate(currentPost.createdAt)}
@@ -482,26 +488,22 @@ export default function PostCard({
             <button
               type="button"
               onClick={handleLike}
-              disabled={isLiking}
-              className="flex items-center hover:text-red-600 transition-colors group disabled:opacity-50 cursor-pointer"
+              className="flex items-center p-1 hover:text-red-600 group cursor-pointer"
             >
               {isLiked ? (
                 <FaHeart
                   size={20}
-                  className="text-red-600 group-hover:scale-110 transition-transform"
+                  className="text-red-600 group-hover:scale-110"
                 />
               ) : (
-                <FiHeart
-                  size={20}
-                  className="group-hover:scale-110 transition-transform"
-                />
+                <FiHeart size={20} className="group-hover:scale-110" />
               )}
             </button>
             <button
               type="button"
               onClick={() => setShowLikesModal(true)}
               disabled={likeCount === 0}
-              className="font-bold text-gray-900 hover:text-red-600 transition-colors disabled:opacity-50 cursor-pointer"
+              className="font-bold text-gray-900 hover:text-red-600 disabled:opacity-50 cursor-pointer"
             >
               {likeCount > 1000
                 ? (likeCount / 1000).toFixed(1) + "K"

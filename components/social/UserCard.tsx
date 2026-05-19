@@ -9,6 +9,7 @@ import toast from "react-hot-toast";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import VerifiedBadge from "./VerifiedBadge";
 
 interface UserCardProps {
   user: User;
@@ -48,13 +49,7 @@ export default function UserCard({
     } finally {
       setIsLoading(false);
     }
-  }, [
-    user._id,
-    isFollowingCurrent,
-    isAuthenticated,
-    toggleUserFollow,
-    router,
-  ]);
+  }, [user._id, isFollowingCurrent, isAuthenticated, toggleUserFollow, router]);
 
   const avatarUrl = user.profilePic?.url || user.avatar || "";
 
@@ -82,9 +77,10 @@ export default function UserCard({
         <div className="flex-1 min-w-0">
           <Link
             href={`/profile/${user._id}`}
-            className="block font-bold text-sm truncate hover:text-blue-600"
+            className="inline-flex items-center gap-1 font-bold text-sm truncate hover:text-blue-600"
           >
             {user.username || "Anonymous"}
+            <VerifiedBadge role={user.role} size={12} />
           </Link>
           <p className="text-xs text-gray-500 truncate">
             {user.email || "No email"}

@@ -26,6 +26,7 @@ import {
   UserProfile,
 } from "@/lib/api/social/social.api";
 import { getErrorMessage } from "@/lib/utils/errorHandler";
+import useAuthStore from "@/stores/user/authStore";
 
 /**
  * ═══════════════════════════════════════════════════════════════════════════════
@@ -271,6 +272,90 @@ const normalizePost = (
   commentCount: post.commentCount ?? post.commentsCount ?? post.comments ?? 0,
 });
 
+const createTempId = (prefix: string) =>
+  `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+
+const getCurrentUser = () => useAuthStore.getState().user;
+
+const buildOptimisticPost = (
+  data: FormData,
+  previousPost?: Post,
+  previewUrls?: string[],
+) => {
+  const content = String(data.get("content") || "");
+  const now = new Date().toISOString();
+  const user = getCurrentUser();
+
+  const baseFiles = previousPost?.files || [];
+  const basePublicIds = previousPost?.publicIds || [];
+  const removePublicIdsRaw = data.get("removePublicIds");
+  let removePublicIds: string[] = [];
+
+  if (typeof removePublicIdsRaw === "string") {
+    try {
+      removePublicIds = JSON.parse(removePublicIdsRaw);
+    } catch {
+      removePublicIds = [];
+    }
+  }
+
+  const kept = baseFiles.filter((_, idx) =>
+    removePublicIds.includes(basePublicIds[idx] || "") ? false : true,
+  );
+  const keptPublicIds = basePublicIds.filter(
+    (id) => !removePublicIds.includes(id || ""),
+  );
+
+  const newFiles = previewUrls || [];
+  const newPublicIds = newFiles.map(() => "");
+
+  return {
+    _id: previousPost?._id || createTempId("post"),
+    content,
+    author: {
+      _id: user?._id || "",
+      username: user?.username || "You",
+      profilePic: user?.profilePic,
+      avatar: user?.profilePic?.url || "",
+      role: user?.role,
+    },
+    files: [...kept, ...newFiles],
+    publicIds: [...keptPublicIds, ...newPublicIds],
+    likes: previousPost?.likes || 0,
+    likedByCurrentUser: previousPost?.likedByCurrentUser || false,
+    commentCount: previousPost?.commentCount || 0,
+    createdAt: previousPost?.createdAt || now,
+    updatedAt: now,
+  } as Post;
+};
+
+const buildOptimisticComment = (
+  postId: string,
+  text: string,
+  parentComment?: string,
+) => {
+  const now = new Date().toISOString();
+  const user = getCurrentUser();
+
+  return {
+    _id: createTempId("comment"),
+    text,
+    author: {
+      _id: user?._id || "",
+      username: user?.username || "You",
+      profilePic: user?.profilePic,
+      avatar: user?.profilePic?.url || "",
+      role: user?.role,
+    },
+    post: postId,
+    parentComment: parentComment || null,
+    likes: 0,
+    likedByCurrentUser: false,
+    createdAt: now,
+    updatedAt: now,
+  } as Comment;
+};
+
 const getPostAuthorId = (post: Post) =>
   typeof (post.author as unknown) === "string"
     ? (post.author as unknown as string)
@@ -422,26 +507,86 @@ export const useSocialStore = create<SocialStore>((set, get) => ({
 
   createNewPost: async (data: FormData) => {
     set({ isLoading: true, error: null });
+    const files = data.getAll("files").filter((file) => file instanceof File);
+    const previewUrls = (files as File[]).map((file) =>
+      URL.createObjectURL(file),
+    );
+    const optimisticPost = buildOptimisticPost(data, undefined, previewUrls);
+    const previousFeed = get().feed;
+    const previousUserPosts = get().userPosts;
+
+    set((state) => {
+      const nextUserPosts = new Map(state.userPosts);
+      const userId = optimisticPost.author?._id;
+      if (userId) {
+        const existing = nextUserPosts.get(userId) || [];
+        nextUserPosts.set(userId, [optimisticPost, ...existing]);
+      }
+      return {
+        feed: [optimisticPost, ...state.feed],
+        userPosts: nextUserPosts,
+      };
+    });
     try {
       const res = await createPost(data);
       const newPost = res.data?.post ? normalizePost(res.data.post) : null;
       if (newPost) {
         set((state) => ({
-          feed: [newPost, ...state.feed],
+          feed: state.feed.map((post) =>
+            post._id === optimisticPost._id ? newPost : post,
+          ),
+          userPosts: updatePostEverywhere(
+            state.userPosts,
+            optimisticPost._id,
+            () => newPost,
+          ),
           isLoading: false,
         }));
       }
+      previewUrls.forEach((url) => URL.revokeObjectURL(url));
     } catch (error: unknown) {
       set({
+        feed: previousFeed,
+        userPosts: previousUserPosts,
         error: getErrorMessage(error) || "Failed to create post",
         isLoading: false,
       });
+      previewUrls.forEach((url) => URL.revokeObjectURL(url));
       throw error;
     }
   },
 
   updatePost: async (postId: string, data: FormData) => {
     set({ isLoading: true, error: null });
+    const previousPost =
+      get().feed.find((post) => post._id === postId) ||
+      Array.from(get().userPosts.values())
+        .flat()
+        .find((post) => post._id === postId);
+    const previousFeed = get().feed;
+    const previousUserPosts = get().userPosts;
+    const files = data.getAll("files").filter((file) => file instanceof File);
+    const previewUrls = (files as File[]).map((file) =>
+      URL.createObjectURL(file),
+    );
+
+    if (previousPost) {
+      const optimisticPost = buildOptimisticPost(
+        data,
+        previousPost,
+        previewUrls,
+      );
+      set((state) => ({
+        feed: state.feed.map((post) =>
+          post._id === postId ? optimisticPost : post,
+        ),
+        userPosts: updatePostEverywhere(
+          state.userPosts,
+          postId,
+          () => optimisticPost,
+        ),
+      }));
+    }
     try {
       const res = await editPost(postId, data);
       const updatedPost = res.data?.post ? normalizePost(res.data.post) : null;
@@ -456,17 +601,57 @@ export const useSocialStore = create<SocialStore>((set, get) => ({
           isLoading: false,
         }));
       }
+      previewUrls.forEach((url) => URL.revokeObjectURL(url));
     } catch (error: unknown) {
       set({
+        feed: previousFeed,
+        userPosts: previousUserPosts,
         error: getErrorMessage(error) || "Failed to update post",
         isLoading: false,
       });
+      previewUrls.forEach((url) => URL.revokeObjectURL(url));
       throw error;
     }
   },
 
   removePost: async (postId: string) => {
     set({ isLoading: true, error: null });
+    const previousFeed = get().feed;
+    const previousUserPosts = get().userPosts;
+    const previousComments = get().comments;
+    const previousReplies = get().replies;
+    const previousIsLoading = get().isLoading;
+    const previousError = get().error;
+
+    set((state) => {
+      const nextFeed = state.feed.filter((p) => p._id !== postId);
+      const nextUserPosts = new Map(
+        Array.from(state.userPosts.entries()).map(([userId, posts]) => [
+          userId,
+          posts.filter((post) => post._id !== postId),
+        ]),
+      );
+
+      const postComments = state.comments.get(postId) || [];
+      const commentIdsToDelete = new Set<string>(
+        postComments.map((c) => c._id),
+      );
+
+      const nextComments = new Map(state.comments);
+      nextComments.delete(postId);
+
+      const nextReplies = new Map(state.replies);
+      for (const commentId of commentIdsToDelete) {
+        nextReplies.delete(commentId);
+      }
+
+      return {
+        feed: nextFeed,
+        userPosts: nextUserPosts,
+        comments: nextComments,
+        replies: nextReplies,
+      };
+    });
     try {
       await deletePost(postId);
       set((state) => {
@@ -505,8 +690,13 @@ export const useSocialStore = create<SocialStore>((set, get) => ({
       });
     } catch (error: unknown) {
       set({
-        error: getErrorMessage(error) || "Failed to delete post",
-        isLoading: false,
+        feed: previousFeed,
+        userPosts: previousUserPosts,
+        comments: previousComments,
+        replies: previousReplies,
+        isLoading: previousIsLoading,
+        error:
+          getErrorMessage(error) || previousError || "Failed to delete post",
       });
       throw error;
     }
@@ -540,49 +730,78 @@ export const useSocialStore = create<SocialStore>((set, get) => ({
 
   addComment: async (postId: string, text: string, parentComment?: string) => {
     set({ isLoading: true, error: null });
+    const optimisticComment = buildOptimisticComment(
+      postId,
+      text,
+      parentComment,
+    );
+    const previousComments = get().comments;
+    const previousReplies = get().replies;
+    const previousFeed = get().feed;
+    const previousUserPosts = get().userPosts;
+    const updatePostCount = (post: Post, delta: number) => ({
+      ...post,
+      commentCount: Math.max(0, (post.commentCount || 0) + delta),
+    });
+
+    set((state) => {
+      if (parentComment) {
+        const commentReplies = state.replies.get(parentComment) || [];
+        const updatedReplies = new Map(state.replies).set(parentComment, [
+          ...commentReplies,
+          optimisticComment,
+        ]);
+        return {
+          replies: updatedReplies,
+          feed: state.feed.map((post) =>
+            post._id === postId ? updatePostCount(post, 1) : post,
+          ),
+          userPosts: updatePostEverywhere(state.userPosts, postId, (post) =>
+            updatePostCount(post, 1),
+          ),
+        };
+      }
+
+      const postComments = state.comments.get(postId) || [];
+      return {
+        comments: new Map(state.comments).set(postId, [
+          optimisticComment,
+          ...postComments,
+        ]),
+        feed: state.feed.map((post) =>
+          post._id === postId ? updatePostCount(post, 1) : post,
+        ),
+        userPosts: updatePostEverywhere(state.userPosts, postId, (post) =>
+          updatePostCount(post, 1),
+        ),
+      };
+    });
     try {
       const res = await createComment(postId, text, parentComment);
       const newComment = res.data?.comment;
       if (newComment) {
         set((state) => {
-          const updatePostCount = (post: Post) => ({
-            ...post,
-            commentCount: (post.commentCount || 0) + 1,
-          });
-
           if (parentComment) {
             const commentReplies = state.replies.get(parentComment) || [];
-            const updatedReplies = new Map(state.replies).set(parentComment, [
-              ...commentReplies,
-              newComment,
-            ]);
+            const updatedReplies = new Map(state.replies).set(
+              parentComment,
+              commentReplies.map((comment) =>
+                comment._id === optimisticComment._id ? newComment : comment,
+              ),
+            );
             return {
               replies: updatedReplies,
-              feed: state.feed.map((post) =>
-                post._id === postId ? updatePostCount(post) : post,
-              ),
-              userPosts: updatePostEverywhere(
-                state.userPosts,
-                postId,
-                updatePostCount,
-              ),
               isLoading: false,
             };
           }
 
           const postComments = state.comments.get(postId) || [];
           return {
-            comments: new Map(state.comments).set(postId, [
-              newComment,
-              ...postComments,
-            ]),
-            feed: state.feed.map((post) =>
-              post._id === postId ? updatePostCount(post) : post,
-            ),
-            userPosts: updatePostEverywhere(
-              state.userPosts,
+            comments: new Map(state.comments).set(
               postId,
-              updatePostCount,
+              postComments.map((comment) =>
+                comment._id === optimisticComment._id ? newComment : comment,
+              ),
             ),
             isLoading: false,
           };
@@ -590,6 +809,10 @@ export const useSocialStore = create<SocialStore>((set, get) => ({
       }
     } catch (error: unknown) {
       set({
+        comments: previousComments,
+        replies: previousReplies,
+        feed: previousFeed,
+        userPosts: previousUserPosts,
         error: getErrorMessage(error) || "Failed to add comment",
         isLoading: false,
       });
@@ -619,6 +842,28 @@ export const useSocialStore = create<SocialStore>((set, get) => ({
 
   updateComment: async (postId: string, commentId: string, text: string) => {
     set({ isLoading: true, error: null });
+    let previousComment: Comment | undefined;
+    for (const comments of get().comments.values()) {
+      previousComment = comments.find((c) => c._id === commentId);
+      if (previousComment) break;
+    }
+    if (!previousComment) {
+      for (const replies of get().replies.values()) {
+        previousComment = replies.find((c) => c._id === commentId);
+        if (previousComment) break;
+      }
+    }
+
+    if (previousComment) {
+      const optimisticComment = { ...previousComment, text };
+      const updated = updateCommentEverywhere(
+        get().comments,
+        get().replies,
+        commentId,
+        () => optimisticComment,
+      );
+      set({ comments: updated.comments, replies: updated.replies });
+    }
     try {
       const res = await editComment(postId, commentId, text);
       const updatedComment = res.data?.comment;
@@ -638,6 +883,15 @@ export const useSocialStore = create<SocialStore>((set, get) => ({
         });
       }
     } catch (error: unknown) {
+      if (previousComment) {
+        const restored = updateCommentEverywhere(
+          get().comments,
+          get().replies,
+          commentId,
+          () => previousComment as Comment,
+        );
+        set({ comments: restored.comments, replies: restored.replies });
+      }
       set({
         error: getErrorMessage(error) || "Failed to update comment",
         isLoading: false,
@@ -648,6 +902,42 @@ export const useSocialStore = create<SocialStore>((set, get) => ({
 
   removeComment: async (postId: string, commentId: string) => {
     set({ isLoading: true, error: null });
+    const previousComments = get().comments;
+    const previousReplies = get().replies;
+    const previousFeed = get().feed;
+    const previousUserPosts = get().userPosts;
+    const repliesToRemove = get().replies.get(commentId) || [];
+    const optimisticDeletedCount = 1 + repliesToRemove.length;
+
+    set((state) => {
+      const updated = removeCommentEverywhere(
+        state.comments,
+        state.replies,
+        commentId,
+      );
+      return {
+        comments: updated.comments,
+        replies: updated.replies,
+        feed: state.feed.map((post) =>
+          post._id === postId
+            ? {
+                ...post,
+                commentCount: Math.max(
+                  0,
+                  (post.commentCount || 0) - optimisticDeletedCount,
+                ),
+              }
+            : post,
+        ),
+        userPosts: updatePostEverywhere(state.userPosts, postId, (post) => ({
+          ...post,
+          commentCount: Math.max(
+            0,
+            (post.commentCount || 0) - optimisticDeletedCount,
+          ),
+        })),
+      };
+    });
     try {
       const res = await deleteComment(postId, commentId);
       const deletedCount = Math.max(1, res.data?.deletedCount || 1);
@@ -680,6 +970,10 @@ export const useSocialStore = create<SocialStore>((set, get) => ({
       });
     } catch (error: unknown) {
       set({
+        comments: previousComments,
+        replies: previousReplies,
+        feed: previousFeed,
+        userPosts: previousUserPosts,
         error: getErrorMessage(error) || "Failed to delete comment",
         isLoading: false,
       });
@@ -1112,14 +1406,18 @@ export const useSocialStore = create<SocialStore>((set, get) => ({
 
   markAllAsRead: async () => {
     set({ error: null });
+    const previousNotifications = get().notifications;
+    const previousUnreadCount = get().unreadCount;
+    set({
+      notifications: get().notifications.map((n) => ({ ...n, read: true })),
+      unreadCount: 0,
+    });
     try {
       await markAllNotificationsAsRead();
-      set({
-        notifications: get().notifications.map((n) => ({ ...n, read: true })),
-        unreadCount: 0,
-      });
     } catch (error: unknown) {
       set({
+        notifications: previousNotifications,
+        unreadCount: previousUnreadCount,
         error: getErrorMessage(error) || "Failed to mark all as read",
       });
     }
@@ -1127,24 +1425,28 @@ export const useSocialStore = create<SocialStore>((set, get) => ({
 
   markOneAsRead: async (notificationId: string) => {
     set({ error: null });
+    const previousNotifications = get().notifications;
+    const previousUnreadCount = get().unreadCount;
+    set((state) => {
+      const notification = state.notifications.find(
+        (n) => n._id === notificationId,
+      );
+      return {
+        notifications: state.notifications.map((n) =>
+          n._id === notificationId ? { ...n, read: true } : n,
+        ),
+        unreadCount:
+          notification && !notification.read
+            ? Math.max(0, state.unreadCount - 1)
+            : state.unreadCount,
+      };
+    });
     try {
       await markNotificationAsRead(notificationId);
-      set((state) => {
-        const notification = state.notifications.find(
-          (n) => n._id === notificationId,
-        );
-        return {
-          notifications: state.notifications.map((n) =>
-            n._id === notificationId ? { ...n, read: true } : n,
-          ),
-          unreadCount:
-            notification && !notification.read
-              ? state.unreadCount - 1
-              : state.unreadCount,
-        };
-      });
     } catch (error: unknown) {
       set({
+        notifications: previousNotifications,
+        unreadCount: previousUnreadCount,
         error: getErrorMessage(error) || "Failed to mark as read",
       });
     }

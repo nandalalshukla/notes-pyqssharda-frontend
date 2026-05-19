@@ -17,6 +17,7 @@ import useAuthStore from "@/stores/user/authStore";
 import { useSocialStore } from "@/stores/social/social.store";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
+import VerifiedBadge from "./VerifiedBadge";
 
 interface LikesModalProps {
   postId: string;
@@ -253,8 +254,11 @@ export default function LikesModal({
                               />
                             </div>
                             <div className="min-w-0">
-                              <p className="font-semibold text-gray-900 text-sm truncate">
-                                {like.username}
+                              <p className="inline-flex max-w-full items-center gap-1 font-semibold text-gray-900 text-sm">
+                                <span className="truncate">
+                                  {like.username}
+                                </span>
+                                <VerifiedBadge role={like.role} size={12} />
                               </p>
                               <p className="text-xs text-gray-500 truncate">
                                 @

@@ -11,6 +11,7 @@ import {
 } from "@/lib/api/social/social.api";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
+import VerifiedBadge from "./VerifiedBadge";
 
 export default function NotificationsDropdown() {
   const router = useRouter();
@@ -179,6 +180,18 @@ export default function NotificationsDropdown() {
     });
   };
 
+  const getNotificationActionText = (notification: Notification) => {
+    const actorName = notification.actor?.username;
+    if (!actorName) return notification.message;
+
+    const prefix = `${actorName} `;
+    return notification.message
+      .toLowerCase()
+      .startsWith(prefix.toLowerCase())
+      ? notification.message.slice(prefix.length).trim()
+      : notification.message;
+  };
+
   return (
     <div className="relative" ref={dropdownRef}>
       {/* Bell Icon Button */}
@@ -264,10 +277,14 @@ export default function NotificationsDropdown() {
                         className="flex-1 min-w-0 text-left hover:opacity-80 transition-opacity"
                       >
                         <p className="text-sm text-gray-900">
-                          <span className="font-semibold">
+                          <span className="inline-flex items-center gap-1 font-semibold">
                             {notification.actor.username}
+                            <VerifiedBadge
+                              role={notification.actor.role}
+                              size={12}
+                            />
                           </span>{" "}
-                          {notification.message}
+                          {getNotificationActionText(notification)}
                         </p>
 
                         {/* Time */}

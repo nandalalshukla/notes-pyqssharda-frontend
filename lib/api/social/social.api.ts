@@ -16,6 +16,7 @@ export interface User {
     publicId?: string;
   };
   avatar?: string;
+  role?: string;
   isFollowedByCurrentUser?: boolean;
 }
 

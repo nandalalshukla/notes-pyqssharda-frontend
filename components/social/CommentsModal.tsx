@@ -24,6 +24,7 @@ import toast from "react-hot-toast";
 import Image from "next/image";
 import { useBodyScroll } from "@/hooks/useBodyScroll";
 import ConfirmationDialog from "@/components/shared/ConfirmationDialog";
+import VerifiedBadge from "./VerifiedBadge";
 
 interface CommentsModalProps {
   postId: string;
@@ -318,9 +319,12 @@ export default function CommentsModal({
                         <button
                           type="button"
                           onClick={() => handleViewProfile(reply.author)}
-                          className="font-semibold text-xs text-gray-900 hover:underline underline-offset-2"
+                          className="inline-flex max-w-full items-center gap-1 font-semibold text-xs text-gray-900 hover:underline underline-offset-2"
                         >
-                          {reply.author.username || "Anonymous"}
+                          <span className="truncate">
+                            {reply.author.username || "Anonymous"}
+                          </span>
+                          <VerifiedBadge role={reply.author.role} size={11} />
                         </button>
                         <p className="text-xs text-gray-500 mt-0.5">
                           {formatRelativeTime(reply.createdAt)}
@@ -407,22 +411,24 @@ export default function CommentsModal({
                     <div className="flex items-center gap-2 mt-2 flex-wrap">
                       <button
                         onClick={() => handleLikeComment(reply._id)}
-                        className={`flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-semibold transition-all ${
-                          reply.likedByCurrentUser
-                            ? "bg-red-50 text-red-600"
-                            : "text-gray-600 hover:bg-gray-100"
-                        }`}
+                        className="flex items-center p-1 hover:text-red-600 group cursor-pointer"
                       >
                         {reply.likedByCurrentUser ? (
-                          <FaHeart size={12} className="fill-current" />
+                          <FaHeart
+                            size={20}
+                            className="text-red-600 group-hover:scale-110"
+                          />
                         ) : (
-                          <FiHeart size={12} />
+                          <FiHeart
+                            size={20}
+                            className="group-hover:scale-110"
+                          />
                         )}
-                        <span>
-                          {reply.likes || 0}{" "}
-                          {(reply.likes || 0) === 1 ? "like" : "likes"}
-                        </span>
                       </button>
+                      <span className="text-xs font-semibold text-gray-600">
+                        {reply.likes || 0}{" "}
+                        {(reply.likes || 0) === 1 ? "like" : "likes"}
+                      </span>
 
                       <button
                         onClick={() => toggleReplyForm(reply._id)}
@@ -540,9 +546,12 @@ export default function CommentsModal({
                 <button
                   type="button"
                   onClick={() => handleViewProfile(comment.author)}
-                  className="text-sm font-semibold text-gray-900 hover:underline underline-offset-2"
+                  className="inline-flex max-w-full items-center gap-1 text-sm font-semibold text-gray-900 hover:underline underline-offset-2"
                 >
-                  {comment.author?.username || "Anonymous"}
+                  <span className="truncate">
+                    {comment.author?.username || "Anonymous"}
+                  </span>
+                  <VerifiedBadge role={comment.author?.role} size={12} />
                 </button>
                 {editingCommentId === comment._id ? (
                   <div className="mt-2">
@@ -622,22 +631,20 @@ export default function CommentsModal({
           <div className="flex items-center gap-3 mt-2 text-xs text-gray-500 px-3 flex-wrap">
             <button
               onClick={() => handleLikeComment(comment._id)}
-              className={`font-semibold hover:text-gray-900 transition-colors ${
-                comment.likedByCurrentUser ? "text-red-600" : ""
-              }`}
+              className="flex items-center p-1 hover:text-red-600 group cursor-pointer"
             >
               {comment.likedByCurrentUser ? (
-                <span className="flex items-center gap-1">
-                  <FaHeart size={12} className="fill-current" />
-                  {comment.likes || 0}
-                </span>
+                <FaHeart
+                  size={20}
+                  className="text-red-600 group-hover:scale-110"
+                />
               ) : (
-                <span className="flex items-center gap-1">
-                  <FiHeart size={12} />
-                  {comment.likes || 0}
-                </span>
+                <FiHeart size={20} className="group-hover:scale-110" />
               )}
             </button>
+            <span className="text-xs font-semibold text-gray-600">
+              {comment.likes || 0}
+            </span>
             <span>{formatRelativeTime(comment.createdAt)}</span>
             <button
               onClick={() => toggleReplyForm(comment._id)}

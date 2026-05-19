@@ -10,6 +10,7 @@ import {
   FiUserPlus,
   FiBook,
 } from "react-icons/fi";
+import VerifiedBadge from "./VerifiedBadge";
 
 interface ProfileHeaderProps {
   profile: UserProfile;
@@ -49,9 +50,12 @@ export default function ProfileHeader({
           <div className="flex-1 min-w-0">
             <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
               <div>
-                <h1 className="text-4xl font-bold text-slate-900 mb-1">
-                  {profile.name}
-                </h1>
+                <div className="flex items-center gap-2 mb-1">
+                  <h1 className="text-4xl font-bold text-slate-900">
+                    {profile.name}
+                  </h1>
+                  <VerifiedBadge role={profile.role} size={18} />
+                </div>
                 <p className="text-lg text-slate-500">@{profile.username}</p>
               </div>
 
