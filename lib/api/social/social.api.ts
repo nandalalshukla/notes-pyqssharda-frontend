@@ -48,6 +48,25 @@ export interface Comment {
   updatedAt: string;
 }
 
+export type ReportTargetType = "post" | "comment" | "user";
+
+export type ReportReason =
+  | "spam"
+  | "harassment"
+  | "hate"
+  | "nudity"
+  | "violence"
+  | "fake_information"
+  | "scam"
+  | "other";
+
+export interface CreateReportPayload {
+  targetType: ReportTargetType;
+  targetId: string;
+  reason: ReportReason;
+  message?: string;
+}
+
 export interface Notification {
   _id: string;
   type: "like" | "comment" | "follow" | "post" | "share";
@@ -368,6 +387,20 @@ export const markNotificationAsRead = async (notificationId: string) => {
   const response = await api.patch<ApiResponse>(
     `/social/notifications/${notificationId}/read`,
     {},
+  );
+  return response.data;
+};
+
+/**
+ * ═══════════════════════════════════════════════════════════════════════════════
+ * REPORTS API
+ * ═══════════════════════════════════════════════════════════════════════════════
+ */
+
+export const createReport = async (payload: CreateReportPayload) => {
+  const response = await api.post<ApiResponse<{ report: unknown }>>(
+    "/social/reports",
+    payload,
   );
   return response.data;
 };
