@@ -9,8 +9,12 @@ export default function AuthProviders({
   children: React.ReactNode;
 }) {
   const [hydrated, setHydrated] = useState(false);
-  const [authReady, setAuthReady] = useState(false);
-  const { fetchMe, setAuthLoading } = useAuthStore();
+  const {
+    fetchMe,
+    setAuthLoading,
+    setAuthInitialized,
+    authInitialized,
+  } = useAuthStore();
 
   useEffect(() => {
     // Wait for Zustand to finish hydrating from localStorage
@@ -33,13 +37,18 @@ export default function AuthProviders({
     let cancelled = false;
 
     const initAuth = async () => {
+      const { isAuthenticated, user } = useAuthStore.getState();
+      if (!isAuthenticated && !user) {
+        setAuthInitialized(true);
+        return;
+      }
+
       setAuthLoading(true);
       try {
         await fetchMe();
       } finally {
         if (!cancelled) {
           setAuthLoading(false);
-          setAuthReady(true);
         }
       }
     };
@@ -49,10 +58,10 @@ export default function AuthProviders({
     return () => {
       cancelled = true;
     };
-  }, [hydrated, fetchMe, setAuthLoading]);
+  }, [hydrated, fetchMe, setAuthLoading, setAuthInitialized]);
 
   // Wait for Zustand to hydrate from localStorage
-  if (!hydrated || !authReady) {
+  if (!hydrated || !authInitialized) {
     return null;
   }
 

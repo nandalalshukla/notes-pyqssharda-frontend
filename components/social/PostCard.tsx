@@ -4,7 +4,7 @@ import React, { useState, useCallback, useMemo } from "react";
 import { useSocialStore } from "@/stores/social/social.store";
 import useAuthStore from "@/stores/user/authStore";
 import { useRouter } from "next/navigation";
-import { Post } from "@/lib/api/social/social.api";
+import { Post, PostType } from "@/lib/api/social/social.api";
 import {
   FiHeart,
   FiMessageCircle,
@@ -14,6 +14,9 @@ import {
   FiTrash2,
   FiUserPlus,
   FiUserMinus,
+  FiBell,
+  FiCalendar,
+  FiMessageSquare,
 } from "react-icons/fi";
 import { FaHeart } from "react-icons/fa";
 import toast from "react-hot-toast";
@@ -32,6 +35,31 @@ interface PostCardProps {
   className?: string;
   style?: React.CSSProperties;
 }
+
+const postTypeMeta: Record<
+  PostType,
+  {
+    label: string;
+    Icon: React.ComponentType<{ size?: number; className?: string }>;
+    className: string;
+  }
+> = {
+  general: {
+    label: "General",
+    Icon: FiMessageSquare,
+    className: "bg-slate-100 text-slate-700 border-slate-200",
+  },
+  announcement: {
+    label: "Announcement",
+    Icon: FiBell,
+    className: "bg-amber-50 text-amber-700 border-amber-200",
+  },
+  event: {
+    label: "Event",
+    Icon: FiCalendar,
+    className: "bg-emerald-50 text-emerald-700 border-emerald-200",
+  },
+};
 
 export default function PostCard({
   post,
@@ -125,6 +153,12 @@ export default function PostCard({
     "";
   const authorRole =
     (currentPost.author as { role?: string } | undefined)?.role ?? undefined;
+  const postType =
+    currentPost.type === "event" || currentPost.type === "announcement"
+      ? currentPost.type
+      : "general";
+  const typeMeta = postTypeMeta[postType];
+  const TypeIcon = typeMeta.Icon;
 
   const handleLike = useCallback(async () => {
     if (!user) {
@@ -323,6 +357,13 @@ export default function PostCard({
                 )}
               </span>
             </div>
+          </div>
+
+          <div
+            className={`mr-2 inline-flex shrink-0 items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-semibold ${typeMeta.className}`}
+          >
+            <TypeIcon size={13} />
+            {typeMeta.label}
           </div>
 
           {/* More Menu */}

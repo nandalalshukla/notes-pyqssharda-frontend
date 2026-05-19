@@ -19,6 +19,7 @@ import {
   markAllNotificationsAsRead,
   markNotificationAsRead,
   Post,
+  PostType,
   Comment,
   FollowStats,
   Notification,
@@ -43,6 +44,7 @@ interface PostsState {
   feedPage: number;
   feedTotalPages: number;
   isLoadingFeed: boolean;
+  currentFeedType: PostType;
 }
 
 interface CommentsState {
@@ -76,7 +78,7 @@ interface SocialStore
   error: string | null;
 
   // Posts actions
-  fetchFeed: (page?: number) => Promise<void>;
+  fetchFeed: (page?: number, type?: PostType) => Promise<void>;
   fetchUserPosts: (userId: string, page?: number) => Promise<void>;
   createNewPost: (data: FormData) => Promise<void>;
   updatePost: (postId: string, data: FormData) => Promise<void>;
@@ -161,6 +163,7 @@ const initialState: Omit<
   feedPage: 1,
   feedTotalPages: 0,
   isLoadingFeed: false,
+  currentFeedType: "general",
 
   // Comments
   comments: new Map(),
@@ -260,12 +263,17 @@ const removeCommentEverywhere = (
 
 const normalizePost = (
   post: Post & {
+    type?: string | null;
     media?: { url: string; publicId?: string }[];
     commentsCount?: number;
     comments?: number;
   },
-) => ({
+): Post => ({
   ...post,
+  type:
+    post.type === "event" || post.type === "announcement"
+      ? post.type
+      : "general",
   files: post.files || post.media?.map((media) => media.url) || [],
   publicIds:
     post.publicIds || post.media?.map((media) => media.publicId || "") || [],
@@ -311,6 +319,7 @@ const buildOptimisticPost = (
 
   return {
     _id: previousPost?._id || createTempId("post"),
+    type: (data.get("type") as PostType) || previousPost?.type || "general",
     content,
     author: {
       _id: user?._id || "",
@@ -444,10 +453,10 @@ export const useSocialStore = create<SocialStore>((set, get) => ({
    * ───────────────────────────────────────────────────────────────────────────────
    */
 
-  fetchFeed: async (page = 1) => {
-    set({ isLoadingFeed: true, error: null });
+  fetchFeed: async (page = 1, type = "general") => {
+    set({ isLoadingFeed: true, error: null, currentFeedType: type });
     try {
-      const res = await getFeed(page, 10);
+      const res = await getFeed(page, 10, type);
       const posts = (res.data?.data || []).map(normalizePost);
       set((state) => ({
         feed: page > 1 ? [...state.feed, ...posts] : posts,
@@ -455,6 +464,7 @@ export const useSocialStore = create<SocialStore>((set, get) => ({
         feedPage: page,
         feedTotalPages: res.data?.totalPages || 0,
         isLoadingFeed: false,
+        currentFeedType: type,
       }));
     } catch (error: unknown) {
       set({
@@ -522,8 +532,13 @@ export const useSocialStore = create<SocialStore>((set, get) => ({
         const existing = nextUserPosts.get(userId) || [];
         nextUserPosts.set(userId, [optimisticPost, ...existing]);
       }
+      const shouldShowInCurrentFeed =
+        state.currentFeedType === "general" ||
+        state.currentFeedType === optimisticPost.type;
       return {
-        feed: [optimisticPost, ...state.feed],
+        feed: shouldShowInCurrentFeed
+          ? [optimisticPost, ...state.feed]
+          : state.feed,
         userPosts: nextUserPosts,
       };
     });
@@ -532,9 +547,13 @@ export const useSocialStore = create<SocialStore>((set, get) => ({
       const newPost = res.data?.post ? normalizePost(res.data.post) : null;
       if (newPost) {
         set((state) => ({
-          feed: state.feed.map((post) =>
-            post._id === optimisticPost._id ? newPost : post,
-          ),
+          feed:
+            state.currentFeedType === "general" ||
+            state.currentFeedType === newPost.type
+              ? state.feed.map((post) =>
+                  post._id === optimisticPost._id ? newPost : post,
+                )
+              : state.feed.filter((post) => post._id !== optimisticPost._id),
           userPosts: updatePostEverywhere(
             state.userPosts,
             optimisticPost._id,
@@ -577,9 +596,13 @@ export const useSocialStore = create<SocialStore>((set, get) => ({
         previewUrls,
       );
       set((state) => ({
-        feed: state.feed.map((post) =>
-          post._id === postId ? optimisticPost : post,
-        ),
+        feed:
+          state.currentFeedType === "general" ||
+          state.currentFeedType === optimisticPost.type
+            ? state.feed.map((post) =>
+                post._id === postId ? optimisticPost : post,
+              )
+            : state.feed.filter((post) => post._id !== postId),
         userPosts: updatePostEverywhere(
           state.userPosts,
           postId,
@@ -592,7 +615,11 @@ export const useSocialStore = create<SocialStore>((set, get) => ({
       const updatedPost = res.data?.post ? normalizePost(res.data.post) : null;
       if (updatedPost) {
         set((state) => ({
-          feed: state.feed.map((p) => (p._id === postId ? updatedPost : p)),
+          feed:
+            state.currentFeedType === "general" ||
+            state.currentFeedType === updatedPost.type
+              ? state.feed.map((p) => (p._id === postId ? updatedPost : p))
+              : state.feed.filter((p) => p._id !== postId),
           userPosts: updatePostEverywhere(
             state.userPosts,
             postId,

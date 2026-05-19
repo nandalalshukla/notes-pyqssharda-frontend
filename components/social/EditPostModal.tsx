@@ -4,8 +4,17 @@ import React, { useState, useCallback, Fragment } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import { useSocialStore } from "@/stores/social/social.store";
 import { useBodyScroll } from "@/hooks/useBodyScroll";
-import { Post } from "@/lib/api/social/social.api";
-import { FiX, FiImage, FiFile, FiTrash2, FiVideo } from "react-icons/fi";
+import { Post, PostType } from "@/lib/api/social/social.api";
+import {
+  FiX,
+  FiImage,
+  FiFile,
+  FiTrash2,
+  FiVideo,
+  FiMessageSquare,
+  FiBell,
+  FiCalendar,
+} from "react-icons/fi";
 import toast from "react-hot-toast";
 import Image from "next/image";
 
@@ -14,6 +23,16 @@ interface EditPostModalProps {
   onClose: () => void;
 }
 
+const postTypeOptions: {
+  value: PostType;
+  label: string;
+  Icon: React.ComponentType<{ size?: number; className?: string }>;
+}[] = [
+  { value: "general", label: "General", Icon: FiMessageSquare },
+  { value: "announcement", label: "Announcement", Icon: FiBell },
+  { value: "event", label: "Event", Icon: FiCalendar },
+];
+
 export default function EditPostModal({ post, onClose }: EditPostModalProps) {
   const { updatePost, isLoading } = useSocialStore();
 
@@ -21,6 +40,7 @@ export default function EditPostModal({ post, onClose }: EditPostModalProps) {
   useBodyScroll(true);
 
   const [content, setContent] = useState(post.content);
+  const [postType, setPostType] = useState<PostType>(post.type || "general");
   const [newFiles, setNewFiles] = useState<File[]>([]);
   const [newPreviews, setNewPreviews] = useState<string[]>([]);
   const [existingMedia, setExistingMedia] = useState(
@@ -85,6 +105,7 @@ export default function EditPostModal({ post, onClose }: EditPostModalProps) {
 
       const formData = new FormData();
       formData.append("content", content);
+      formData.append("type", postType);
 
       const keptPublicIds = new Set(
         existingMedia
@@ -110,6 +131,7 @@ export default function EditPostModal({ post, onClose }: EditPostModalProps) {
     },
     [
       content,
+      postType,
       existingMedia,
       newFiles,
       post._id,
@@ -162,6 +184,32 @@ export default function EditPostModal({ post, onClose }: EditPostModalProps) {
                   onSubmit={handleSubmit}
                   className="flex-1 overflow-y-auto p-6 space-y-5"
                 >
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Post Type
+                    </label>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                      {postTypeOptions.map(({ value, label, Icon }) => {
+                        const selected = postType === value;
+                        return (
+                          <button
+                            key={value}
+                            type="button"
+                            onClick={() => setPostType(value)}
+                            className={`flex items-center justify-center gap-2 rounded-lg border px-3 py-2.5 text-sm font-semibold transition-colors ${
+                              selected
+                                ? "border-blue-600 bg-blue-50 text-blue-700"
+                                : "border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
+                            }`}
+                          >
+                            <Icon size={16} />
+                            {label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">
                       Post Content

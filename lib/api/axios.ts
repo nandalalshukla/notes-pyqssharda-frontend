@@ -13,19 +13,43 @@ const api = axios.create({
 let isRefreshing = false;
 let refreshPromise: Promise<unknown> | null = null;
 
+const getPersistedAuthState = () => {
+  if (typeof window === "undefined") return null;
+
+  try {
+    const rawState = localStorage.getItem("auth-storage");
+    if (!rawState) return null;
+
+    return JSON.parse(rawState) as {
+      state?: { isAuthenticated?: boolean; user?: unknown };
+    };
+  } catch {
+    return null;
+  }
+};
+
+const wasPreviouslyAuthenticated = () => {
+  const state = getPersistedAuthState()?.state;
+  return Boolean(state?.isAuthenticated || state?.user);
+};
+
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
-
-    // Don't retry if it's already a retry, refresh token endpoint, or login endpoint
-    // (login returns 401 on failed credentials, not token expiry)
-    if (
+    const requestUrl = originalRequest?.url || "";
+    const isAuthMeRequest = requestUrl.includes("/auth/me");
+    const canAttemptRefresh =
       error.response?.status === 401 &&
+      originalRequest &&
       !originalRequest._retry &&
-      !originalRequest.url?.includes("/auth/refresh-token") &&
-      !originalRequest.url?.includes("/auth/login")
-    ) {
+      !requestUrl.includes("/auth/refresh-token") &&
+      !requestUrl.includes("/auth/login") &&
+      !requestUrl.includes("/auth/logout") &&
+      !requestUrl.includes("/auth/logout-all") &&
+      (!isAuthMeRequest || wasPreviouslyAuthenticated());
+
+    if (canAttemptRefresh) {
       originalRequest._retry = true;
 
       if (!isRefreshing) {
@@ -40,11 +64,8 @@ api.interceptors.response.use(
         await refreshPromise;
         return api(originalRequest);
       } catch (refreshError) {
-        // Refresh failed - clear auth state and redirect to login
         if (typeof window !== "undefined") {
-          // Clear auth storage
           localStorage.removeItem("auth-storage");
-          window.location.href = "/auth/login";
         }
         return Promise.reject(refreshError);
       }

@@ -1,31 +1,86 @@
 "use client";
 
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import { useSocialStore } from "@/stores/social/social.store";
 import useAuthStore from "@/stores/user/authStore";
 import PostCard from "./PostCard";
 import CreatePostModal from "./CreatePostModal";
 import { FeedLoadingState } from "./LoadingSkeletons";
-import { FiPlus, FiStar, FiFileText } from "react-icons/fi";
+import {
+  FiPlus,
+  FiStar,
+  FiFileText,
+  FiMessageSquare,
+  FiBell,
+  FiCalendar,
+} from "react-icons/fi";
+import { PostType } from "@/lib/api/social/social.api";
+
+const feedSections: {
+  value: PostType;
+  label: string;
+  empty: string;
+  Icon: React.ComponentType<{ size?: number; className?: string }>;
+}[] = [
+  {
+    value: "general",
+    label: "General",
+    empty: "No posts yet",
+    Icon: FiMessageSquare,
+  },
+  {
+    value: "announcement",
+    label: "Announcements",
+    empty: "No announcements yet",
+    Icon: FiBell,
+  },
+  {
+    value: "event",
+    label: "Events",
+    empty: "No events yet",
+    Icon: FiCalendar,
+  },
+];
 
 export default function Feed() {
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, authInitialized } = useAuthStore();
   const { feed, feedPage, feedTotalPages, isLoadingFeed, fetchFeed, error } =
     useSocialStore();
 
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const [activeSection, setActiveSection] = useState<PostType>("general");
 
-  // Fetch feed on mount and when page changes
-  useEffect(() => {
-    fetchFeed(currentPage);
-  }, [currentPage, fetchFeed]);
+  const previousAuthState = useRef<boolean | null>(null);
+  const previousSection = useRef<PostType>("general");
 
-  // Refetch feed when user logs in/out to update like states
   useEffect(() => {
-    fetchFeed(1);
-    setCurrentPage(1);
-  }, [isAuthenticated, fetchFeed]);
+    if (!authInitialized) return;
+
+    if (previousSection.current !== activeSection) {
+      previousSection.current = activeSection;
+      if (currentPage !== 1) {
+        setCurrentPage(1);
+        return;
+      }
+    }
+
+    if (previousAuthState.current === null) {
+      previousAuthState.current = isAuthenticated;
+      fetchFeed(currentPage, activeSection);
+      return;
+    }
+
+    if (previousAuthState.current !== isAuthenticated) {
+      previousAuthState.current = isAuthenticated;
+      if (currentPage !== 1) {
+        setCurrentPage(1);
+        return;
+      }
+    }
+
+    fetchFeed(currentPage, activeSection);
+  }, [authInitialized, isAuthenticated, activeSection, currentPage, fetchFeed]);
 
   const handleLoadMore = useCallback(() => {
     if (currentPage < feedTotalPages) {
@@ -55,6 +110,26 @@ export default function Feed() {
               <span className="hidden sm:inline">New Post</span>
             </button>
           )}
+        </div>
+        <div className="mx-auto flex max-w-3xl gap-2 overflow-x-auto px-4 pb-4 sm:px-6 lg:px-8">
+          {feedSections.map(({ value, label, Icon }) => {
+            const selected = activeSection === value;
+            return (
+              <button
+                key={value}
+                type="button"
+                onClick={() => setActiveSection(value)}
+                className={`inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-sm font-semibold transition-colors ${
+                  selected
+                    ? "border-blue-600 bg-blue-50 text-blue-700"
+                    : "border-gray-200 bg-white text-gray-700 hover:bg-gray-50"
+                }`}
+              >
+                <Icon size={16} />
+                {label}
+              </button>
+            );
+          })}
         </div>
       </div>
 
@@ -145,7 +220,8 @@ export default function Feed() {
               <FiFileText size={32} className="text-gray-400" />
             </div>
             <h2 className="text-xl font-semibold text-gray-900 mb-2">
-              No posts yet
+              {feedSections.find((section) => section.value === activeSection)
+                ?.empty || "No posts yet"}
             </h2>
             <p className="text-gray-500 mb-6 text-sm">
               Be the first to share something with the community!

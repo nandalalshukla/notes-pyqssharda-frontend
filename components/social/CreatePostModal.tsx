@@ -5,14 +5,34 @@ import { Dialog, Transition } from "@headlessui/react";
 import { useSocialStore } from "@/stores/social/social.store";
 import useAuthStore from "@/stores/user/authStore";
 import { useBodyScroll } from "@/hooks/useBodyScroll";
-import { FiX, FiImage, FiFile, FiTrash2, FiVideo } from "react-icons/fi";
+import {
+  FiX,
+  FiImage,
+  FiFile,
+  FiTrash2,
+  FiVideo,
+  FiMessageSquare,
+  FiBell,
+  FiCalendar,
+} from "react-icons/fi";
 import toast from "react-hot-toast";
 import Image from "next/image";
+import { PostType } from "@/lib/api/social/social.api";
 
 interface CreatePostModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
+
+const postTypeOptions: {
+  value: PostType;
+  label: string;
+  Icon: React.ComponentType<{ size?: number; className?: string }>;
+}[] = [
+  { value: "general", label: "General", Icon: FiMessageSquare },
+  { value: "announcement", label: "Announcement", Icon: FiBell },
+  { value: "event", label: "Event", Icon: FiCalendar },
+];
 
 export default function CreatePostModal({
   isOpen,
@@ -25,6 +45,7 @@ export default function CreatePostModal({
   useBodyScroll(isOpen);
 
   const [content, setContent] = useState("");
+  const [postType, setPostType] = useState<PostType>("general");
   const [files, setFiles] = useState<File[]>([]);
   const [previews, setPreviews] = useState<string[]>([]);
 
@@ -75,6 +96,7 @@ export default function CreatePostModal({
 
       const formData = new FormData();
       formData.append("content", content);
+      formData.append("type", postType);
       files.forEach((file) => {
         formData.append("files", file);
       });
@@ -82,6 +104,7 @@ export default function CreatePostModal({
       try {
         await createNewPost(formData);
         setContent("");
+        setPostType("general");
         setFiles([]);
         setPreviews([]);
         onClose();
@@ -103,11 +126,12 @@ export default function CreatePostModal({
         toast.error(message);
       }
     },
-    [content, files, createNewPost, onClose],
+    [content, postType, files, createNewPost, onClose],
   );
 
   const handleClose = useCallback(() => {
     setContent("");
+    setPostType("general");
     setFiles([]);
     setPreviews([]);
     onClose();
@@ -173,6 +197,32 @@ export default function CreatePostModal({
                       <p className="text-sm text-gray-500">
                         {user?.course || "Sharda University"}
                       </p>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Post Type
+                    </label>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                      {postTypeOptions.map(({ value, label, Icon }) => {
+                        const selected = postType === value;
+                        return (
+                          <button
+                            key={value}
+                            type="button"
+                            onClick={() => setPostType(value)}
+                            className={`flex items-center justify-center gap-2 rounded-lg border px-3 py-2.5 text-sm font-semibold transition-colors ${
+                              selected
+                                ? "border-blue-600 bg-blue-50 text-blue-700"
+                                : "border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
+                            }`}
+                          >
+                            <Icon size={16} />
+                            {label}
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
 

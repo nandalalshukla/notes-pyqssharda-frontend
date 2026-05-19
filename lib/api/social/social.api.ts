@@ -20,8 +20,11 @@ export interface User {
   isFollowedByCurrentUser?: boolean;
 }
 
+export type PostType = "general" | "event" | "announcement";
+
 export interface Post {
   _id: string;
+  type: PostType;
   content: string;
   author: User;
   files?: string[];
@@ -117,11 +120,15 @@ export interface UserProfile {
  * ═══════════════════════════════════════════════════════════════════════════════
  */
 
-export const getFeed = async (page: number = 1, limit: number = 10) => {
+export const getFeed = async (
+  page: number = 1,
+  limit: number = 10,
+  type: PostType = "general",
+) => {
   const response = await api.get<ApiResponse<PaginatedResponse<Post>>>(
     "/social/feed",
     {
-      params: { page, limit },
+      params: { page, limit, type },
     },
   );
   return response.data;

@@ -7,6 +7,7 @@ interface AuthState {
   user: User | null;
   isAuthenticated: boolean;
   authLoading: boolean;
+  authInitialized: boolean;
   lastLoginTime: number | null;
 
   login: (data: { email: string; password: string }) => Promise<void>;
@@ -14,6 +15,7 @@ interface AuthState {
   logoutAll: () => Promise<void>;
   fetchMe: () => Promise<void>;
   setAuthLoading: (loading: boolean) => void;
+  setAuthInitialized: (initialized: boolean) => void;
   setUser: (user: User | null) => void;
 }
 
@@ -34,11 +36,18 @@ const useAuthStore = create<AuthState>()(
       user: null,
       isAuthenticated: false,
       authLoading: false,
+      authInitialized: false,
       lastLoginTime: null,
 
       setAuthLoading: (loading) => set({ authLoading: loading }),
+      setAuthInitialized: (initialized) =>
+        set({ authInitialized: initialized }),
 
-      setUser: (user) => set({ user: normalizeUser(user) }),
+      setUser: (user) =>
+        set({
+          user: normalizeUser(user),
+          isAuthenticated: Boolean(user),
+        }),
 
       login: async (data) => {
         const res = await login(data);
@@ -46,6 +55,7 @@ const useAuthStore = create<AuthState>()(
           user: normalizeUser(res.data.data.user),
           isAuthenticated: true,
           authLoading: false,
+          authInitialized: true,
           lastLoginTime: Date.now(),
         });
       },
@@ -63,6 +73,7 @@ const useAuthStore = create<AuthState>()(
           user: null,
           isAuthenticated: false,
           authLoading: false,
+          authInitialized: true,
           lastLoginTime: null,
         });
       },
@@ -77,6 +88,7 @@ const useAuthStore = create<AuthState>()(
           user: null,
           isAuthenticated: false,
           authLoading: false,
+          authInitialized: true,
           lastLoginTime: null,
         });
       },
@@ -88,16 +100,23 @@ const useAuthStore = create<AuthState>()(
             user: normalizeUser(res.data.data.user),
             isAuthenticated: true,
             authLoading: false,
+            authInitialized: true,
           });
         } catch (error) {
-          // Silent failure - don't clear auth state on page load verification
-          // Let the axios interceptor handle actual auth failures during user actions
-          console.log(
-            "Auth verification failed (cookies may need refresh):",
-            error,
-          );
-          set({ authLoading: false });
-          // Auth state is preserved - will be cleared only if refresh token also fails
+          const status = (error as { response?: { status?: number } })
+            ?.response?.status;
+          if (status === 401 || status === 403) {
+            set({
+              user: null,
+              isAuthenticated: false,
+              authLoading: false,
+              authInitialized: true,
+              lastLoginTime: null,
+            });
+            return;
+          }
+
+          set({ authLoading: false, authInitialized: true });
         }
       },
     }),
