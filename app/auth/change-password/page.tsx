@@ -1,3 +1,5 @@
+"use client";
+
 import AuthGuard from "@/components/AuthGuard";
 import ChangePasswordForm from "@/components/forms/changePswd";
 

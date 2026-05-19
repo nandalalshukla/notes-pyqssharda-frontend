@@ -26,9 +26,11 @@ export default function AuthProviders({
     };
   }, []);
 
-  // Wait for Zustand to hydrate from localStorage
+  // Show a minimal background instead of null to avoid blank flash
   if (!hydrated) {
-    return null;
+    return (
+      <div className="min-h-screen" style={{ background: "var(--paper-bg)" }} />
+    );
   }
 
   return <>{children}</>;

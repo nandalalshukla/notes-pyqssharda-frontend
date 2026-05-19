@@ -1,8 +1,27 @@
 @import "tailwindcss";
 
+/* ============================================================
+   DESIGN TOKENS — Premium Paper-Texture Neo-Brutalist System
+   ============================================================ */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Core palette */
+  --paper-bg: #f5f3ef;
+  --paper-surface: #faf9f6;
+  --ink: #0f0f0f;
+  --muted-ink: #6b7280;
+  --primary-blue: #2563eb;
+  --accent-orange: #f97316;
+  --accent-green: #22c55e;
+  --accent-purple: #a855f7;
+  --dark-card: #1e2235;
+  --border-ink: #0f0f0f;
+  --soft-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+  --hard-shadow: 5px 5px 0px 0px #0f0f0f;
+  --hard-shadow-sm: 3px 3px 0px 0px #0f0f0f;
+
+  /* Legacy compat */
+  --background: var(--paper-bg);
+  --foreground: var(--ink);
 }
 
 @theme inline {
@@ -12,19 +31,74 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* ============================================================
+   BASE STYLES
+   ============================================================ */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--paper-bg);
+  color: var(--ink);
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
+/* ============================================================
+   PAPER GRAIN TEXTURE — subtle, low-opacity noise overlay
+   ============================================================ */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.025;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 128px 128px;
+}
+
+/* ============================================================
+   FOCUS STATES — accessible, visible
+   ============================================================ */
+:focus-visible {
+  outline: 2px solid var(--primary-blue);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* ============================================================
+   SCROLLBAR — minimal, paper-themed
+   ============================================================ */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--paper-bg);
+}
+::-webkit-scrollbar-thumb {
+  background: #d1cfc9;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #a8a49e;
+}
+
+/* ============================================================
+   ANIMATIONS
+   ============================================================ */
+
+/* Page entrance */
 @keyframes fade-in-up {
   0% {
     opacity: 0;
@@ -37,18 +111,14 @@ body {
 }
 
 @keyframes fade-in {
-  0% {
-    opacity: 0;
-  }
-  100% {
-    opacity: 1;
-  }
+  0% { opacity: 0; }
+  100% { opacity: 1; }
 }
 
 @keyframes scale-in {
   0% {
     opacity: 0;
-    transform: scale(0.9);
+    transform: scale(0.92);
   }
   100% {
     opacity: 1;
@@ -56,33 +126,386 @@ body {
   }
 }
 
-@keyframes bounce-in {
+/* Floating decorative elements */
+@keyframes float-slow {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  33% { transform: translateY(-8px) rotate(1deg); }
+  66% { transform: translateY(-4px) rotate(-1deg); }
+}
+
+@keyframes float-medium {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-6px) rotate(2deg); }
+}
+
+/* Stagger children */
+@keyframes stagger-in {
   0% {
     opacity: 0;
-    transform: scale(0.3);
-  }
-  50% {
-    opacity: 1;
-    transform: scale(1.1);
+    transform: translateY(16px);
   }
   100% {
-    opacity: 0;
-    transform: scale(0.8);
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
+/* Pulse glow */
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.15; }
+  50% { opacity: 0.3; }
+}
+
+/* Shimmer for skeletons */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* Bounce in for badges */
+@keyframes bounce-in {
+  0% { opacity: 0; transform: scale(0.3); }
+  50% { opacity: 1; transform: scale(1.08); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+/* ============================================================
+   ANIMATION UTILITY CLASSES
+   ============================================================ */
 .animate-fade-in-up {
-  animation: fade-in-up 0.6s ease-out forwards;
+  animation: fade-in-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .animate-fade-in {
-  animation: fade-in 0.2s ease-out forwards;
+  animation: fade-in 0.3s ease-out forwards;
 }
 
 .animate-scale-in {
-  animation: scale-in 0.3s ease-out forwards;
+  animation: scale-in 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-float-slow {
+  animation: float-slow 5s ease-in-out infinite;
+}
+
+.animate-float-medium {
+  animation: float-medium 3.5s ease-in-out infinite;
+}
+
+.animate-stagger-in {
+  animation: stagger-in 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  opacity: 0;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 3s ease-in-out infinite;
 }
 
 .animate-bounce-in {
-  animation: bounce-in 0.6s ease-out forwards;
+  animation: bounce-in 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Stagger delays */
+.delay-75  { animation-delay: 75ms; }
+.delay-100 { animation-delay: 100ms; }
+.delay-150 { animation-delay: 150ms; }
+.delay-200 { animation-delay: 200ms; }
+.delay-300 { animation-delay: 300ms; }
+.delay-400 { animation-delay: 400ms; }
+.delay-500 { animation-delay: 500ms; }
+.delay-600 { animation-delay: 600ms; }
+.delay-700 { animation-delay: 700ms; }
+
+/* ============================================================
+   SKELETON LOADING
+   ============================================================ */
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    #e8e5df 25%,
+    #f0ede8 50%,
+    #e8e5df 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 8px;
+}
+
+/* ============================================================
+   PAPER CARD SYSTEM
+   ============================================================ */
+.paper-card {
+  background: var(--paper-surface);
+  border: 2px solid var(--border-ink);
+  border-radius: 20px;
+  box-shadow: var(--hard-shadow);
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.paper-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 6px 8px 0px 0px var(--border-ink);
+}
+
+.paper-card-sm {
+  background: var(--paper-surface);
+  border: 1.5px solid var(--border-ink);
+  border-radius: 14px;
+  box-shadow: var(--hard-shadow-sm);
+  transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.paper-card-sm:hover {
+  transform: translateY(-2px);
+  box-shadow: 4px 5px 0px 0px var(--border-ink);
+}
+
+/* ============================================================
+   BUTTON SYSTEM
+   ============================================================ */
+
+/* Primary — blue */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 28px;
+  background: var(--primary-blue);
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.9375rem;
+  border: 2px solid var(--border-ink);
+  border-radius: 12px;
+  box-shadow: var(--hard-shadow-sm);
+  cursor: pointer;
+  transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+  text-decoration: none;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 5px 6px 0px 0px var(--border-ink);
+}
+
+.btn-primary:active {
+  transform: translateY(1px);
+  box-shadow: 1px 1px 0px 0px var(--border-ink);
+}
+
+/* Secondary — paper white */
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 28px;
+  background: var(--paper-surface);
+  color: var(--ink);
+  font-weight: 700;
+  font-size: 0.9375rem;
+  border: 2px solid var(--border-ink);
+  border-radius: 12px;
+  box-shadow: var(--hard-shadow-sm);
+  cursor: pointer;
+  transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+  text-decoration: none;
+}
+
+.btn-secondary:hover {
+  transform: translateY(-2px);
+  box-shadow: 5px 6px 0px 0px var(--border-ink);
+}
+
+.btn-secondary:active {
+  transform: translateY(1px);
+  box-shadow: 1px 1px 0px 0px var(--border-ink);
+}
+
+/* Pill button */
+.btn-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 20px;
+  border: 2px solid var(--border-ink);
+  border-radius: 9999px;
+  font-weight: 700;
+  font-size: 0.875rem;
+  box-shadow: var(--hard-shadow-sm);
+  cursor: pointer;
+  transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+  text-decoration: none;
+}
+
+.btn-pill:hover {
+  transform: translateY(-2px) scale(1.03);
+  box-shadow: 4px 5px 0px 0px var(--border-ink);
+}
+
+.btn-pill:active {
+  transform: translateY(1px) scale(0.98);
+  box-shadow: 1px 1px 0px 0px var(--border-ink);
+}
+
+/* ============================================================
+   STICKER BADGE
+   ============================================================ */
+.sticker-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 16px;
+  border: 2px solid var(--border-ink);
+  border-radius: 9999px;
+  font-weight: 800;
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  box-shadow: 3px 3px 0px 0px var(--border-ink);
+}
+
+/* ============================================================
+   SECTION HEADER
+   ============================================================ */
+.section-header {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 2rem;
+}
+
+.section-header h2 {
+  font-size: clamp(1.5rem, 3vw, 2.25rem);
+  font-weight: 900;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+}
+
+.section-header p {
+  font-size: 0.9375rem;
+  color: var(--muted-ink);
+  font-weight: 500;
+}
+
+/* ============================================================
+   NAVBAR GLASS PAPER EFFECT
+   ============================================================ */
+.navbar-glass {
+  background: rgba(245, 243, 239, 0.88);
+  backdrop-filter: blur(16px) saturate(1.4);
+  -webkit-backdrop-filter: blur(16px) saturate(1.4);
+  border-bottom: 1.5px solid rgba(15, 15, 15, 0.1);
+  box-shadow: 0 1px 12px rgba(0, 0, 0, 0.06);
+}
+
+.navbar-glass-scrolled {
+  background: rgba(245, 243, 239, 0.96);
+  backdrop-filter: blur(20px) saturate(1.6);
+  -webkit-backdrop-filter: blur(20px) saturate(1.6);
+  border-bottom: 1.5px solid rgba(15, 15, 15, 0.15);
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.1);
+}
+
+/* ============================================================
+   FEED POST CARD
+   ============================================================ */
+.feed-post-card {
+  background: var(--paper-surface);
+  border: 2px solid #e2ddd6;
+  border-radius: 20px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.2s ease;
+}
+
+.feed-post-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.1);
+  border-color: #c8c3ba;
+}
+
+/* ============================================================
+   RESOURCE CARD ACCENT STRIPES
+   ============================================================ */
+.resource-card-notes::before {
+  content: "";
+  display: block;
+  height: 4px;
+  background: var(--accent-green);
+  border-radius: 4px 4px 0 0;
+  margin: -2px -2px 0 -2px;
+}
+
+.resource-card-pyqs::before {
+  content: "";
+  display: block;
+  height: 4px;
+  background: var(--accent-orange);
+  border-radius: 4px 4px 0 0;
+  margin: -2px -2px 0 -2px;
+}
+
+.resource-card-syllabus::before {
+  content: "";
+  display: block;
+  height: 4px;
+  background: var(--accent-purple);
+  border-radius: 4px 4px 0 0;
+  margin: -2px -2px 0 -2px;
+}
+
+/* ============================================================
+   DECORATIVE FLOATING ELEMENTS
+   ============================================================ */
+.deco-float {
+  pointer-events: none;
+  user-select: none;
+  position: absolute;
+}
+
+/* ============================================================
+   TYPOGRAPHY UTILITIES
+   ============================================================ */
+.display-heading {
+  font-size: clamp(2.5rem, 6vw, 4.5rem);
+  font-weight: 900;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  color: var(--ink);
+}
+
+.section-title {
+  font-size: clamp(1.75rem, 3.5vw, 2.5rem);
+  font-weight: 900;
+  line-height: 1.1;
+  letter-spacing: -0.025em;
+  color: var(--ink);
+}
+
+/* ============================================================
+   CONTAINER
+   ============================================================ */
+.container-main {
+  width: 100%;
+  max-width: 1160px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .container-main {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
 }

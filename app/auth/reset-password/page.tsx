@@ -1,4 +1,4 @@
-"useClient";
+"use client";
 
 import ResetPasswordForm from "@/components/forms/resetPswd";
 import React from "react";

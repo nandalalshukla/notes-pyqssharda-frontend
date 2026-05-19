@@ -1,10 +1,8 @@
+"use client";
+
 import ForgotPasswordForm from "@/components/forms/forgotPswd";
 
 const ForgotPasswordPage = () => {
-  return (
-
-      <ForgotPasswordForm />
-
-  );
+  return <ForgotPasswordForm />;
 };
 export default ForgotPasswordPage;

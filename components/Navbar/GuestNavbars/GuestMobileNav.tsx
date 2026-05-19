@@ -3,15 +3,17 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { FiHome, FiBookOpen, FiInfo } from "react-icons/fi";
 
 const navLinks = [
-  { href: "/", label: "Social" },
-  { href: "/library", label: "Library" },
-  { href: "/about-us", label: "About" },
+  { href: "/", label: "Social", icon: FiHome },
+  { href: "/library", label: "Library", icon: FiBookOpen },
+  { href: "/about-us", label: "About", icon: FiInfo },
 ];
 
 const GuestMobileNav = () => {
   const pathname = usePathname();
+
   const handleLogoClick = () => {
     if (typeof window !== "undefined") {
       window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
@@ -19,60 +21,66 @@ const GuestMobileNav = () => {
   };
 
   return (
-    <div className="w-full px-4 py-3 text-gray-950">
-      <div className="flex items-center justify-between gap-3 mb-3">
-        {/* Logo */}
-        <Link
-          href="/"
-          onClick={handleLogoClick}
-          className="flex items-center gap-2 flex-shrink-0"
-        >
-          <Image
-            src="/shardasocial.png"
-            alt="Sharda Social"
-            width={100}
-            height={100}
-            className="h-[100px] w-[100px] object-contain drop-shadow-md"
-            priority
-          />
-        </Link>
-      </div>
+    <div className="flex h-12 items-center gap-2 px-3" style={{ color: "var(--ink)" }}>
+      {/* Logo */}
+      <Link
+        href="/"
+        onClick={handleLogoClick}
+        className="flex-shrink-0"
+        aria-label="Sharda Social home"
+      >
+        <Image
+          src="/shardasocial.png"
+          alt="Sharda Social"
+          width={34}
+          height={34}
+          className="h-[34px] w-[34px] object-contain"
+          priority
+        />
+      </Link>
 
-      {/* Navigation Links - Always Visible */}
-      <div className="flex gap-1.5 mb-3 overflow-x-auto pb-1 rounded-lg bg-white/50 border border-gray-200 p-1 backdrop-blur-sm">
-        {navLinks.map((link) => {
+      {/* Icon nav links */}
+      <nav
+        className="flex items-center gap-1 flex-1 justify-center min-w-0"
+        aria-label="Main navigation"
+      >
+        {navLinks.map(({ href, label, icon: Icon }) => {
           const active =
-            link.href === "/"
+            href === "/"
               ? pathname === "/"
-              : pathname.startsWith(link.href);
+              : pathname.startsWith(href);
 
           return (
             <Link
-              key={link.href}
-              href={link.href}
-              className={`rounded-lg px-3 py-1.5 text-xs font-semibold whitespace-nowrap transition-all duration-200 flex-shrink-0 ${
-                active
-                  ? "bg-white text-gray-950 shadow-sm"
-                  : "text-gray-600 hover:text-gray-950"
-              }`}
+              key={href}
+              href={href}
+              className="flex items-center justify-center h-8 w-8 rounded-full transition-all duration-200 flex-shrink-0"
+              style={{
+                color: active ? "var(--ink)" : "var(--muted-ink)",
+                background: active ? "rgba(15,15,15,0.07)" : "transparent",
+              }}
+              aria-label={label}
+              aria-current={active ? "page" : undefined}
             >
-              {link.label}
+              <Icon size={17} strokeWidth={active ? 2.5 : 1.8} />
             </Link>
           );
         })}
-      </div>
+      </nav>
 
-      {/* Auth Buttons */}
-      <div className="flex gap-2">
+      {/* Auth buttons */}
+      <div className="flex items-center gap-1.5 flex-shrink-0">
         <Link
           href="/auth/login"
-          className="flex-1 rounded-lg border border-gray-200 bg-white px-3 py-2 text-center text-xs font-semibold text-gray-700 transition-all hover:border-gray-300 hover:bg-gray-50"
+          className="rounded-full px-3 py-1 text-xs font-medium transition-all"
+          style={{ color: "var(--muted-ink)" }}
         >
           Login
         </Link>
         <Link
           href="/auth/register"
-          className="flex-1 rounded-lg bg-gray-950 px-3 py-2 text-center text-xs font-semibold text-white shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
+          className="rounded-full px-3.5 py-1.5 text-xs font-semibold text-white transition-all"
+          style={{ background: "var(--ink)" }}
         >
           Register
         </Link>
