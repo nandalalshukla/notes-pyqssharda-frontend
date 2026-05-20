@@ -19,6 +19,10 @@ export interface User {
     url: string;
     publicId: string;
   };
+  privacySettings?: {
+    showEmail: boolean;
+    showContactNo: boolean;
+  };
   followersCount?: number;
   followingCount?: number;
   createdAt: string;
@@ -32,6 +36,8 @@ export const updateProfile = async (data: {
   course?: string;
   contactNo?: string;
   profilePic?: File;
+  showEmail?: boolean;
+  showContactNo?: boolean;
 }) => {
   const formData = new FormData();
   if (data.name) formData.append("name", data.name);
@@ -39,6 +45,8 @@ export const updateProfile = async (data: {
   if (data.course) formData.append("course", data.course);
   if (data.contactNo) formData.append("contactNo", data.contactNo);
   if (data.profilePic) formData.append("profilePic", data.profilePic);
+  if (data.showEmail !== undefined) formData.append("showEmail", String(data.showEmail));
+  if (data.showContactNo !== undefined) formData.append("showContactNo", String(data.showContactNo));
 
   const response = await api.put("/auth/profile", formData, {
     headers: { "Content-Type": "multipart/form-data" },

@@ -135,6 +135,8 @@ export const editProfileSchema = z.object({
     .optional()
     .or(z.literal("")),
   profilePic: z.instanceof(File).optional(),
+  showEmail: z.boolean().optional(),
+  showContactNo: z.boolean().optional(),
 });
 
 export type EditProfileInput = z.infer<typeof editProfileSchema>;
