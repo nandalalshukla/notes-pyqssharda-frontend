@@ -1,19 +1,48 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useModStore } from "@/stores/mod/mod.store";
+import { useEffect, useMemo, useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 import { toast } from "react-hot-toast";
 import useAuthStore from "@/stores/user/authStore";
 import DashboardPage from "./DashboardPage";
 import RejectionModal from "@/components/modals/RejectionModal";
-import { FaUserShield, FaUser } from "react-icons/fa";
+import ModerationShell from "@/components/moderation/ModerationShell";
+import ModerationToolbar from "@/components/moderation/ModerationToolbar";
+import SearchInput from "@/components/moderation/SearchInput";
+import FilterSelect from "@/components/moderation/FilterSelect";
+import DataTable, { TableColumn } from "@/components/moderation/DataTable";
+import SectionCard from "@/components/moderation/SectionCard";
+import Pagination from "@/components/moderation/Pagination";
+import StatusBadge from "@/components/moderation/StatusBadge";
+import Badge from "@/components/moderation/Badge";
+import ActionMenu from "@/components/moderation/ActionMenu";
+import DetailPanel from "@/components/moderation/DetailPanel";
+import StatsStrip from "@/components/moderation/StatsStrip";
+import {
+  getSubmissionActionKey,
+  useModSubmissionsStore,
+} from "@/stores/mod/submissions.store";
+import { useModReportsStore } from "@/stores/mod/reports.store";
+import type {
+  PendingSubmission,
+  SubmissionType,
+} from "@/stores/mod/submissions.store";
+import type {
+  ReportListItem,
+  ReportTargetType,
+  ReportAction,
+} from "@/lib/api/mod/mod.api";
 
 type DashboardView = "moderator" | "user";
+
+type SubmissionWithType = PendingSubmission & {
+  submissionType: SubmissionType;
+};
 
 interface RejectionModalState {
   isOpen: boolean;
   itemId: string;
-  itemType: "note" | "pyq" | "syllabus";
+  itemType: SubmissionType;
   itemTitle: string;
 }
 
@@ -24,6 +53,9 @@ export default function ModDashboard({
   isViewedByAdmin?: boolean;
   isEmbedded?: boolean;
 }) {
+  type ModSubmissionsStore = ReturnType<typeof useModSubmissionsStore.getState>;
+  type ModReportsStore = ReturnType<typeof useModReportsStore.getState>;
+
   const { user } = useAuthStore();
   const [currentView, setCurrentView] = useState<DashboardView>("moderator");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -33,58 +65,204 @@ export default function ModDashboard({
     itemType: "note",
     itemTitle: "",
   });
+  const [search, setSearch] = useState("");
+  const [submissionFilter, setSubmissionFilter] = useState("all");
+  const [reportStatus, setReportStatus] = useState("pending");
+  const [reportTargetType, setReportTargetType] = useState("all");
+  const [submissionPage, setSubmissionPage] = useState(1);
+  const [reportPage, setReportPage] = useState(1);
+  const [selectedSubmission, setSelectedSubmission] =
+    useState<SubmissionWithType | null>(null);
+  const [selectedReport, setSelectedReport] = useState<ReportListItem | null>(
+    null,
+  );
 
   const {
-    pendingNotes,
-    pendingPyqs,
-    pendingSyllabus,
-    isLoading,
-    fetchPendingContent,
-    approveItem,
-    rejectItem,
-  } = useModStore();
+    submissionEntities,
+    submissionIds,
+    submissionLoading,
+    submissionPendingActions,
+    fetchAllPending,
+    approveSubmission,
+    rejectSubmission,
+  } = useModSubmissionsStore(
+    useShallow((state: ModSubmissionsStore) => ({
+      submissionEntities: state.entities,
+      submissionIds: state.ids,
+      submissionLoading: state.isLoading,
+      submissionPendingActions: state.pendingActions,
+      fetchAllPending: state.fetchAllPending,
+      approveSubmission: state.approveSubmission,
+      rejectSubmission: state.rejectSubmission,
+    })),
+  );
+
+  const {
+    reportEntities,
+    reportIds,
+    reportsLoading,
+    reportPendingActions,
+    fetchReports,
+    applyReportAction,
+  } = useModReportsStore(
+    useShallow((state: ModReportsStore) => ({
+      reportEntities: state.entities,
+      reportIds: state.ids,
+      reportsLoading: state.isLoading,
+      reportPendingActions: state.pendingActions,
+      fetchReports: state.fetchReports,
+      applyReportAction: state.applyReportAction,
+    })),
+  );
+
+  const pendingNotes = useMemo(
+    () =>
+      submissionIds.note
+        .map((id) => submissionEntities.note[id])
+        .filter(Boolean),
+    [submissionIds.note, submissionEntities.note],
+  );
+  const pendingPyqs = useMemo(
+    () =>
+      submissionIds.pyq.map((id) => submissionEntities.pyq[id]).filter(Boolean),
+    [submissionIds.pyq, submissionEntities.pyq],
+  );
+  const pendingSyllabus = useMemo(
+    () =>
+      submissionIds.syllabus
+        .map((id) => submissionEntities.syllabus[id])
+        .filter(Boolean),
+    [submissionIds.syllabus, submissionEntities.syllabus],
+  );
+  const pendingReports = useMemo(
+    () => reportIds.map((id) => reportEntities[id]).filter(Boolean),
+    [reportIds, reportEntities],
+  );
+
+  const normalizedSearch = search.trim().toLowerCase();
+  const typedSubmissions = useMemo(
+    () => [
+      ...pendingNotes.map((item) => ({
+        ...item,
+        submissionType: "note" as const,
+      })),
+      ...pendingPyqs.map((item) => ({
+        ...item,
+        submissionType: "pyq" as const,
+      })),
+      ...pendingSyllabus.map((item) => ({
+        ...item,
+        submissionType: "syllabus" as const,
+      })),
+    ],
+    [pendingNotes, pendingPyqs, pendingSyllabus],
+  );
+
+  const filteredSubmissions = useMemo(() => {
+    return typedSubmissions.filter((item) => {
+      const matchesSearch =
+        !normalizedSearch ||
+        item.title.toLowerCase().includes(normalizedSearch) ||
+        item.userId?.name?.toLowerCase().includes(normalizedSearch) ||
+        item.userId?.email?.toLowerCase().includes(normalizedSearch);
+      const matchesType =
+        submissionFilter === "all" || submissionFilter === item.submissionType;
+      return matchesSearch && matchesType;
+    });
+  }, [typedSubmissions, normalizedSearch, submissionFilter]);
+
+  const filteredReports = useMemo(() => {
+    return pendingReports.filter((item) => {
+      const matchesSearch =
+        !normalizedSearch ||
+        item.reason.toLowerCase().includes(normalizedSearch) ||
+        item.reporter?.username?.toLowerCase().includes(normalizedSearch) ||
+        item.targetOwner?.username?.toLowerCase().includes(normalizedSearch) ||
+        item.message?.toLowerCase().includes(normalizedSearch);
+      const matchesStatus =
+        reportStatus === "all" || item.status === reportStatus;
+      const matchesTarget =
+        reportTargetType === "all" || item.targetType === reportTargetType;
+      return matchesSearch && matchesStatus && matchesTarget;
+    });
+  }, [pendingReports, normalizedSearch, reportStatus, reportTargetType]);
+
+  const pageSize = 8;
+  const pagedSubmissions = filteredSubmissions.slice(
+    (submissionPage - 1) * pageSize,
+    submissionPage * pageSize,
+  );
+  const pagedReports = filteredReports.slice(
+    (reportPage - 1) * pageSize,
+    reportPage * pageSize,
+  );
 
   useEffect(() => {
     if (currentView === "moderator") {
-      fetchPendingContent();
+      fetchAllPending();
+      fetchReports({
+        page: reportPage,
+        limit: 20,
+        status:
+          reportStatus === "all"
+            ? undefined
+            : (reportStatus as ReportListItem["status"]),
+        targetType:
+          reportTargetType === "all"
+            ? undefined
+            : (reportTargetType as ReportTargetType),
+      });
     }
-  }, [currentView, fetchPendingContent]);
+  }, [
+    currentView,
+    fetchAllPending,
+    fetchReports,
+    reportPage,
+    reportStatus,
+    reportTargetType,
+  ]);
 
-  const handleAction = async (
+  const handleSubmissionAction = async (
     id: string,
-    type: "note" | "pyq" | "syllabus",
+    type: SubmissionType,
     action: "approve" | "reject",
     title?: string,
   ) => {
     if (action === "reject") {
-      // Open rejection modal
       setRejectionModal({
         isOpen: true,
         itemId: id,
         itemType: type,
         itemTitle: title || "Untitled",
       });
-    } else {
-      // Handle approval directly
-      try {
-        await approveItem(id, type);
-        toast.success("Item approved successfully");
-        // No need to refetch - store already updates optimistically
-      } catch (error: unknown) {
-        const errorMessage =
-          error instanceof Error ? error.message : "Failed to approve item";
-        toast.error(errorMessage);
-        console.error("Approval error:", error);
-        // Only refetch on error to restore correct state
-        await fetchPendingContent();
-      }
+      return;
+    }
+
+    try {
+      await approveSubmission(id, type);
+      toast.success("Item approved successfully");
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to approve item";
+      toast.error(errorMessage);
+    }
+  };
+
+  const handleReportAction = async (id: string, action: ReportAction) => {
+    try {
+      await applyReportAction(id, action);
+      toast.success("Report updated successfully");
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to update report";
+      toast.error(errorMessage);
     }
   };
 
   const handleRejectionSubmit = async (rejectionReason: string) => {
     setIsSubmitting(true);
     try {
-      await rejectItem(
+      await rejectSubmission(
         rejectionModal.itemId,
         rejectionModal.itemType,
         rejectionReason,
@@ -96,14 +274,10 @@ export default function ModDashboard({
         itemType: "note",
         itemTitle: "",
       });
-      // No need to refetch - store already updates optimistically
     } catch (error: unknown) {
       const errorMessage =
         error instanceof Error ? error.message : "Failed to reject item";
       toast.error(errorMessage);
-      console.error("Rejection error:", error);
-      // Only refetch on error to restore correct state
-      await fetchPendingContent();
     } finally {
       setIsSubmitting(false);
     }
@@ -121,12 +295,14 @@ export default function ModDashboard({
   };
 
   const totalPending =
-    pendingNotes.length + pendingPyqs.length + pendingSyllabus.length;
+    pendingNotes.length +
+    pendingPyqs.length +
+    pendingSyllabus.length +
+    pendingReports.length;
 
-  // Render User View
   if (currentView === "user") {
     return (
-      <div className="min-h-screen bg-[#F2F4F8] p-4 md:p-8 font-sans">
+      <div className="min-h-screen bg-slate-50 p-4 md:p-8 font-sans">
         {!isViewedByAdmin && (
           <ViewSwitcher
             currentView={currentView}
@@ -139,114 +315,369 @@ export default function ModDashboard({
     );
   }
 
-  // Render Moderator View (default)
+  const submissionColumns: TableColumn<SubmissionWithType>[] = [
+    {
+      header: "Submission",
+      accessor: (row) => (
+        <div>
+          <p className="font-semibold text-slate-900">{row.title}</p>
+          <p className="text-xs text-slate-500">
+            {row.courseCode || "—"} · {row.courseName || "Course"}
+          </p>
+        </div>
+      ),
+    },
+    {
+      header: "Contributor",
+      accessor: (row) => (
+        <div>
+          <p className="text-sm text-slate-700">
+            {row.userId?.name || row.userId?.username || "Unknown"}
+          </p>
+          <p className="text-xs text-slate-500">{row.userId?.email || "—"}</p>
+        </div>
+      ),
+    },
+    {
+      header: "Type",
+      accessor: (row) => (
+        <div className="flex flex-wrap gap-1">
+          <Badge label={row.submissionType} />
+          <Badge label={`Sem ${row.semester || "?"}`} />
+        </div>
+      ),
+    },
+    {
+      header: "Actions",
+      accessor: (row) => {
+        const actionKey = getSubmissionActionKey(row.submissionType, row._id);
+        const pendingAction = submissionPendingActions[actionKey];
+        const isPending = Boolean(pendingAction);
+
+        return (
+          <ActionMenu
+            items={[
+              {
+                label: pendingAction === "approve" ? "Approving" : "Approve",
+                loading: pendingAction === "approve",
+                onClick: () =>
+                  handleSubmissionAction(
+                    row._id,
+                    row.submissionType,
+                    "approve",
+                  ),
+                disabled: isPending,
+              },
+              {
+                label: pendingAction === "reject" ? "Rejecting" : "Reject",
+                loading: pendingAction === "reject",
+                onClick: () =>
+                  handleSubmissionAction(
+                    row._id,
+                    row.submissionType,
+                    "reject",
+                    row.title,
+                  ),
+                variant: "danger",
+                disabled: isPending,
+              },
+            ]}
+          />
+        );
+      },
+      className: "text-right",
+    },
+  ];
+
+  const reportColumns: TableColumn<ReportListItem>[] = [
+    {
+      header: "Target",
+      accessor: (row) => (
+        <div>
+          <p className="font-semibold text-slate-900 capitalize">
+            {row.targetType}
+          </p>
+          <p className="text-xs text-slate-500">{row.reason}</p>
+        </div>
+      ),
+    },
+    {
+      header: "Reporter",
+      accessor: (row) => (
+        <p className="text-sm text-slate-700">
+          {row.reporter?.username || "Unknown"}
+        </p>
+      ),
+    },
+    {
+      header: "Owner",
+      accessor: (row) => (
+        <p className="text-sm text-slate-700">
+          {row.targetOwner?.username || "Unknown"}
+        </p>
+      ),
+    },
+    {
+      header: "Status",
+      accessor: (row) => <StatusBadge status={row.status} />,
+    },
+    {
+      header: "Actions",
+      accessor: (row) => (
+        <ActionMenu
+          items={buildReportActions(
+            row,
+            handleReportAction,
+            reportPendingActions[row._id],
+          )}
+        />
+      ),
+      className: "text-right",
+    },
+  ];
+
   return (
     <div
       className={
         isEmbedded
           ? "font-sans"
-          : "min-h-screen bg-[#F2F4F8] p-4 md:p-8 font-sans"
+          : "min-h-screen bg-slate-50 p-4 md:p-8 font-sans"
       }
     >
-      {/* View Switcher */}
-      {!isViewedByAdmin && (
-        <ViewSwitcher
-          currentView={currentView}
-          onViewChange={setCurrentView}
-          userName={user?.name}
+      <ModerationShell
+        title="Moderator workspace"
+        subtitle={`Welcome back, ${user?.name || "Moderator"}. ${totalPending} items need review.`}
+        actions={
+          !isViewedByAdmin ? (
+            <ViewSwitcher
+              currentView={currentView}
+              onViewChange={setCurrentView}
+              userName={user?.name}
+            />
+          ) : undefined
+        }
+      >
+        <StatsStrip
+          items={[
+            { label: "Pending total", value: totalPending },
+            { label: "Notes", value: pendingNotes.length },
+            { label: "PYQs", value: pendingPyqs.length },
+            { label: "Reports", value: pendingReports.length },
+          ]}
         />
-      )}
 
-      {/* Header Section */}
-      <div className="max-w-7xl mx-auto mb-8 animate-fade-in-up">
-        <div className="bg-white border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] rounded-2xl p-6 md:p-8 mb-6">
-          <h1 className="text-3xl md:text-4xl font-black text-black mb-2">
-            Moderator <span className="text-[#C084FC]">Dashboard</span>
-          </h1>
-          <p className="text-gray-600 text-base md:text-lg">
-            Welcome back, {user?.name || "Moderator"}. You have {totalPending}{" "}
-            pending {totalPending === 1 ? "item" : "items"} to review.
-          </p>
-
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 md:gap-6 mt-6 md:mt-8">
-            <StatCard
-              label="Total Pending"
-              value={totalPending}
-              color="bg-blue-300"
-            />
-            <StatCard
-              label="Pending PYQs"
-              value={pendingPyqs.length}
-              color="bg-orange-300"
-            />
-            <StatCard
-              label="Pending Notes"
-              value={pendingNotes.length}
-              color="bg-green-300"
-            />
-            <StatCard
-              label="Pending Syllabus"
-              value={pendingSyllabus.length}
-              color="bg-purple-300"
-            />
-          </div>
-        </div>
-      </div>
-
-      {isLoading ? (
-        <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-4 border-black"></div>
-        </div>
-      ) : (
-        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
-          {/* PYQs Section */}
-          <ModSection
-            title="Pending PYQs"
-            items={pendingPyqs}
-            onApprove={(id) => handleAction(id, "pyq", "approve")}
-            onReject={(id, title) => handleAction(id, "pyq", "reject", title)}
-            type="pyq"
-            color="#FDBA74"
+        <ModerationToolbar
+          title="Moderation queue"
+          description="Filter submissions and reports quickly."
+        >
+          <SearchInput
+            value={search}
+            onChange={setSearch}
+            placeholder="Search titles, users, reasons"
           />
-
-          {/* Notes Section */}
-          <ModSection
-            title="Pending Notes"
-            items={pendingNotes}
-            onApprove={(id) => handleAction(id, "note", "approve")}
-            onReject={(id, title) => handleAction(id, "note", "reject", title)}
-            type="note"
-            color="#86EFAC"
+          <FilterSelect
+            label="Submissions"
+            value={submissionFilter}
+            onChange={(value) => {
+              setSubmissionFilter(value);
+              setSubmissionPage(1);
+            }}
+            options={[
+              { label: "All", value: "all" },
+              { label: "Notes", value: "note" },
+              { label: "PYQs", value: "pyq" },
+              { label: "Syllabus", value: "syllabus" },
+            ]}
           />
+          <FilterSelect
+            label="Report status"
+            value={reportStatus}
+            onChange={(value) => {
+              setReportStatus(value);
+              setReportPage(1);
+            }}
+            options={[
+              { label: "All", value: "all" },
+              { label: "Pending", value: "pending" },
+              { label: "Resolved", value: "resolved" },
+              { label: "Rejected", value: "rejected" },
+            ]}
+          />
+          <FilterSelect
+            label="Target"
+            value={reportTargetType}
+            onChange={(value) => setReportTargetType(value)}
+            options={[
+              { label: "All", value: "all" },
+              { label: "Post", value: "post" },
+              { label: "Comment", value: "comment" },
+              { label: "User", value: "user" },
+            ]}
+          />
+        </ModerationToolbar>
 
-          {/* Syllabus Section */}
-          <ModSection
-            title="Pending Syllabus"
-            items={pendingSyllabus}
-            onApprove={(id) => handleAction(id, "syllabus", "approve")}
-            onReject={(id, title) =>
-              handleAction(id, "syllabus", "reject", title)
+        <div className="grid gap-6 lg:grid-cols-2">
+          <SectionCard
+            title="Submissions"
+            description="Approve or reject notes, PYQs, and syllabus uploads."
+            actions={
+              <Pagination
+                page={submissionPage}
+                totalPages={Math.max(
+                  1,
+                  Math.ceil(filteredSubmissions.length / pageSize),
+                )}
+                onPageChange={setSubmissionPage}
+              />
             }
-            type="syllabus"
-            color="#C084FC"
-          />
-        </div>
-      )}
+          >
+            <DataTable
+              rows={pagedSubmissions}
+              columns={submissionColumns}
+              isLoading={
+                submissionLoading.note ||
+                submissionLoading.pyq ||
+                submissionLoading.syllabus
+              }
+              emptyTitle="No submissions"
+              emptyDescription="Everything is already reviewed."
+              onRowClick={setSelectedSubmission}
+            />
+          </SectionCard>
 
-      {/* Rejection Modal */}
-      <RejectionModal
-        isOpen={rejectionModal.isOpen}
-        onClose={handleRejectionModalClose}
-        onSubmit={handleRejectionSubmit}
-        itemType={rejectionModal.itemType}
-        itemTitle={rejectionModal.itemTitle}
-        isSubmitting={isSubmitting}
-      />
+          <SectionCard
+            title="Reports"
+            description="Review reported posts, comments, and users."
+            actions={
+              <Pagination
+                page={reportPage}
+                totalPages={Math.max(
+                  1,
+                  Math.ceil(filteredReports.length / pageSize),
+                )}
+                onPageChange={setReportPage}
+              />
+            }
+          >
+            <DataTable
+              rows={pagedReports}
+              columns={reportColumns}
+              isLoading={reportsLoading}
+              emptyTitle="No reports"
+              emptyDescription="Nothing is awaiting review."
+              onRowClick={setSelectedReport}
+            />
+          </SectionCard>
+        </div>
+
+        <RejectionModal
+          isOpen={rejectionModal.isOpen}
+          onClose={handleRejectionModalClose}
+          onSubmit={handleRejectionSubmit}
+          itemType={rejectionModal.itemType}
+          itemTitle={rejectionModal.itemTitle}
+          isSubmitting={isSubmitting}
+        />
+
+        <DetailPanel
+          isOpen={Boolean(selectedSubmission)}
+          title="Submission details"
+          onClose={() => setSelectedSubmission(null)}
+        >
+          {selectedSubmission && (
+            <div className="space-y-3">
+              <div>
+                <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
+                  Title
+                </p>
+                <p className="text-base font-semibold text-slate-900">
+                  {selectedSubmission.title}
+                </p>
+                <p className="text-sm text-slate-500">
+                  {selectedSubmission.courseName}
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <Badge label={selectedSubmission.program || "Program"} />
+                <Badge
+                  label={`Semester ${selectedSubmission.semester || "?"}`}
+                />
+                {selectedSubmission.year && (
+                  <Badge label={`Year ${selectedSubmission.year}`} />
+                )}
+              </div>
+              <div>
+                <p className="text-xs text-slate-500">Contributor</p>
+                <p className="text-sm text-slate-700">
+                  {selectedSubmission.userId?.name ||
+                    selectedSubmission.userId?.username ||
+                    "Unknown"}
+                </p>
+              </div>
+              {selectedSubmission.fileUrl && (
+                <a
+                  href={selectedSubmission.fileUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm font-semibold text-blue-600"
+                >
+                  View attachment
+                </a>
+              )}
+            </div>
+          )}
+        </DetailPanel>
+
+        <DetailPanel
+          isOpen={Boolean(selectedReport)}
+          title="Report details"
+          onClose={() => setSelectedReport(null)}
+        >
+          {selectedReport && (
+            <div className="space-y-3">
+              <div>
+                <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
+                  Target
+                </p>
+                <p className="text-base font-semibold text-slate-900 capitalize">
+                  {selectedReport.targetType}
+                </p>
+                <StatusBadge status={selectedReport.status} />
+              </div>
+              <div>
+                <p className="text-xs text-slate-500">Reason</p>
+                <p className="text-sm text-slate-700">
+                  {selectedReport.reason}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs text-slate-500">Reporter</p>
+                <p className="text-sm text-slate-700">
+                  {selectedReport.reporter?.username || "Unknown"}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs text-slate-500">Target owner</p>
+                <p className="text-sm text-slate-700">
+                  {selectedReport.targetOwner?.username || "Unknown"}
+                </p>
+              </div>
+              {selectedReport.message && (
+                <div>
+                  <p className="text-xs text-slate-500">Message</p>
+                  <p className="text-sm text-slate-700">
+                    {selectedReport.message}
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+        </DetailPanel>
+      </ModerationShell>
     </div>
   );
 }
 
-// View Switcher Component
 function ViewSwitcher({
   currentView,
   onViewChange,
@@ -257,185 +688,90 @@ function ViewSwitcher({
   userName?: string;
 }) {
   return (
-    <div className="max-w-7xl mx-auto mb-8">
-      <div className="bg-white border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] rounded-2xl p-6 md:p-8">
-        <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex-1">
-            <h2 className="text-xl md:text-2xl font-black text-black flex items-center gap-2">
-              <FaUserShield className="w-5 h-5" />
-              Moderator Controls - {userName || "Moderator"}
-            </h2>
-            <p className="text-sm text-gray-600 mt-1">
-              Switch between moderator and user views
-            </p>
-          </div>
-
-          <div className="flex gap-3 flex-wrap justify-center md:justify-end">
-            <button
-              onClick={() => onViewChange("moderator")}
-              className={`flex items-center gap-2 px-5 py-2.5 text-sm font-bold border-2 border-black rounded-lg transition-all shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none ${
-                currentView === "moderator"
-                  ? "bg-orange-400 text-white"
-                  : "bg-orange-100 text-black"
-              }`}
-            >
-              <FaUserShield className="w-4 h-4" />
-              Moderator View
-            </button>
-            <button
-              onClick={() => onViewChange("user")}
-              className={`flex items-center gap-2 px-5 py-2.5 text-sm font-bold border-2 border-black rounded-lg transition-all shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none ${
-                currentView === "user"
-                  ? "bg-blue-400 text-white"
-                  : "bg-blue-100 text-black"
-              }`}
-            >
-              <FaUser className="w-4 h-4" />
-              User View
-            </button>
-          </div>
-        </div>
-      </div>
+    <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-600 shadow-sm">
+      <span className="text-[10px] uppercase tracking-[0.2em] text-slate-400">
+        {userName || "Moderator"}
+      </span>
+      <button
+        onClick={() => onViewChange("moderator")}
+        className={`rounded-full px-3 py-1 ${
+          currentView === "moderator"
+            ? "bg-slate-900 text-white"
+            : "text-slate-500 hover:bg-slate-100"
+        }`}
+      >
+        Moderator
+      </button>
+      <button
+        onClick={() => onViewChange("user")}
+        className={`rounded-full px-3 py-1 ${
+          currentView === "user"
+            ? "bg-slate-900 text-white"
+            : "text-slate-500 hover:bg-slate-100"
+        }`}
+      >
+        User
+      </button>
     </div>
   );
 }
 
-function StatCard({
-  label,
-  value,
-  color,
-}: {
-  label: string;
-  value: number;
-  color: string;
-}) {
-  return (
-    <div
-      className={`${color} border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] rounded-xl p-4 transition-transform hover:-translate-y-1`}
-    >
-      <div className="text-3xl md:text-4xl font-black text-black mb-1">
-        {value}
-      </div>
-      <div className="text-xs md:text-sm font-bold text-black/80 uppercase tracking-wide">
-        {label}
-      </div>
-    </div>
-  );
-}
+function buildReportActions(
+  report: ReportListItem,
+  onAction: (reportId: string, action: ReportAction) => void,
+  pendingAction?: ReportAction,
+) {
+  const baseActions = [
+    {
+      label: pendingAction === "resolve" ? "Resolving" : "Resolve",
+      loading: pendingAction === "resolve",
+      disabled: Boolean(pendingAction),
+      onClick: () => onAction(report._id, "resolve"),
+    },
+    {
+      label: pendingAction === "reject" ? "Rejecting" : "Reject",
+      loading: pendingAction === "reject",
+      disabled: Boolean(pendingAction),
+      onClick: () => onAction(report._id, "reject"),
+      variant: "danger" as const,
+    },
+  ];
 
-function ModSection({
-  title,
-  items,
-  onApprove,
-  onReject,
-  type,
-  color,
-}: {
-  title: string;
-  items: any[];
-  onApprove: (id: string) => void;
-  onReject: (id: string, title: string) => void;
-  type: "note" | "pyq" | "syllabus";
-  color: string;
-}) {
-  return (
-    <div className="bg-white rounded-2xl border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex flex-col h-full overflow-hidden">
-      <div className="p-4 md:p-6 border-b-2 border-black bg-gray-50 flex justify-between items-center">
-        <h2 className="text-xl md:text-2xl font-black text-black flex items-center gap-2">
-          <span
-            className="w-4 h-4 rounded-full border-2 border-black"
-            style={{ backgroundColor: color }}
-          ></span>
-          {title}
-        </h2>
-      </div>
+  if (report.targetType === "post") {
+    baseActions.push({
+      label: pendingAction === "delete_post" ? "Deleting" : "Delete post",
+      loading: pendingAction === "delete_post",
+      disabled: Boolean(pendingAction),
+      onClick: () => onAction(report._id, "delete_post"),
+      variant: "danger" as const,
+    });
+  }
 
-      <div className="flex-1 overflow-y-auto max-h-[500px] md:max-h-[600px] p-4 md:p-6 space-y-4">
-        {items.length === 0 ? (
-          <div className="text-center text-gray-400 py-12 italic border-2 border-dashed border-gray-300 rounded-xl">
-            No {title.toLowerCase()} to review. Good job! 🎉
-          </div>
-        ) : (
-          items.map((item) => (
-            <div
-              key={item._id}
-              className="group bg-white p-4 rounded-xl border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all"
-            >
-              <div className="flex justify-between items-start mb-3">
-                <h3
-                  className="font-bold text-base md:text-lg text-black line-clamp-2"
-                  title={item.title}
-                >
-                  {item.title}
-                </h3>
-              </div>
+  if (report.targetType === "comment") {
+    baseActions.push({
+      label: pendingAction === "delete_comment" ? "Deleting" : "Delete comment",
+      loading: pendingAction === "delete_comment",
+      disabled: Boolean(pendingAction),
+      onClick: () => onAction(report._id, "delete_comment"),
+      variant: "danger" as const,
+    });
+  }
 
-              <div className="space-y-2 mb-4">
-                <div className="flex items-center gap-2 flex-wrap">
-                  {item.courseCode && (
-                    <div className="inline-block px-2 py-1 bg-gray-100 border border-black rounded-md text-xs font-bold text-black">
-                      {item.courseCode}
-                    </div>
-                  )}
-                  <span className="text-sm font-medium text-gray-600 line-clamp-1">
-                    {item.courseName || "No Course Name"}
-                  </span>
-                </div>
-                <div className="text-xs text-gray-500">
-                  By:{" "}
-                  <span className="font-semibold text-black">
-                    {item.userId?.name || item.userId?.username || "Unknown"}
-                  </span>
-                </div>
-                {item.userId?.email && (
-                  <div className="text-xs text-gray-500">
-                    Email:{" "}
-                    <span className="font-medium text-black">
-                      {item.userId.email}
-                    </span>
-                  </div>
-                )}
-              </div>
+  if (report.targetType === "user") {
+    baseActions.push({
+      label: pendingAction === "suspend_user" ? "Suspending" : "Suspend user",
+      loading: pendingAction === "suspend_user",
+      disabled: Boolean(pendingAction),
+      onClick: () => onAction(report._id, "suspend_user"),
+      variant: "danger" as const,
+    });
+    baseActions.push({
+      label: pendingAction === "warn_user" ? "Warning" : "Warn user",
+      loading: pendingAction === "warn_user",
+      disabled: Boolean(pendingAction),
+      onClick: () => onAction(report._id, "warn_user"),
+    });
+  }
 
-              <div className="flex justify-between items-end gap-2 flex-wrap">
-                <div className="flex-1 min-w-[150px]">
-                  <div className="text-xs font-bold text-gray-500 mb-2">
-                    {item.program || "Program n/a"} • Sem {item.semester || "?"}{" "}
-                    {type === "pyq" && item.year && `• ${item.year}`}
-                  </div>
-                  {item.fileUrl && (
-                    <a
-                      href={item.fileUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-xs font-black underline decoration-2 hover:text-purple-600 transition-colors text-black"
-                    >
-                      VIEW FILE →
-                    </a>
-                  )}
-                </div>
-
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => onApprove(item._id)}
-                    className="p-2 bg-green-100 hover:bg-green-200 border border-black rounded-lg transition-colors text-green-700 font-bold text-sm"
-                    title="Approve"
-                  >
-                    ✓
-                  </button>
-                  <button
-                    onClick={() => onReject(item._id, item.title)}
-                    className="p-2 bg-red-100 hover:bg-red-200 border border-black rounded-lg transition-colors text-red-700 font-bold text-sm"
-                    title="Reject"
-                  >
-                    ✕
-                  </button>
-                </div>
-              </div>
-            </div>
-          ))
-        )}
-      </div>
-    </div>
-  );
+  return report.status === "pending" ? baseActions : baseActions.slice(0, 1);
 }

@@ -49,6 +49,10 @@ interface ModState {
   ) => Promise<void>;
 }
 
+type PendingNotesResponse = { notes?: PendingItem[] };
+type PendingPyqsResponse = { pyqs?: PendingItem[] };
+type PendingSyllabusResponse = { syllabus?: PendingItem[] };
+
 export const useModStore = create<ModState>((set, get) => ({
   pendingNotes: [],
   pendingPyqs: [],
@@ -63,15 +67,15 @@ export const useModStore = create<ModState>((set, get) => ({
         getPendingNotes().catch((err) => {
           console.error("Error fetching pending notes:", err);
           return { notes: [] };
-        }),
+        }) as Promise<PendingNotesResponse>,
         getPendingPyqs().catch((err) => {
           console.error("Error fetching pending pyqs:", err);
           return { pyqs: [] };
-        }),
+        }) as Promise<PendingPyqsResponse>,
         getPendingSyllabus().catch((err) => {
           console.error("Error fetching pending syllabus:", err);
           return { syllabus: [] };
-        }),
+        }) as Promise<PendingSyllabusResponse>,
       ]);
 
       set({

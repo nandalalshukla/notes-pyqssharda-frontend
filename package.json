@@ -14,6 +14,7 @@
     "@vercel/analytics": "^2.0.1",
     "axios": "^1.13.2",
     "framer-motion": "^12.27.0",
+    "lucide-react": "^1.16.0",
     "next": "16.2.4",
     "pdfjs-dist": "^5.4.530",
     "react": "19.2.5",

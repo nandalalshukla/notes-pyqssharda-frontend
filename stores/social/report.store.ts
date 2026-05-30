@@ -5,7 +5,11 @@ import {
   ReportTargetType,
   ReportReason,
 } from "@/lib/api/social/report.api";
-import { getErrorMessage } from "@/lib/utils/errorHandler";
+import {
+  getReportErrorDetails,
+  getReportErrorFeedback,
+  ReportError,
+} from "@/lib/utils/reportErrorHandler";
 
 const getTargetKey = (targetType: ReportTargetType, targetId: string) =>
   `${targetType}:${targetId}`;
@@ -14,7 +18,13 @@ interface ReportState {
   isSubmitting: boolean;
   pendingByTarget: Record<string, boolean>;
   success: boolean;
-  error: string | null;
+  error: ReportError | null;
+  errorFeedback: {
+    title: string;
+    description: string;
+    actionText?: string;
+    retryAfter?: number;
+  } | null;
   submitReport: (payload: CreateReportPayload) => Promise<void>;
   reportPost: (
     targetId: string,
@@ -40,6 +50,7 @@ export const useReportStore = create<ReportState>((set, get) => ({
   pendingByTarget: {},
   success: false,
   error: null,
+  errorFeedback: null,
 
   isTargetPending: (targetType, targetId) =>
     Boolean(get().pendingByTarget[getTargetKey(targetType, targetId)]),
@@ -52,6 +63,7 @@ export const useReportStore = create<ReportState>((set, get) => ({
     set((state) => ({
       isSubmitting: true,
       error: null,
+      errorFeedback: null,
       success: false,
       pendingByTarget: {
         ...state.pendingByTarget,
@@ -64,16 +76,22 @@ export const useReportStore = create<ReportState>((set, get) => ({
       set((state) => ({
         isSubmitting: false,
         success: true,
+        error: null,
+        errorFeedback: null,
         pendingByTarget: {
           ...state.pendingByTarget,
           [targetKey]: false,
         },
       }));
     } catch (error: unknown) {
+      const errorDetails = getReportErrorDetails(error);
+      const feedback = getReportErrorFeedback(errorDetails);
+
       set((state) => ({
         isSubmitting: false,
         success: false,
-        error: getErrorMessage(error),
+        error: errorDetails,
+        errorFeedback: feedback,
         pendingByTarget: {
           ...state.pendingByTarget,
           [targetKey]: false,
@@ -93,5 +111,10 @@ export const useReportStore = create<ReportState>((set, get) => ({
     get().submitReport({ targetType: "user", targetId, reason, message }),
 
   resetReportState: () =>
-    set({ isSubmitting: false, success: false, error: null }),
+    set({
+      isSubmitting: false,
+      success: false,
+      error: null,
+      errorFeedback: null,
+    }),
 }));

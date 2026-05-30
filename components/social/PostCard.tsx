@@ -17,6 +17,7 @@ import {
   FiBell,
   FiCalendar,
   FiMessageSquare,
+  FiFlag,
 } from "react-icons/fi";
 import { FaHeart } from "react-icons/fa";
 import toast from "react-hot-toast";
@@ -29,6 +30,7 @@ import Image from "next/image";
 import { Menu, Transition } from "@headlessui/react";
 import { Fragment } from "react";
 import VerifiedBadge from "./VerifiedBadge";
+import ReportModal from "./ReportModal";
 
 interface PostCardProps {
   post: Post;
@@ -89,6 +91,12 @@ export default function PostCard({
     null,
   );
   const [doubleTapLikeAnimation, setDoubleTapLikeAnimation] = useState(false);
+  const [reportModal, setReportModal] = useState({
+    isOpen: false,
+    targetType: "post" as "post" | "comment" | "user",
+    targetId: "",
+    targetOwner: "",
+  });
 
   const getAuthorFollowStatus = useCallback((sourcePost: Post) => {
     return typeof sourcePost.author === "object"
@@ -237,6 +245,26 @@ export default function PostCard({
       router.push(`/profile/${authorId}`);
     }
   }, [authorId, router]);
+
+  const openReportModal = useCallback(
+    (targetType: "post" | "comment" | "user", targetId: string) => {
+      if (!user) {
+        toast.error("Please login to report content");
+        router.push("/auth/login");
+        return;
+      }
+
+      if (!authorId) return;
+
+      setReportModal({
+        isOpen: true,
+        targetType,
+        targetId,
+        targetOwner: targetType === "user" ? targetId : authorId,
+      });
+    },
+    [authorId, router, user],
+  );
 
   const openProfileHover = useCallback(() => {
     if (hoverCloseTimer) {
@@ -408,6 +436,44 @@ export default function PostCard({
                         </button>
                       )}
                     </Menu.Item>
+                  )}
+                  {!isAuthor && (
+                    <>
+                      <Menu.Item>
+                        {({ active }) => (
+                          <button
+                            onClick={() => openReportModal("post", post._id)}
+                            className={`w-full flex items-center gap-2 px-4 py-2.5 text-sm font-medium transition-colors ${
+                              active
+                                ? "bg-amber-50 text-amber-700"
+                                : "text-gray-900"
+                            }`}
+                          >
+                            <FiFlag size={16} />
+                            Report Post
+                          </button>
+                        )}
+                      </Menu.Item>
+                      {authorId && (
+                        <Menu.Item>
+                          {({ active }) => (
+                            <button
+                              onClick={() =>
+                                openReportModal("user", authorId)
+                              }
+                              className={`w-full flex items-center gap-2 px-4 py-2.5 text-sm font-medium transition-colors ${
+                                active
+                                  ? "bg-amber-50 text-amber-700"
+                                  : "text-gray-900"
+                              }`}
+                            >
+                              <FiFlag size={16} />
+                              Report User
+                            </button>
+                          )}
+                        </Menu.Item>
+                      )}
+                    </>
                   )}
                   {isAuthor && (
                     <>
@@ -600,6 +666,14 @@ export default function PostCard({
           onClose={() => setShowEditModal(false)}
         />
       )}
+
+      <ReportModal
+        isOpen={reportModal.isOpen}
+        onClose={() => setReportModal((prev) => ({ ...prev, isOpen: false }))}
+        targetType={reportModal.targetType}
+        targetId={reportModal.targetId}
+        targetOwner={reportModal.targetOwner}
+      />
 
       {/* Delete Confirmation Dialog */}
       <ConfirmationDialog

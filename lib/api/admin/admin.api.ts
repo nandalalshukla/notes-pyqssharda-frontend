@@ -21,12 +21,12 @@ export const deleteUser = async (userId: string) => {
 };
 
 export const deactivateUser = async (userId: string) => {
-  const response = await api.patch(`/admin/users/deactivate/${userId}`);
+  const response = await api.patch(`/admin/users/${userId}/deactivate`);
   return response.data;
 };
 
 export const activateUser = async (userId: string) => {
-  const response = await api.patch(`/admin/users/activate/${userId}`);
+  const response = await api.patch(`/admin/users/${userId}/activate`);
   return response.data;
 };
 

@@ -1,61 +1,176 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useAdminStore } from "@/stores/admin/admin.store";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "react-hot-toast";
+import { useShallow } from "zustand/react/shallow";
 import useAuthStore from "@/stores/user/authStore";
-import ModDashboard from "./ModDashboard";
+import ModDashboard from "@/components/pages/ModDashboard";
 import DashboardPage from "./DashboardPage";
-import { FaUserShield, FaUserTie, FaUser } from "react-icons/fa";
+import { useAdminUsersStore } from "@/stores/admin/users.store";
+import { useAdminModsStore } from "@/stores/admin/mods.store";
+import { useAdminModRequestsStore } from "@/stores/admin/modRequests.store";
+import ModerationShell from "@/components/moderation/ModerationShell";
+import ModerationToolbar from "@/components/moderation/ModerationToolbar";
+import SearchInput from "@/components/moderation/SearchInput";
+import FilterSelect from "@/components/moderation/FilterSelect";
+import DataTable, { TableColumn } from "@/components/moderation/DataTable";
+import StatusBadge from "@/components/moderation/StatusBadge";
+import SectionCard from "@/components/moderation/SectionCard";
+import StatsStrip from "@/components/moderation/StatsStrip";
+import ActionMenu from "@/components/moderation/ActionMenu";
+import Pagination from "@/components/moderation/Pagination";
+import DetailPanel from "@/components/moderation/DetailPanel";
+import Badge from "@/components/moderation/Badge";
 
 type DashboardView = "admin" | "moderator" | "user";
 
-// Import types from admin store
-interface User {
-  _id: string;
-  name: string;
-  email: string;
-  role: string;
-  isActive: boolean;
-  isEmailVerified: boolean;
-  contributions: number;
-  createdAt: string;
-  contactNo?: string;
-  modRequest?: "pending" | "approved" | "rejected";
-  modMotivation?: string;
-  modRequestAt?: string;
-}
-
-interface ModRequest {
-  _id: string;
-  name: string;
-  email: string;
-  contactNo: string;
-  modMotivation: string;
-  modRequestAt: string;
-  role: string;
-  isActive: boolean;
-  contributions: number;
-}
+import type { AdminUser } from "@/stores/admin/users.store";
+import type { ModRequest } from "@/stores/admin/modRequests.store";
 
 export default function AdminDashboard() {
   const { user } = useAuthStore();
   const [currentView, setCurrentView] = useState<DashboardView>("admin");
+  const [search, setSearch] = useState("");
+  const [userFilter, setUserFilter] = useState("all");
+  const [modFilter, setModFilter] = useState("all");
+  const [requestPage, setRequestPage] = useState(1);
+  const [userPage, setUserPage] = useState(1);
+  const [modPage, setModPage] = useState(1);
+  const [selectedUser, setSelectedUser] = useState<AdminUser | null>(null);
+  const [selectedRequest, setSelectedRequest] = useState<ModRequest | null>(
+    null,
+  );
   const {
-    users,
-    mods,
-    modRequests,
-    isLoading,
-    error,
+    userIds,
+    userEntities,
+    usersLoading,
+    usersError,
+    userPendingActions,
     fetchUsers,
-    fetchMods,
-    fetchModRequests,
-    processModRequest,
-    deleteUser,
     deactivateUser,
     activateUser,
+    deleteUser,
+  } = useAdminUsersStore(
+    useShallow((state) => ({
+      userIds: state.ids,
+      userEntities: state.entities,
+      usersLoading: state.isLoading,
+      usersError: state.error,
+      userPendingActions: state.pendingActions,
+      fetchUsers: state.fetchUsers,
+      deactivateUser: state.deactivateUser,
+      activateUser: state.activateUser,
+      deleteUser: state.deleteUser,
+    })),
+  );
+
+  const {
+    modIds,
+    modEntities,
+    modsLoading,
+    modsError,
+    modPendingActions,
+    fetchMods,
     removeModRole,
-  } = useAdminStore();
+  } = useAdminModsStore(
+    useShallow((state) => ({
+      modIds: state.ids,
+      modEntities: state.entities,
+      modsLoading: state.isLoading,
+      modsError: state.error,
+      modPendingActions: state.pendingActions,
+      fetchMods: state.fetchMods,
+      removeModRole: state.removeModRole,
+    })),
+  );
+
+  const {
+    requestIds,
+    requestEntities,
+    requestsLoading,
+    requestsError,
+    requestPendingActions,
+    fetchModRequests,
+    processModRequest,
+  } = useAdminModRequestsStore(
+    useShallow((state) => ({
+      requestIds: state.ids,
+      requestEntities: state.entities,
+      requestsLoading: state.isLoading,
+      requestsError: state.error,
+      requestPendingActions: state.pendingActions,
+      fetchModRequests: state.fetchModRequests,
+      processModRequest: state.processModRequest,
+    })),
+  );
+
+  const users = useMemo(
+    () => userIds.map((id) => userEntities[id]).filter(Boolean),
+    [userIds, userEntities],
+  );
+  const mods = useMemo(
+    () => modIds.map((id) => modEntities[id]).filter(Boolean),
+    [modIds, modEntities],
+  );
+  const modRequests = useMemo(
+    () => requestIds.map((id) => requestEntities[id]).filter(Boolean),
+    [requestIds, requestEntities],
+  );
+
+  const filteredUsers = useMemo(() => {
+    const normalized = search.trim().toLowerCase();
+    return users.filter((item) => {
+      const matchesSearch =
+        !normalized ||
+        item.name.toLowerCase().includes(normalized) ||
+        item.email.toLowerCase().includes(normalized);
+      const matchesFilter =
+        userFilter === "all" ||
+        (userFilter === "active" && item.isActive) ||
+        (userFilter === "inactive" && !item.isActive);
+      return matchesSearch && matchesFilter;
+    });
+  }, [users, search, userFilter]);
+
+  const filteredMods = useMemo(() => {
+    const normalized = search.trim().toLowerCase();
+    return mods.filter((item) => {
+      const matchesSearch =
+        !normalized ||
+        item.name.toLowerCase().includes(normalized) ||
+        item.email.toLowerCase().includes(normalized);
+      const matchesFilter =
+        modFilter === "all" ||
+        (modFilter === "active" && item.isActive) ||
+        (modFilter === "inactive" && !item.isActive);
+      return matchesSearch && matchesFilter;
+    });
+  }, [mods, search, modFilter]);
+
+  const filteredRequests = useMemo(() => {
+    const normalized = search.trim().toLowerCase();
+    return modRequests.filter((item) => {
+      if (!normalized) return true;
+      return (
+        item.name.toLowerCase().includes(normalized) ||
+        item.email.toLowerCase().includes(normalized)
+      );
+    });
+  }, [modRequests, search]);
+
+  const pageSize = 8;
+  const pagedUsers = filteredUsers.slice(
+    (userPage - 1) * pageSize,
+    userPage * pageSize,
+  );
+  const pagedMods = filteredMods.slice(
+    (modPage - 1) * pageSize,
+    modPage * pageSize,
+  );
+  const pagedRequests = filteredRequests.slice(
+    (requestPage - 1) * pageSize,
+    requestPage * pageSize,
+  );
 
   useEffect(() => {
     if (currentView === "admin") {
@@ -67,10 +182,11 @@ export default function AdminDashboard() {
 
   // Show error toast if there's an error
   useEffect(() => {
+    const error = usersError || modsError || requestsError;
     if (error) {
       toast.error(error);
     }
-  }, [error]);
+  }, [usersError, modsError, requestsError]);
 
   const handleDeactivate = async (id: string, currentStatus: boolean) => {
     try {
@@ -82,7 +198,6 @@ export default function AdminDashboard() {
         await activateUser(id);
         toast.success("User activated successfully");
       }
-      fetchUsers(); // Refresh the list
     } catch (error) {
       toast.error("Failed to update user status");
     }
@@ -92,10 +207,6 @@ export default function AdminDashboard() {
     try {
       await processModRequest(id, action);
       toast.success(`Request ${action}ed successfully`);
-      fetchModRequests(); // Refresh mod requests
-      if (action === "approve") {
-        fetchMods(); // Refresh mods list if approved
-      }
     } catch (error) {
       toast.error(`Failed to ${action} request`);
     }
@@ -109,7 +220,6 @@ export default function AdminDashboard() {
     try {
       await removeModRole(id);
       toast.success("Moderator role removed successfully");
-      fetchMods(); // Refresh the mods list
     } catch (error) {
       toast.error("Failed to remove moderator role");
     }
@@ -125,7 +235,6 @@ export default function AdminDashboard() {
     try {
       await deleteUser(id);
       toast.success("User deleted successfully");
-      fetchUsers(); // Refresh the list
     } catch (error) {
       toast.error("Failed to delete user");
     }
@@ -134,7 +243,7 @@ export default function AdminDashboard() {
   // Render different views based on currentView
   if (currentView === "moderator") {
     return (
-      <div className="min-h-screen bg-[#F2F4F8] p-4 md:p-8 font-sans">
+      <div className="min-h-screen bg-slate-50 p-4 md:p-8 font-sans">
         <ViewSwitcher
           currentView={currentView}
           onViewChange={setCurrentView}
@@ -147,7 +256,7 @@ export default function AdminDashboard() {
 
   if (currentView === "user") {
     return (
-      <div className="min-h-screen bg-[#F2F4F8] p-4 md:p-8 font-sans">
+      <div className="min-h-screen bg-slate-50 p-4 md:p-8 font-sans">
         <ViewSwitcher
           currentView={currentView}
           onViewChange={setCurrentView}
@@ -159,101 +268,354 @@ export default function AdminDashboard() {
   }
 
   // Admin view (default)
+  const userColumns: TableColumn<AdminUser>[] = [
+    {
+      header: "User",
+      accessor: (row) => (
+        <div>
+          <p className="font-semibold text-slate-900">{row.name}</p>
+          <p className="text-xs text-slate-500">{row.email}</p>
+        </div>
+      ),
+    },
+    {
+      header: "Role",
+      accessor: (row) => <Badge label={row.role} />,
+    },
+    {
+      header: "Status",
+      accessor: (row) => (
+        <StatusBadge status={row.isActive ? "active" : "inactive"} />
+      ),
+    },
+    {
+      header: "Actions",
+      accessor: (row) => {
+        const pendingAction = userPendingActions[row._id];
+        const isPending = Boolean(pendingAction);
+        const toggleLabel = row.isActive ? "Deactivate" : "Activate";
+        const pendingToggleLabel = row.isActive ? "Deactivating" : "Activating";
+
+        return (
+          <ActionMenu
+            items={[
+              {
+                label:
+                  pendingAction === "activate" || pendingAction === "deactivate"
+                    ? pendingToggleLabel
+                    : toggleLabel,
+                loading:
+                  pendingAction === "activate" ||
+                  pendingAction === "deactivate",
+                onClick: () => handleDeactivate(row._id, row.isActive),
+                disabled: isPending,
+              },
+              {
+                label: pendingAction === "delete" ? "Deleting" : "Delete",
+                loading: pendingAction === "delete",
+                onClick: () => handleDeleteUser(row._id),
+                variant: "danger",
+                disabled: isPending,
+              },
+            ]}
+          />
+        );
+      },
+      className: "text-right",
+    },
+  ];
+
+  const modColumns: TableColumn<AdminUser>[] = [
+    {
+      header: "Moderator",
+      accessor: (row) => (
+        <div>
+          <p className="font-semibold text-slate-900">{row.name}</p>
+          <p className="text-xs text-slate-500">{row.email}</p>
+        </div>
+      ),
+    },
+    {
+      header: "Contributions",
+      accessor: (row) => (
+        <span className="text-sm text-slate-700">{row.contributions || 0}</span>
+      ),
+    },
+    {
+      header: "Status",
+      accessor: (row) => (
+        <StatusBadge status={row.isActive ? "active" : "inactive"} />
+      ),
+    },
+    {
+      header: "Actions",
+      accessor: (row) => {
+        const pendingAction = modPendingActions[row._id];
+        return (
+          <ActionMenu
+            items={[
+              {
+                label: pendingAction ? "Removing" : "Remove role",
+                loading: Boolean(pendingAction),
+                onClick: () => handleRemoveMod(row._id),
+                variant: "danger",
+                disabled: Boolean(pendingAction),
+              },
+            ]}
+          />
+        );
+      },
+      className: "text-right",
+    },
+  ];
+
+  const requestColumns: TableColumn<ModRequest>[] = [
+    {
+      header: "Requester",
+      accessor: (row) => (
+        <div>
+          <p className="font-semibold text-slate-900">{row.name}</p>
+          <p className="text-xs text-slate-500">{row.email}</p>
+        </div>
+      ),
+    },
+    {
+      header: "Motivation",
+      accessor: (row) => (
+        <p className="line-clamp-2 text-xs text-slate-600">
+          {row.modMotivation || "—"}
+        </p>
+      ),
+    },
+    {
+      header: "Actions",
+      accessor: (row) => {
+        const pendingAction = requestPendingActions[row._id];
+        const isPending = Boolean(pendingAction);
+
+        return (
+          <ActionMenu
+            items={[
+              {
+                label: pendingAction === "approve" ? "Approving" : "Approve",
+                loading: pendingAction === "approve",
+                onClick: () => handleModRequest(row._id, "approve"),
+                disabled: isPending,
+              },
+              {
+                label: pendingAction === "reject" ? "Rejecting" : "Reject",
+                loading: pendingAction === "reject",
+                onClick: () => handleModRequest(row._id, "reject"),
+                variant: "danger",
+                disabled: isPending,
+              },
+            ]}
+          />
+        );
+      },
+      className: "text-right",
+    },
+  ];
+
   return (
-    <div className="min-h-screen bg-[#F2F4F8] p-4 md:p-8 font-sans">
-      {/* View Switcher */}
-      <ViewSwitcher
-        currentView={currentView}
-        onViewChange={setCurrentView}
-        userName={user?.name}
+    <ModerationShell
+      title="Admin moderation"
+      subtitle={`Welcome back, ${user?.name || "Admin"}. Keep users and moderators healthy.`}
+      actions={
+        <ViewSwitcher
+          currentView={currentView}
+          onViewChange={setCurrentView}
+          userName={user?.name}
+        />
+      }
+    >
+      <StatsStrip
+        items={[
+          { label: "Total users", value: users.length },
+          { label: "Active moderators", value: mods.length },
+          { label: "Pending requests", value: modRequests.length },
+          {
+            label: "Inactive users",
+            value: users.filter((item) => !item.isActive).length,
+          },
+        ]}
       />
 
-      {/* Header Section */}
-      <div className="max-w-7xl mx-auto mb-8 animate-fade-in-up">
-        <div className="bg-white border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] rounded-2xl p-6 md:p-8 mb-6">
-          <h1 className="text-3xl md:text-4xl font-black text-black mb-2">
-            Admin <span className="text-[#C084FC]">Dashboard</span>
-          </h1>
-          <p className="text-gray-600 text-base md:text-lg">
-            Welcome back, {user?.name || "Admin"}. Manage users and moderators
-            efficiently.
-          </p>
+      <ModerationToolbar
+        title="Directory"
+        description="Search and filter user, moderator, and request queues in one place."
+      >
+        <SearchInput
+          value={search}
+          onChange={setSearch}
+          placeholder="Search by name or email"
+        />
+        <FilterSelect
+          label="Users"
+          value={userFilter}
+          onChange={(value) => {
+            setUserFilter(value);
+            setUserPage(1);
+          }}
+          options={[
+            { label: "All", value: "all" },
+            { label: "Active", value: "active" },
+            { label: "Inactive", value: "inactive" },
+          ]}
+        />
+        <FilterSelect
+          label="Moderators"
+          value={modFilter}
+          onChange={(value) => {
+            setModFilter(value);
+            setModPage(1);
+          }}
+          options={[
+            { label: "All", value: "all" },
+            { label: "Active", value: "active" },
+            { label: "Inactive", value: "inactive" },
+          ]}
+        />
+      </ModerationToolbar>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mt-6 md:mt-8">
-            <StatCard
-              label="Total Users"
-              value={users.length}
-              color="bg-blue-300"
+      <div className="grid gap-6 lg:grid-cols-3">
+        <SectionCard
+          title="Users"
+          description="Review accounts and enforce status changes fast."
+          actions={
+            <Pagination
+              page={userPage}
+              totalPages={Math.max(
+                1,
+                Math.ceil(filteredUsers.length / pageSize),
+              )}
+              onPageChange={setUserPage}
             />
-            <StatCard
-              label="Active Moderators"
-              value={mods.length}
-              color="bg-orange-300"
+          }
+        >
+          <DataTable
+            rows={pagedUsers}
+            columns={userColumns}
+            isLoading={usersLoading}
+            emptyTitle="No users"
+            emptyDescription="Try clearing filters or search."
+            onRowClick={setSelectedUser}
+          />
+        </SectionCard>
+
+        <SectionCard
+          title="Moderators"
+          description="Keep your trusted moderators active and focused."
+          actions={
+            <Pagination
+              page={modPage}
+              totalPages={Math.max(
+                1,
+                Math.ceil(filteredMods.length / pageSize),
+              )}
+              onPageChange={setModPage}
             />
-            <StatCard
-              label="Pending Mod Requests"
-              value={modRequests.length}
-              color="bg-green-300"
+          }
+        >
+          <DataTable
+            rows={pagedMods}
+            columns={modColumns}
+            isLoading={modsLoading}
+            emptyTitle="No moderators"
+            emptyDescription="Approve a request to get started."
+            onRowClick={setSelectedUser}
+          />
+        </SectionCard>
+
+        <SectionCard
+          title="Mod requests"
+          description="Approve or reject moderator applications."
+          actions={
+            <Pagination
+              page={requestPage}
+              totalPages={Math.max(
+                1,
+                Math.ceil(filteredRequests.length / pageSize),
+              )}
+              onPageChange={setRequestPage}
             />
-          </div>
-        </div>
+          }
+        >
+          <DataTable
+            rows={pagedRequests}
+            columns={requestColumns}
+            isLoading={requestsLoading}
+            emptyTitle="No requests"
+            emptyDescription="All applications processed."
+            onRowClick={setSelectedRequest}
+          />
+        </SectionCard>
       </div>
 
-      {isLoading ? (
-        <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-4 border-black"></div>
-        </div>
-      ) : (
-        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
-          {/* Users Section */}
-          <AdminSection title="All Users" color="#93C5FD">
-            {users.length === 0 ? (
-              <EmptyState message="No users found." />
-            ) : (
-              users.map((u) => (
-                <UserCard
-                  key={u._id}
-                  user={u}
-                  onDeactivate={() => handleDeactivate(u._id, u.isActive)}
-                  onDelete={() => handleDeleteUser(u._id)}
-                />
-              ))
-            )}
-          </AdminSection>
+      <DetailPanel
+        isOpen={Boolean(selectedUser)}
+        title="User details"
+        onClose={() => setSelectedUser(null)}
+      >
+        {selectedUser && (
+          <div className="space-y-3">
+            <div>
+              <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
+                Profile
+              </p>
+              <p className="text-base font-semibold text-slate-900">
+                {selectedUser.name}
+              </p>
+              <p className="text-sm text-slate-500">{selectedUser.email}</p>
+            </div>
+            <div className="flex gap-2">
+              <StatusBadge
+                status={selectedUser.isActive ? "active" : "inactive"}
+              />
+              <Badge label={selectedUser.role} />
+            </div>
+            <div>
+              <p className="text-xs text-slate-500">Contributions</p>
+              <p className="text-sm font-semibold text-slate-700">
+                {selectedUser.contributions || 0}
+              </p>
+            </div>
+          </div>
+        )}
+      </DetailPanel>
 
-          {/* Moderators Section */}
-          <AdminSection title="Moderators" color="#FDBA74">
-            {mods.length === 0 ? (
-              <EmptyState message="No moderators found." />
-            ) : (
-              mods.map((mod) => (
-                <ModCard
-                  key={mod._id}
-                  mod={mod}
-                  onRemove={() => handleRemoveMod(mod._id)}
-                />
-              ))
-            )}
-          </AdminSection>
-
-          {/* Mod Requests Section */}
-          <AdminSection title="Mod Requests" color="#86EFAC">
-            {modRequests.length === 0 ? (
-              <EmptyState message="No pending requests." />
-            ) : (
-              modRequests.map((req) => (
-                <RequestCard
-                  key={req._id}
-                  req={req}
-                  onApprove={() => handleModRequest(req._id, "approve")}
-                  onReject={() => handleModRequest(req._id, "reject")}
-                />
-              ))
-            )}
-          </AdminSection>
-        </div>
-      )}
-    </div>
+      <DetailPanel
+        isOpen={Boolean(selectedRequest)}
+        title="Request details"
+        onClose={() => setSelectedRequest(null)}
+      >
+        {selectedRequest && (
+          <div className="space-y-3">
+            <div>
+              <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
+                Applicant
+              </p>
+              <p className="text-base font-semibold text-slate-900">
+                {selectedRequest.name}
+              </p>
+              <p className="text-sm text-slate-500">{selectedRequest.email}</p>
+            </div>
+            <div>
+              <p className="text-xs text-slate-500">Motivation</p>
+              <p className="text-sm text-slate-700">
+                {selectedRequest.modMotivation || "—"}
+              </p>
+            </div>
+            <div>
+              <p className="text-xs text-slate-500">Contact</p>
+              <p className="text-sm text-slate-700">
+                {selectedRequest.contactNo || "—"}
+              </p>
+            </div>
+          </div>
+        )}
+      </DetailPanel>
+    </ModerationShell>
   );
 }
 
@@ -268,271 +630,40 @@ function ViewSwitcher({
   userName?: string;
 }) {
   return (
-    <div className="max-w-7xl mx-auto mb-8">
-      <div className="bg-white border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] rounded-2xl p-6 md:p-8">
-        <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex-1">
-            <h2 className="text-xl md:text-2xl font-black text-black flex items-center gap-2">
-              <FaUserTie className="w-5 h-5" />
-              Admin Controls - {userName || "Admin"}
-            </h2>
-            <p className="text-sm text-gray-600 mt-1">
-              Switch between different role views
-            </p>
-          </div>
-
-          <div className="flex gap-3 flex-wrap justify-center md:justify-end">
-            <button
-              onClick={() => onViewChange("admin")}
-              className={`flex items-center gap-2 px-5 py-2.5 text-sm font-bold border-2 border-black rounded-lg transition-all shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none ${
-                currentView === "admin"
-                  ? "bg-purple-400 text-white"
-                  : "bg-purple-100 text-black"
-              }`}
-            >
-              <FaUserTie className="w-4 h-4" />
-              Admin View
-            </button>
-            <button
-              onClick={() => onViewChange("moderator")}
-              className={`flex items-center gap-2 px-5 py-2.5 text-sm font-bold border-2 border-black rounded-lg transition-all shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none ${
-                currentView === "moderator"
-                  ? "bg-orange-400 text-white"
-                  : "bg-orange-100 text-black"
-              }`}
-            >
-              <FaUserShield className="w-4 h-4" />
-              Moderator View
-            </button>
-            <button
-              onClick={() => onViewChange("user")}
-              className={`flex items-center gap-2 px-5 py-2.5 text-sm font-bold border-2 border-black rounded-lg transition-all shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none ${
-                currentView === "user"
-                  ? "bg-blue-400 text-white"
-                  : "bg-blue-100 text-black"
-              }`}
-            >
-              <FaUser className="w-4 h-4" />
-              User View
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function StatCard({
-  label,
-  value,
-  color,
-}: {
-  label: string;
-  value: number;
-  color: string;
-}) {
-  return (
-    <div
-      className={`${color} border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] rounded-xl p-4 transition-transform hover:-translate-y-1`}
-    >
-      <div className="text-3xl md:text-4xl font-black text-black mb-1">
-        {value}
-      </div>
-      <div className="text-xs md:text-sm font-bold text-black/80 uppercase tracking-wide">
-        {label}
-      </div>
-    </div>
-  );
-}
-
-function AdminSection({
-  title,
-  children,
-  color,
-}: {
-  title: string;
-  children: React.ReactNode;
-  color: string;
-}) {
-  return (
-    <div className="bg-white rounded-2xl border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex flex-col h-full overflow-hidden">
-      <div className="p-4 md:p-6 border-b-2 border-black bg-gray-50 flex justify-between items-center">
-        <h2 className="text-xl md:text-2xl font-black text-black flex items-center gap-2">
-          <span
-            className="w-4 h-4 rounded-full border-2 border-black"
-            style={{ backgroundColor: color }}
-          ></span>
-          {title}
-        </h2>
-      </div>
-
-      <div className="flex-1 overflow-y-auto max-h-[500px] md:max-h-[600px] p-4 md:p-6 space-y-4">
-        {children}
-      </div>
-    </div>
-  );
-}
-
-function EmptyState({ message }: { message: string }) {
-  return (
-    <div className="text-center text-gray-400 py-12 italic border-2 border-dashed border-gray-300 rounded-xl">
-      {message}
-    </div>
-  );
-}
-
-function UserCard({
-  user,
-  onDeactivate,
-  onDelete,
-}: {
-  user: User;
-  onDeactivate: () => void;
-  onDelete: () => void;
-}) {
-  return (
-    <div className="group bg-white p-4 rounded-xl border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all">
-      <div className="flex justify-between items-start mb-2">
-        <div className="flex-1 min-w-0">
-          <h3 className="font-bold text-base md:text-lg text-black truncate">
-            {user.name}
-          </h3>
-          <p className="text-xs text-gray-500 truncate">{user.email}</p>
-        </div>
-        <span
-          className={`ml-2 px-2 py-1 rounded-md text-[10px] uppercase font-black border border-black whitespace-nowrap ${
-            user.isActive
-              ? "bg-green-100 text-green-700"
-              : "bg-red-100 text-red-700"
-          }`}
-        >
-          {user.isActive ? "Active" : "Inactive"}
-        </span>
-      </div>
-
-      <div className="text-xs text-gray-600 mb-3 space-y-1">
-        <div className="flex justify-between">
-          <span>Role:</span>
-          <span className="font-bold">{user.role}</span>
-        </div>
-        <div className="flex justify-between">
-          <span>Contributions:</span>
-          <span className="font-bold">{user.contributions || 0}</span>
-        </div>
-        <div className="flex justify-between">
-          <span>Email Verified:</span>
-          <span className="font-bold">
-            {user.isEmailVerified ? "✓ Yes" : "✗ No"}
-          </span>
-        </div>
-      </div>
-
-      <div className="flex gap-2 pt-3 border-t border-gray-100">
-        <button
-          onClick={onDeactivate}
-          className="flex-1 px-2 py-1.5 text-xs font-bold bg-yellow-100 hover:bg-yellow-200 border border-black rounded-lg transition-colors text-yellow-800"
-        >
-          {user.isActive ? "Deactivate" : "Activate"}
-        </button>
-        <button
-          onClick={onDelete}
-          className="px-3 py-1.5 text-xs font-bold bg-red-100 hover:bg-red-200 border border-black rounded-lg transition-colors text-red-800"
-          title="Delete User"
-        >
-          🗑️
-        </button>
-      </div>
-    </div>
-  );
-}
-
-function ModCard({ mod, onRemove }: { mod: User; onRemove: () => void }) {
-  return (
-    <div className="group bg-white p-4 rounded-xl border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all">
-      <div className="mb-3">
-        <h3 className="font-bold text-base md:text-lg text-black truncate">
-          {mod.name}
-        </h3>
-        <p className="text-xs text-gray-500 truncate">{mod.email}</p>
-      </div>
-
-      <div className="text-xs text-gray-600 mb-3 space-y-1">
-        <div className="flex justify-between">
-          <span>Contributions:</span>
-          <span className="font-bold">{mod.contributions || 0}</span>
-        </div>
-        <div className="flex justify-between">
-          <span>Status:</span>
-          <span className="font-bold">
-            {mod.isActive ? "Active" : "Inactive"}
-          </span>
-        </div>
-      </div>
-
+    <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-600 shadow-sm">
+      <span className="text-[10px] uppercase tracking-[0.2em] text-slate-400">
+        {userName || "Admin"}
+      </span>
       <button
-        onClick={onRemove}
-        className="w-full px-3 py-2 text-xs font-bold bg-orange-100 hover:bg-orange-200 border border-black rounded-lg transition-colors text-orange-800"
+        onClick={() => onViewChange("admin")}
+        className={`rounded-full px-3 py-1 ${
+          currentView === "admin"
+            ? "bg-slate-900 text-white"
+            : "text-slate-500 hover:bg-slate-100"
+        }`}
       >
-        Remove Mod Role
+        Admin
       </button>
-    </div>
-  );
-}
-
-function RequestCard({
-  req,
-  onApprove,
-  onReject,
-}: {
-  req: ModRequest;
-  onApprove: () => void;
-  onReject: () => void;
-}) {
-  return (
-    <div className="group bg-white p-4 rounded-xl border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all">
-      <div className="mb-3">
-        <h3 className="font-bold text-base md:text-lg text-black truncate">
-          {req.name}
-        </h3>
-        <p className="text-xs text-gray-500 truncate">{req.email}</p>
-        <p className="text-xs font-medium text-purple-600 mt-1">
-          📝 Moderator Request
-        </p>
-      </div>
-
-      {req.contactNo && (
-        <div className="text-xs text-gray-600 mb-2">
-          <span className="font-bold">Contact:</span> {req.contactNo}
-        </div>
-      )}
-
-      {req.modMotivation && (
-        <div className="text-xs text-gray-600 mb-3 p-2 bg-gray-50 rounded border border-gray-200">
-          <span className="font-bold block mb-1">Motivation:</span>
-          <p className="line-clamp-3">{req.modMotivation}</p>
-        </div>
-      )}
-
-      {req.modRequestAt && (
-        <div className="text-xs text-gray-500 mb-3">
-          Requested: {new Date(req.modRequestAt).toLocaleDateString()}
-        </div>
-      )}
-
-      <div className="flex gap-2">
-        <button
-          onClick={onApprove}
-          className="flex-1 py-2 bg-green-100 hover:bg-green-200 border border-black rounded-lg transition-colors text-green-700 font-bold text-xs"
-        >
-          ✓ Approve
-        </button>
-        <button
-          onClick={onReject}
-          className="flex-1 py-2 bg-red-100 hover:bg-red-200 border border-black rounded-lg transition-colors text-red-700 font-bold text-xs"
-        >
-          ✗ Reject
-        </button>
-      </div>
+      <button
+        onClick={() => onViewChange("moderator")}
+        className={`rounded-full px-3 py-1 ${
+          currentView === "moderator"
+            ? "bg-slate-900 text-white"
+            : "text-slate-500 hover:bg-slate-100"
+        }`}
+      >
+        Moderator
+      </button>
+      <button
+        onClick={() => onViewChange("user")}
+        className={`rounded-full px-3 py-1 ${
+          currentView === "user"
+            ? "bg-slate-900 text-white"
+            : "text-slate-500 hover:bg-slate-100"
+        }`}
+      >
+        User
+      </button>
     </div>
   );
 }
