@@ -8,7 +8,8 @@ export type ReportAction =
   | "delete_post"
   | "delete_comment"
   | "suspend_user"
-  | "warn_user";
+  | "warn_user"
+  | "delete_user";
 
 export interface ReportUserSummary {
   _id: string;
@@ -22,6 +23,7 @@ export interface ReportTargetSummary {
   author?: string;
   content?: string;
   post?: string;
+  username?: string;
   createdAt?: string;
   isDeleted?: boolean;
   media?: Array<{ url?: string }>;
@@ -161,3 +163,6 @@ export const suspendReportedUser = async (reportId: string) =>
 
 export const warnReportedUser = async (reportId: string) =>
   apiRequest.patch(`/mod/reports/${reportId}/warn-user`);
+
+export const deleteReportedUser = async (reportId: string) =>
+  apiRequest.patch(`/mod/reports/${reportId}/delete-user`);

@@ -11,6 +11,7 @@ import {
   deleteReportedComment,
   suspendReportedUser,
   warnReportedUser,
+  deleteReportedUser,
   ReportAction,
 } from "@/lib/api/mod/mod.api";
 
@@ -134,6 +135,9 @@ export const useModReportsStore = create<ReportsState>((set, get) => ({
           break;
         case "warn_user":
           await warnReportedUser(reportId);
+          break;
+        case "delete_user":
+          await deleteReportedUser(reportId);
           break;
         default:
           break;

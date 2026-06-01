@@ -184,6 +184,13 @@ export const deletePost = async (postId: string) => {
   return response.data;
 };
 
+export const getPost = async (postId: string) => {
+  const response = await api.get<ApiResponse<{ post: Post }>>(
+    `/social/posts/${postId}`,
+  );
+  return response.data;
+};
+
 /**
  * ═══════════════════════════════════════════════════════════════════════════════
  * COMMENTS API
@@ -194,6 +201,13 @@ export const getComments = async (postId: string) => {
   const response = await api.get<
     ApiResponse<{ comments: Comment[]; pagination: PaginationInfo }>
   >(`/social/posts/${postId}/comments`);
+  return response.data;
+};
+
+export const getComment = async (postId: string, commentId: string) => {
+  const response = await api.get<ApiResponse<{ comment: Comment }>>(
+    `/social/posts/${postId}/comments/${commentId}`,
+  );
   return response.data;
 };
 

@@ -18,6 +18,7 @@ import {
   FiCornerDownRight,
   FiMessageSquare,
   FiLogIn,
+  FiFlag,
 } from "react-icons/fi";
 import { FaHeart } from "react-icons/fa";
 import toast from "react-hot-toast";
@@ -25,6 +26,7 @@ import Image from "next/image";
 import { useBodyScroll } from "@/hooks/useBodyScroll";
 import ConfirmationDialog from "@/components/shared/ConfirmationDialog";
 import VerifiedBadge from "./VerifiedBadge";
+import ReportModal from "./ReportModal";
 
 interface CommentsModalProps {
   postId: string;
@@ -68,6 +70,12 @@ export default function CommentsModal({
     null,
   );
   const [isDeleting, setIsDeleting] = useState(false);
+  const [reportModal, setReportModal] = useState({
+    isOpen: false,
+    targetType: "comment" as const,
+    targetId: "",
+    targetOwner: "",
+  });
   const commentsListRef = useRef<HTMLDivElement>(null);
 
   const postComments = comments.get(postId) || [];
@@ -171,6 +179,26 @@ export default function CommentsModal({
   const handleDeleteComment = useCallback(async (commentId: string) => {
     setShowDeleteConfirm(commentId);
   }, []);
+
+  const openReportModal = useCallback(
+    (commentId: string, targetOwner: string) => {
+      if (!user) {
+        toast.error("Please login to report content", {
+          icon: <FiLogIn className="mr-2" />,
+        });
+        router.push("/auth/login");
+        return;
+      }
+
+      setReportModal({
+        isOpen: true,
+        targetType: "comment",
+        targetId: commentId,
+        targetOwner,
+      });
+    },
+    [user, router],
+  );
 
   const confirmDeleteComment = useCallback(
     async (commentId: string) => {
@@ -330,7 +358,7 @@ export default function CommentsModal({
                           {formatRelativeTime(reply.createdAt)}
                         </p>
                       </div>
-                      {isReplyAuthor && editingCommentId !== reply._id && (
+                      {editingCommentId !== reply._id && (
                         <div className="relative">
                           <button
                             onClick={() =>
@@ -349,27 +377,48 @@ export default function CommentsModal({
                           </button>
                           {showCommentMenu === reply._id && (
                             <div className="absolute right-0 top-full mt-2 min-w-[120px] overflow-hidden rounded-lg border border-gray-200 bg-white shadow-lg z-20">
-                              <button
-                                onClick={() => {
-                                  setEditingCommentId(reply._id);
-                                  setEditText(reply.text);
-                                  setShowCommentMenu(null);
-                                }}
-                                className="flex w-full items-center gap-2 px-3 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50"
-                              >
-                                <FiEdit2 size={14} />
-                                Edit
-                              </button>
-                              <button
-                                onClick={() => {
-                                  handleDeleteComment(reply._id);
-                                  setShowCommentMenu(null);
-                                }}
-                                className="flex w-full items-center gap-2 px-3 py-2 text-xs font-semibold text-red-600 hover:bg-red-50"
-                              >
-                                <FiTrash2 size={14} />
-                                Delete
-                              </button>
+                              {isReplyAuthor && (
+                                <>
+                                  <button
+                                    onClick={() => {
+                                      setEditingCommentId(reply._id);
+                                      setEditText(reply.text);
+                                      setShowCommentMenu(null);
+                                    }}
+                                    className="flex w-full items-center gap-2 px-3 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50"
+                                  >
+                                    <FiEdit2 size={14} />
+                                    Edit
+                                  </button>
+                                  <button
+                                    onClick={() => {
+                                      handleDeleteComment(reply._id);
+                                      setShowCommentMenu(null);
+                                    }}
+                                    className="flex w-full items-center gap-2 px-3 py-2 text-xs font-semibold text-red-600 hover:bg-red-50"
+                                  >
+                                    <FiTrash2 size={14} />
+                                    Delete
+                                  </button>
+                                </>
+                              )}
+                              {!isReplyAuthor && (
+                                <button
+                                  onClick={() => {
+                                    openReportModal(
+                                      reply._id,
+                                      typeof reply.author === "string"
+                                        ? reply.author
+                                        : reply.author?._id || "",
+                                    );
+                                    setShowCommentMenu(null);
+                                  }}
+                                  className="flex w-full items-center gap-2 px-3 py-2 text-xs font-semibold text-amber-600 hover:bg-amber-50"
+                                >
+                                  <FiFlag size={14} />
+                                  Report
+                                </button>
+                              )}
                             </div>
                           )}
                         </div>
@@ -585,7 +634,7 @@ export default function CommentsModal({
                   </p>
                 )}
               </div>
-              {isCommentAuthor && editingCommentId !== comment._id && (
+              {editingCommentId !== comment._id && (
                 <div className="relative">
                   <button
                     onClick={() =>
@@ -599,27 +648,48 @@ export default function CommentsModal({
                   </button>
                   {showCommentMenu === comment._id && (
                     <div className="absolute right-0 top-full mt-2 min-w-[120px] overflow-hidden rounded-lg border border-gray-200 bg-white shadow-lg z-20">
-                      <button
-                        onClick={() => {
-                          setEditingCommentId(comment._id);
-                          setEditText(comment.text);
-                          setShowCommentMenu(null);
-                        }}
-                        className="flex w-full items-center gap-2 px-3 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50"
-                      >
-                        <FiEdit2 size={14} />
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => {
-                          handleDeleteComment(comment._id);
-                          setShowCommentMenu(null);
-                        }}
-                        className="flex w-full items-center gap-2 px-3 py-2 text-xs font-semibold text-red-600 hover:bg-red-50"
-                      >
-                        <FiTrash2 size={14} />
-                        Delete
-                      </button>
+                      {isCommentAuthor && (
+                        <>
+                          <button
+                            onClick={() => {
+                              setEditingCommentId(comment._id);
+                              setEditText(comment.text);
+                              setShowCommentMenu(null);
+                            }}
+                            className="flex w-full items-center gap-2 px-3 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50"
+                          >
+                            <FiEdit2 size={14} />
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => {
+                              handleDeleteComment(comment._id);
+                              setShowCommentMenu(null);
+                            }}
+                            className="flex w-full items-center gap-2 px-3 py-2 text-xs font-semibold text-red-600 hover:bg-red-50"
+                          >
+                            <FiTrash2 size={14} />
+                            Delete
+                          </button>
+                        </>
+                      )}
+                      {!isCommentAuthor && (
+                        <button
+                          onClick={() => {
+                            openReportModal(
+                              comment._id,
+                              typeof comment.author === "string"
+                                ? comment.author
+                                : comment.author?._id || "",
+                            );
+                            setShowCommentMenu(null);
+                          }}
+                          className="flex w-full items-center gap-2 px-3 py-2 text-xs font-semibold text-amber-600 hover:bg-amber-50"
+                        >
+                          <FiFlag size={14} />
+                          Report
+                        </button>
+                      )}
                     </div>
                   )}
                 </div>
@@ -831,6 +901,13 @@ export default function CommentsModal({
           }
         }}
         onCancel={() => setShowDeleteConfirm(null)}
+      />
+      <ReportModal
+        isOpen={reportModal.isOpen}
+        onClose={() => setReportModal((prev) => ({ ...prev, isOpen: false }))}
+        targetType={reportModal.targetType}
+        targetId={reportModal.targetId}
+        targetOwner={reportModal.targetOwner}
       />
     </Transition>
   );

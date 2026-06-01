@@ -2,9 +2,13 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
+import { useRouter } from "next/navigation";
 import { toast } from "react-hot-toast";
 import useAuthStore from "@/stores/user/authStore";
 import RejectionModal from "@/components/modals/RejectionModal";
+import { ReportActionModal } from "@/components/modals/ReportActionModal";
+import ViewPostModal from "@/components/modals/ViewPostModal";
+import ViewCommentModal from "@/components/modals/ViewCommentModal";
 import { DashboardLayout } from "@/components/dashboards/DashboardLayout";
 import { StatCard, StatsGrid } from "@/components/dashboards/StatCard";
 import { DataTable, DataTableColumn } from "@/components/dashboards/DataTable";
@@ -14,6 +18,7 @@ import {
   Tabs,
   Toolbar,
 } from "@/components/dashboards/SectionCard";
+import { UserProfileLink } from "@/components/shared/UserProfileLink";
 import {
   getSubmissionActionKey,
   useModSubmissionsStore,
@@ -25,7 +30,9 @@ import {
   Clock,
   AlertCircle,
   FileText,
-  MessageSquare,
+  Trash2,
+  Ban,
+  AlertTriangle,
   TrendingUp,
 } from "lucide-react";
 import type {
@@ -45,17 +52,40 @@ interface RejectionModalState {
   itemTitle: string;
 }
 
+interface ReportActionModalState {
+  isOpen: boolean;
+  action: ReportAction | null;
+  reportId: string | null;
+  isLoading: boolean;
+}
+
 interface SubmissionWithType extends PendingSubmission {
   submissionType: SubmissionType;
 }
 
 export default function ModeratorDashboard() {
+  const router = useRouter();
   const { user } = useAuthStore();
   const [rejectionModal, setRejectionModal] = useState<RejectionModalState>({
     isOpen: false,
     itemId: "",
     itemType: "note",
     itemTitle: "",
+  });
+  const [actionModal, setActionModal] = useState<ReportActionModalState>({
+    isOpen: false,
+    action: null,
+    reportId: null,
+    isLoading: false,
+  });
+  const [viewPostModal, setViewPostModal] = useState({
+    isOpen: false,
+    postId: "",
+  });
+  const [viewCommentModal, setViewCommentModal] = useState({
+    isOpen: false,
+    postId: "",
+    commentId: "",
   });
   const [submissionSearch, setSubmissionSearch] = useState("");
   const [reportSearch, setReportSearch] = useState("");
@@ -253,24 +283,34 @@ export default function ModeratorDashboard() {
     }
   };
 
-  const handleApproveReport = async (id: string) => {
-    try {
-      await applyReportAction(id, "resolve");
-      toast.success("Report approved");
-      setSelectedReport(null);
-    } catch (error) {
-      toast.error("Failed to approve report");
-    }
+  const handleReportAction = (action: ReportAction) => {
+    if (!selectedReport) return;
+    setActionModal({
+      isOpen: true,
+      action,
+      reportId: selectedReport._id,
+      isLoading: false,
+    });
   };
 
-  const handleRejectReport = async (id: string) => {
-    if (!confirm("Are you sure you want to dismiss this report?")) return;
+  const handleConfirmReportAction = async () => {
+    if (!actionModal.reportId || !actionModal.action) return;
+
+    setActionModal((prev) => ({ ...prev, isLoading: true }));
     try {
-      await applyReportAction(id, "reject");
-      toast.success("Report dismissed");
+      await applyReportAction(actionModal.reportId, actionModal.action);
+      toast.success(`Report action completed: ${actionModal.action}`);
+      setActionModal({
+        isOpen: false,
+        action: null,
+        reportId: null,
+        isLoading: false,
+      });
       setSelectedReport(null);
     } catch (error) {
-      toast.error("Failed to dismiss report");
+      toast.error("Failed to apply report action");
+    } finally {
+      setActionModal((prev) => ({ ...prev, isLoading: false }));
     }
   };
 
@@ -314,15 +354,63 @@ export default function ModeratorDashboard() {
     {
       id: "target",
       header: "Report Target",
+      accessor: (row) => {
+        const handleTargetClick = (e: React.MouseEvent) => {
+          e.stopPropagation();
+
+          if (row.targetType === "user") {
+            // Navigate to user profile
+            router.push(`/profile/${row.targetOwner?._id}`);
+          } else if (row.targetType === "post") {
+            // Open post modal
+            setViewPostModal({
+              isOpen: true,
+              postId: row.targetId,
+            });
+          } else if (row.targetType === "comment") {
+            // Open comment modal
+            setViewCommentModal({
+              isOpen: true,
+              postId: row.targetEntity?.post || "",
+              commentId: row.targetId,
+            });
+          }
+        };
+
+        return (
+          <div className="cursor-pointer" onClick={handleTargetClick}>
+            <div className="font-medium text-blue-600 hover:text-blue-700 hover:underline line-clamp-1">
+              {row.targetType === "user"
+                ? row.targetEntity?.username || "Unknown User"
+                : row.targetEntity?.content || "Unknown"}
+            </div>
+            <p className="text-xs text-slate-500 capitalize">
+              {row.targetType}
+            </p>
+          </div>
+        );
+      },
+      sortable: true,
+    },
+    {
+      id: "reporter",
+      header: "Reported By",
       accessor: (row) => (
-        <div>
-          <p className="font-medium text-slate-900 line-clamp-1">
-            {row.targetEntity?.post || row.targetEntity?.content || "Unknown"}
-          </p>
-          <p className="text-xs text-slate-500 capitalize">{row.targetType}</p>
+        <div className="flex items-center gap-2">
+          {row.reporter ? (
+            <UserProfileLink
+              userId={row.reporter._id}
+              username={row.reporter.username || "Unknown"}
+              profilePic={row.reporter.profilePic}
+              showAvatar={true}
+              linkClassName="text-blue-600 hover:text-blue-700 hover:underline font-medium text-sm"
+            />
+          ) : (
+            <span className="text-sm text-slate-500">Unknown Reporter</span>
+          )}
         </div>
       ),
-      sortable: true,
+      sortable: false,
     },
     {
       id: "reason",
@@ -543,20 +631,35 @@ export default function ModeratorDashboard() {
           isOpen={true}
           onClose={() => setSelectedReport(null)}
           title={
-            selectedReport.targetEntity?.post ||
-            selectedReport.targetEntity?.content ||
-            "Unknown"
+            selectedReport.targetType === "user"
+              ? selectedReport.targetEntity?.username || "Unknown User"
+              : selectedReport.targetEntity?.post ||
+                selectedReport.targetEntity?.content ||
+                "Unknown"
           }
-          subtitle={`Report • ${selectedReport.targetType}`}
+          subtitle={`Report • ${selectedReport.targetType} • ${selectedReport.status}`}
           fields={[
             {
               label: "Target Type",
               value: selectedReport.targetType,
               badge: selectedReport.targetType,
+              icon:
+                selectedReport.targetType === "post" ? (
+                  <FileText className="w-5 h-5" />
+                ) : selectedReport.targetType === "comment" ? (
+                  <AlertCircle className="w-5 h-5" />
+                ) : (
+                  <Ban className="w-5 h-5" />
+                ),
             },
             {
               label: "Reason",
-              value: selectedReport.reason,
+              value: selectedReport.reason?.replace(/_/g, " "),
+              icon: <AlertTriangle className="w-5 h-5" />,
+            },
+            {
+              label: "Report Message",
+              value: selectedReport.message || "No additional message",
             },
             {
               label: "Status",
@@ -569,21 +672,152 @@ export default function ModeratorDashboard() {
                 ? new Date(selectedReport.createdAt).toLocaleDateString()
                 : "Unknown",
             },
-          ]}
-          actions={[
             {
-              label: "Approve Report",
-              onClick: () => handleApproveReport(selectedReport._id),
-              variant: "primary",
-              loading: Boolean(reportPendingActions[selectedReport._id]),
+              label: "Reported By",
+              value: selectedReport.reporter ? (
+                <UserProfileLink
+                  userId={selectedReport.reporter._id}
+                  username={selectedReport.reporter.username || "Unknown User"}
+                  profilePic={selectedReport.reporter.profilePic}
+                  showAvatar={true}
+                  linkClassName="text-blue-600 hover:text-blue-700 hover:underline font-medium"
+                />
+              ) : (
+                "Unknown Reporter"
+              ),
             },
-            {
-              label: "Dismiss Report",
-              onClick: () => handleRejectReport(selectedReport._id),
-              variant: "danger",
-              loading: Boolean(reportPendingActions[selectedReport._id]),
-            },
+            ...(selectedReport.targetOwner?.username
+              ? [
+                  {
+                    label: "Content Author/Owner",
+                    value: (
+                      <UserProfileLink
+                        userId={selectedReport.targetOwner._id}
+                        username={
+                          selectedReport.targetOwner.username || "Unknown User"
+                        }
+                        profilePic={selectedReport.targetOwner.profilePic}
+                        showAvatar={true}
+                        linkClassName="text-blue-600 hover:text-blue-700 hover:underline font-medium"
+                      />
+                    ),
+                  },
+                ]
+              : []),
           ]}
+          actions={
+            selectedReport.status === "pending"
+              ? [
+                  {
+                    label: "Approve Report",
+                    onClick: () => handleReportAction("resolve"),
+                    variant: "primary" as const,
+                    loading: Boolean(
+                      reportPendingActions[selectedReport._id] === "resolve",
+                    ),
+                  },
+                  {
+                    label: "Dismiss Report",
+                    onClick: () => handleReportAction("reject"),
+                    variant: "secondary" as const,
+                    loading: Boolean(
+                      reportPendingActions[selectedReport._id] === "reject",
+                    ),
+                  },
+                  ...(selectedReport.targetType === "post"
+                    ? [
+                        {
+                          label: "Delete Post",
+                          onClick: () => handleReportAction("delete_post"),
+                          variant: "danger" as const,
+                          loading: Boolean(
+                            reportPendingActions[selectedReport._id] ===
+                            "delete_post",
+                          ),
+                        },
+                      ]
+                    : []),
+                  ...(selectedReport.targetType === "comment"
+                    ? [
+                        {
+                          label: "Delete Comment",
+                          onClick: () => handleReportAction("delete_comment"),
+                          variant: "danger" as const,
+                          loading: Boolean(
+                            reportPendingActions[selectedReport._id] ===
+                            "delete_comment",
+                          ),
+                        },
+                      ]
+                    : []),
+                  ...(selectedReport.targetType === "user"
+                    ? [
+                        {
+                          label: "Suspend User",
+                          onClick: () => handleReportAction("suspend_user"),
+                          variant: "warning" as const,
+                          loading: Boolean(
+                            reportPendingActions[selectedReport._id] ===
+                            "suspend_user",
+                          ),
+                        },
+                        {
+                          label: "Delete User",
+                          onClick: () => handleReportAction("delete_user"),
+                          variant: "danger" as const,
+                          loading: Boolean(
+                            reportPendingActions[selectedReport._id] ===
+                            "delete_user",
+                          ),
+                        },
+                        {
+                          label: "Warn User",
+                          onClick: () => handleReportAction("warn_user"),
+                          variant: "warning" as const,
+                          loading: Boolean(
+                            reportPendingActions[selectedReport._id] ===
+                            "warn_user",
+                          ),
+                        },
+                      ]
+                    : []),
+                ]
+              : [
+                  {
+                    label: "Already Resolved",
+                    onClick: () => {},
+                    variant: "secondary" as const,
+                    loading: false,
+                  },
+                ]
+          }
+        />
+      )}
+
+      {/* Report Action Modal */}
+      {selectedReport && (
+        <ReportActionModal
+          isOpen={actionModal.isOpen}
+          action={actionModal.action}
+          targetType={selectedReport.targetType}
+          targetInfo={{
+            title:
+              selectedReport.targetEntity?.post ||
+              selectedReport.targetEntity?.content ||
+              selectedReport.targetOwner?.username,
+            author: selectedReport.targetOwner?.username,
+            reason: selectedReport.reason,
+          }}
+          isLoading={actionModal.isLoading}
+          onConfirm={handleConfirmReportAction}
+          onCancel={() =>
+            setActionModal({
+              isOpen: false,
+              action: null,
+              reportId: null,
+              isLoading: false,
+            })
+          }
         />
       )}
 
@@ -594,6 +828,23 @@ export default function ModeratorDashboard() {
         itemType={rejectionModal.itemType}
         onClose={() => setRejectionModal({ ...rejectionModal, isOpen: false })}
         onSubmit={handleConfirmReject}
+      />
+
+      {/* View Post Modal */}
+      <ViewPostModal
+        postId={viewPostModal.postId}
+        isOpen={viewPostModal.isOpen}
+        onClose={() => setViewPostModal({ isOpen: false, postId: "" })}
+      />
+
+      {/* View Comment Modal */}
+      <ViewCommentModal
+        postId={viewCommentModal.postId}
+        commentId={viewCommentModal.commentId}
+        isOpen={viewCommentModal.isOpen}
+        onClose={() =>
+          setViewCommentModal({ isOpen: false, postId: "", commentId: "" })
+        }
       />
     </DashboardLayout>
   );
