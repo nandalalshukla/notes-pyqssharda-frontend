@@ -10,7 +10,7 @@ import { useAdminModRequestsStore } from "@/stores/admin/modRequests.store";
 import { DashboardLayout } from "@/components/dashboards/DashboardLayout";
 import { StatCard, StatsGrid } from "@/components/dashboards/StatCard";
 import { DataTable, DataTableColumn } from "@/components/dashboards/DataTable";
-import DetailPanel, { DetailField } from "@/components/dashboards/DetailPanel";
+import DetailPanel from "@/components/dashboards/DetailPanel";
 import {
   SectionCard,
   Tabs,
@@ -24,17 +24,559 @@ import {
   TrendingUp,
   Activity,
   Clock,
-  AlertCircle,
-  Edit,
-  Trash2,
   CheckCircle,
   XCircle,
+  Trash2,
 } from "lucide-react";
 
 import type { AdminUser } from "@/stores/admin/users.store";
 import type { ModRequest } from "@/stores/admin/modRequests.store";
 
-export default function AdminDashboardNew() {
+export default function AdminDashboard() {
+  const { user } = useAuthStore();
+  const [activeNav, setActiveNav] = useState("overview");
+  const [userSearch, setUserSearch] = useState("");
+  const [modSearch, setModSearch] = useState("");
+  const [requestSearch, setRequestSearch] = useState("");
+
+  // Store state
+  const {
+    userIds,
+    userEntities,
+    usersLoading,
+    usersError,
+    userPendingActions,
+    fetchUsers,
+    deactivateUser,
+    activateUser,
+    deleteUser,
+  } = useAdminUsersStore(
+    useShallow((state) => ({
+      userIds: state.ids,
+      userEntities: state.entities,
+      usersLoading: state.isLoading,
+      usersError: state.error,
+      userPendingActions: state.pendingActions,
+      fetchUsers: state.fetchUsers,
+      deactivateUser: state.deactivateUser,
+      activateUser: state.activateUser,
+      deleteUser: state.deleteUser,
+    })),
+  );
+
+  const {
+    modIds,
+    modEntities,
+    modsLoading,
+    modsError,
+    modPendingActions,
+    fetchMods,
+    removeModRole,
+  } = useAdminModsStore(
+    useShallow((state) => ({
+      modIds: state.ids,
+      modEntities: state.entities,
+      modsLoading: state.isLoading,
+      modsError: state.error,
+      modPendingActions: state.pendingActions,
+      fetchMods: state.fetchMods,
+      removeModRole: state.removeModRole,
+    })),
+  );
+
+  const {
+    requestIds,
+    requestEntities,
+    requestsLoading,
+    requestsError,
+    requestPendingActions,
+    fetchModRequests,
+    processModRequest,
+  } = useAdminModRequestsStore(
+    useShallow((state) => ({
+      requestIds: state.ids,
+      requestEntities: state.entities,
+      requestsLoading: state.isLoading,
+      requestsError: state.error,
+      requestPendingActions: state.pendingActions,
+      fetchModRequests: state.fetchModRequests,
+      processModRequest: state.processModRequest,
+    })),
+  );
+
+  // Data computation
+  const users = useMemo(
+    () => userIds.map((id) => userEntities[id]).filter(Boolean),
+    [userIds, userEntities],
+  );
+
+  const mods = useMemo(
+    () => modIds.map((id) => modEntities[id]).filter(Boolean),
+    [modIds, modEntities],
+  );
+
+  const modRequests = useMemo(
+    () => requestIds.map((id) => requestEntities[id]).filter(Boolean),
+    [requestIds, requestEntities],
+  );
+
+  // Filtered data
+  const filteredUsers = useMemo(
+    () =>
+      users.filter(
+        (u) =>
+          u.name.toLowerCase().includes(userSearch.toLowerCase()) ||
+          u.email.toLowerCase().includes(userSearch.toLowerCase()),
+      ),
+    [users, userSearch],
+  );
+
+  const filteredMods = useMemo(
+    () =>
+      mods.filter(
+        (u) =>
+          u.name.toLowerCase().includes(modSearch.toLowerCase()) ||
+          u.email.toLowerCase().includes(modSearch.toLowerCase()),
+      ),
+    [mods, modSearch],
+  );
+
+  const filteredRequests = useMemo(
+    () =>
+      modRequests.filter(
+        (r) =>
+          r.name.toLowerCase().includes(requestSearch.toLowerCase()) ||
+          r.email.toLowerCase().includes(requestSearch.toLowerCase()),
+      ),
+    [modRequests, requestSearch],
+  );
+
+  // Stats
+  const stats = [
+    {
+      label: "Total Users",
+      value: users.length,
+      icon: <Users size={24} />,
+      variant: "primary" as const,
+      description: "Active and inactive",
+    },
+    {
+      label: "Active Moderators",
+      value: mods.filter((m) => m.isActive).length,
+      icon: <UserCheck size={24} />,
+      variant: "success" as const,
+      description: `Out of ${mods.length}`,
+    },
+    {
+      label: "Pending Requests",
+      value: modRequests.length,
+      icon: <Clock size={24} />,
+      variant: "warning" as const,
+      description: "Awaiting review",
+    },
+    {
+      label: "Inactive Users",
+      value: users.filter((u) => !u.isActive).length,
+      icon: <UserX size={24} />,
+      variant: "danger" as const,
+      description: "Attention needed",
+    },
+  ];
+
+  // Effects
+  useEffect(() => {
+    fetchUsers();
+    fetchMods();
+    fetchModRequests();
+  }, []);
+
+  useEffect(() => {
+    if (usersError || modsError || requestsError) {
+      toast.error(usersError || modsError || requestsError);
+    }
+  }, [usersError, modsError, requestsError]);
+
+  // Handlers
+  const handleToggleUserStatus = async (id: string, isActive: boolean) => {
+    if (
+      !confirm(
+        `Are you sure you want to ${isActive ? "deactivate" : "activate"} this user?`,
+      )
+    )
+      return;
+    try {
+      if (isActive) await deactivateUser(id);
+      else await activateUser(id);
+      toast.success("User status updated");
+    } catch (error) {
+      toast.error("Failed to update user status");
+    }
+  };
+
+  const handleDeleteUser = async (id: string) => {
+    if (!confirm("⚠️ Permanently delete this user and all their data?")) return;
+    try {
+      await deleteUser(id);
+      toast.success("User deleted");
+    } catch (error) {
+      toast.error("Failed to delete user");
+    }
+  };
+
+  const handleRemoveModRole = async (id: string) => {
+    if (!confirm("Are you sure you want to remove moderator role?")) return;
+    try {
+      await removeModRole(id);
+      toast.success("Moderator role removed");
+    } catch (error) {
+      toast.error("Failed to remove moderator role");
+    }
+  };
+
+  const handleProcessModRequest = async (
+    id: string,
+    action: "approve" | "reject",
+  ) => {
+    try {
+      await processModRequest(id, action);
+      toast.success(`Request ${action}ed successfully`);
+    } catch (error) {
+      toast.error(`Failed to ${action} request`);
+    }
+  };
+
+  // Table columns
+  const userColumns: DataTableColumn<AdminUser>[] = [
+    {
+      id: "name",
+      header: "User",
+      accessor: (row) => (
+        <div>
+          <p className="font-medium text-slate-900">{row.name}</p>
+          <p className="text-xs text-slate-500">{row.email}</p>
+        </div>
+      ),
+      sortable: true,
+    },
+    {
+      id: "contributions",
+      header: "Contributions",
+      accessor: (row) => <span className="font-medium">{row.contributions || 0}</span>,
+      sortable: true,
+    },
+    {
+      id: "status",
+      header: "Status",
+      accessor: (row) => (
+        <span
+          className={`inline-block px-3 py-1 rounded-full text-xs font-bold ${
+            row.isActive
+              ? "bg-emerald-100 text-emerald-700"
+              : "bg-red-100 text-red-700"
+          }`}
+        >
+          {row.isActive ? "Active" : "Inactive"}
+        </span>
+      ),
+    },
+    {
+      id: "actions",
+      header: "Actions",
+      accessor: (row) => (
+        <div className="flex gap-2">
+          <button
+            onClick={() => handleToggleUserStatus(row._id, row.isActive)}
+            disabled={Boolean(userPendingActions[row._id])}
+            className="px-3 py-1 text-xs rounded bg-blue-100 text-blue-700 hover:bg-blue-200 disabled:opacity-50"
+          >
+            {row.isActive ? "Deactivate" : "Activate"}
+          </button>
+          <button
+            onClick={() => handleDeleteUser(row._id)}
+            disabled={Boolean(userPendingActions[row._id])}
+            className="px-3 py-1 text-xs rounded bg-red-100 text-red-700 hover:bg-red-200 disabled:opacity-50"
+          >
+            Delete
+          </button>
+        </div>
+      ),
+    },
+  ];
+
+  const modColumns: DataTableColumn<AdminUser>[] = [
+    {
+      id: "name",
+      header: "Moderator",
+      accessor: (row) => (
+        <div>
+          <p className="font-medium text-slate-900">{row.name}</p>
+          <p className="text-xs text-slate-500">{row.email}</p>
+        </div>
+      ),
+      sortable: true,
+    },
+    {
+      id: "contributions",
+      header: "Contributions",
+      accessor: (row) => (
+        <div className="flex items-center gap-2">
+          <TrendingUp size={16} className="text-blue-600" />
+          <span className="font-medium">{row.contributions || 0}</span>
+        </div>
+      ),
+      sortable: true,
+    },
+    {
+      id: "status",
+      header: "Status",
+      accessor: (row) => (
+        <span
+          className={`inline-block px-3 py-1 rounded-full text-xs font-bold ${
+            row.isActive
+              ? "bg-emerald-100 text-emerald-700"
+              : "bg-amber-100 text-amber-700"
+          }`}
+        >
+          {row.isActive ? "Active" : "Inactive"}
+        </span>
+      ),
+    },
+    {
+      id: "actions",
+      header: "Actions",
+      accessor: (row) => (
+        <button
+          onClick={() => handleRemoveModRole(row._id)}
+          disabled={Boolean(modPendingActions[row._id])}
+          className="px-3 py-1 text-xs rounded bg-red-100 text-red-700 hover:bg-red-200 disabled:opacity-50"
+        >
+          Remove Role
+        </button>
+      ),
+    },
+  ];
+
+  const requestColumns: DataTableColumn<ModRequest>[] = [
+    {
+      id: "name",
+      header: "Requester",
+      accessor: (row) => (
+        <div>
+          <p className="font-medium text-slate-900">{row.name}</p>
+          <p className="text-xs text-slate-500">{row.email}</p>
+        </div>
+      ),
+      sortable: true,
+    },
+    {
+      id: "motivation",
+      header: "Motivation",
+      accessor: (row) => (
+        <p className="text-sm text-slate-600 line-clamp-1">
+          {row.modMotivation || "—"}
+        </p>
+      ),
+    },
+    {
+      id: "date",
+      header: "Requested",
+      accessor: (row) => (
+        <span className="text-sm text-slate-600">
+          {new Date(row.modRequestAt || "").toLocaleDateString()}
+        </span>
+      ),
+      sortable: true,
+    },
+    {
+      id: "actions",
+      header: "Actions",
+      accessor: (row) => (
+        <div className="flex gap-2">
+          <button
+            onClick={() => handleProcessModRequest(row._id, "approve")}
+            disabled={Boolean(requestPendingActions[row._id])}
+            className="px-3 py-1 text-xs rounded bg-emerald-100 text-emerald-700 hover:bg-emerald-200 disabled:opacity-50 flex items-center gap-1"
+          >
+            <CheckCircle size={14} /> Approve
+          </button>
+          <button
+            onClick={() => handleProcessModRequest(row._id, "reject")}
+            disabled={Boolean(requestPendingActions[row._id])}
+            className="px-3 py-1 text-xs rounded bg-red-100 text-red-700 hover:bg-red-200 disabled:opacity-50 flex items-center gap-1"
+          >
+            <XCircle size={14} /> Reject
+          </button>
+        </div>
+      ),
+    },
+  ];
+
+  // Navigation items
+  const navItems = [
+    {
+      id: "overview",
+      label: "Dashboard Overview",
+      icon: <Activity size={20} />,
+    },
+    {
+      id: "users",
+      label: "Users",
+      icon: <Users size={20} />,
+      badge: users.filter((u) => !u.isActive).length,
+    },
+    {
+      id: "mods",
+      label: "Moderators",
+      icon: <UserCheck size={20} />,
+      badge: mods.length,
+    },
+    {
+      id: "requests",
+      label: "Mod Requests",
+      icon: <FileText size={20} />,
+      badge: modRequests.length,
+    },
+  ];
+
+  return (
+    <DashboardLayout
+      navItems={navItems}
+      activeNavId={activeNav}
+      onNavChange={setActiveNav}
+      title="Admin Dashboard"
+      subtitle="Manage users, moderators, and platform health"
+      userRole={`${user?.role} • ${user?.name}`}
+    >
+      {/* Stats Grid - Always visible */}
+      <StatsGrid stats={stats} columns={4} />
+
+      {/* Overview Section */}
+      {activeNav === "overview" && (
+        <div className="mt-8 space-y-6">
+          <SectionCard
+            title="Quick Stats"
+            description="Platform health at a glance"
+          >
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              <div className="p-4 border rounded-lg">
+                <p className="text-sm text-slate-600">Email Verified</p>
+                <p className="text-2xl font-bold">
+                  {users.filter((u) => u.isEmailVerified).length}
+                </p>
+              </div>
+              <div className="p-4 border rounded-lg">
+                <p className="text-sm text-slate-600">Verified Users</p>
+                <p className="text-2xl font-bold">
+                  {Math.round(
+                    (users.filter((u) => u.isEmailVerified).length /
+                      (users.length || 1)) *
+                      100,
+                  )}
+                  %
+                </p>
+              </div>
+              <div className="p-4 border rounded-lg">
+                <p className="text-sm text-slate-600">Mod Coverage</p>
+                <p className="text-2xl font-bold">
+                  {mods.length > 0 ? Math.round((mods.length / users.length) * 100) : 0}%
+                </p>
+              </div>
+            </div>
+          </SectionCard>
+        </div>
+      )}
+
+      {/* Users Section */}
+      {activeNav === "users" && (
+        <div className="mt-8 space-y-6">
+          <Toolbar
+            title="User Management"
+            description={`Total: ${filteredUsers.length} users`}
+          >
+            <input
+              type="text"
+              placeholder="Search by name or email..."
+              value={userSearch}
+              onChange={(e) => setUserSearch(e.target.value)}
+              className="flex-1 px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+            />
+          </Toolbar>
+          <SectionCard title="All Users" icon={<Users size={20} />}>
+            <DataTable
+              columns={userColumns}
+              data={filteredUsers}
+              isLoading={usersLoading}
+              searchable={false}
+              paginated
+              pageSize={15}
+              emptyMessage="No users found"
+            />
+          </SectionCard>
+        </div>
+      )}
+
+      {/* Moderators Section */}
+      {activeNav === "mods" && (
+        <div className="mt-8 space-y-6">
+          <Toolbar
+            title="Moderator Management"
+            description={`Active: ${filteredMods.filter((m) => m.isActive).length} / ${filteredMods.length}`}
+          >
+            <input
+              type="text"
+              placeholder="Search by name or email..."
+              value={modSearch}
+              onChange={(e) => setModSearch(e.target.value)}
+              className="flex-1 px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+            />
+          </Toolbar>
+          <SectionCard title="Moderators" icon={<UserCheck size={20} />}>
+            <DataTable
+              columns={modColumns}
+              data={filteredMods}
+              isLoading={modsLoading}
+              searchable={false}
+              paginated
+              pageSize={15}
+              emptyMessage="No moderators found"
+            />
+          </SectionCard>
+        </div>
+      )}
+
+      {/* Mod Requests Section */}
+      {activeNav === "requests" && (
+        <div className="mt-8 space-y-6">
+          <Toolbar
+            title="Moderator Requests"
+            description={`Pending: ${filteredRequests.length} request${filteredRequests.length !== 1 ? "s" : ""}`}
+          >
+            <input
+              type="text"
+              placeholder="Search by name or email..."
+              value={requestSearch}
+              onChange={(e) => setRequestSearch(e.target.value)}
+              className="flex-1 px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+            />
+          </Toolbar>
+          <SectionCard title="Pending Requests" icon={<Clock size={20} />}>
+            <DataTable
+              columns={requestColumns}
+              data={filteredRequests}
+              isLoading={requestsLoading}
+              searchable={false}
+              paginated
+              pageSize={15}
+              emptyMessage="No pending requests"
+            />
+          </SectionCard>
+        </div>
+      )}
+    </DashboardLayout>
+  );
+}
+
+export function LegacyAdminDashboard() {
   const { user } = useAuthStore();
   const [selectedUser, setSelectedUser] = useState<AdminUser | null>(null);
   const [selectedMod, setSelectedMod] = useState<AdminUser | null>(null);
@@ -381,23 +923,27 @@ export default function AdminDashboardNew() {
   // Navigation items
   const navItems = [
     {
+      id: "overview",
       label: "Dashboard Overview",
       href: "#overview",
       icon: <Activity size={20} />,
     },
     {
+      id: "users",
       label: "Users",
       href: "#users",
       icon: <Users size={20} />,
       badge: users.filter((u) => !u.isActive).length,
     },
     {
+      id: "mods",
       label: "Moderators",
       href: "#mods",
       icon: <UserCheck size={20} />,
       badge: mods.length,
     },
     {
+      id: "requests",
       label: "Mod Requests",
       href: "#requests",
       icon: <FileText size={20} />,

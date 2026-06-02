@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import React, { useState, Fragment } from "react";
+import { Dialog, Transition } from "@headlessui/react";
 import {
   AlertTriangle,
   Trash2,
@@ -163,138 +163,146 @@ export const ReportActionModal: React.FC<ReportActionModalProps> = ({
   };
 
   return (
-    <AnimatePresence>
-      {isOpen && config && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          onClick={handleCancel}
-          className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+    <Transition appear show={isOpen && !!config} as={Fragment}>
+      <Dialog as="div" className="relative z-50" onClose={handleCancel}>
+        <Transition.Child
+          as={Fragment}
+          enter="ease-out duration-300"
+          enterFrom="opacity-0"
+          enterTo="opacity-100"
+          leave="ease-in duration-200"
+          leaveFrom="opacity-100"
+          leaveTo="opacity-0"
         >
-          <motion.div
-            initial={{ scale: 0.95, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0.95, opacity: 0 }}
-            onClick={(e) => e.stopPropagation()}
-            className={`${config.backgroundColor} ${config.borderColor} w-full max-w-md rounded-lg border-2 shadow-xl`}
-          >
-            {/* Header */}
-            <div className="flex items-center justify-between p-6 border-b border-gray-200">
-              <div className="flex items-center gap-3">
-                <div className={`${config.textColor}`}>{config.icon}</div>
-                <div>
-                  <h2 className={`text-lg font-semibold ${config.textColor}`}>
-                    {config.title}
-                  </h2>
-                  {isCritical && (
-                    <p className="text-xs font-medium text-red-600 flex items-center gap-1 mt-1">
-                      <AlertTriangle className="w-3 h-3" /> Critical Action
-                    </p>
-                  )}
-                </div>
-              </div>
-              <button
-                onClick={handleCancel}
-                className="p-1 hover:bg-white/50 rounded transition-colors"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
+          <div className="fixed inset-0 bg-black bg-opacity-50" />
+        </Transition.Child>
 
-            {/* Content */}
-            <div className="p-6 space-y-4">
-              {/* Description */}
-              <p className={`text-sm ${config.textColor}`}>
-                {config.description}
-              </p>
-
-              {/* Target Info */}
-              {targetInfo && (
-                <div className="bg-white/50 rounded p-3 space-y-2">
-                  {targetInfo.title && (
+        <div className="fixed inset-0 overflow-y-auto">
+          <div className="flex min-h-full items-center justify-center p-4">
+            <Transition.Child
+              as={Fragment}
+              enter="ease-out duration-300"
+              enterFrom="opacity-0 scale-95"
+              enterTo="opacity-100 scale-100"
+              leave="ease-in duration-200"
+              leaveFrom="opacity-100 scale-100"
+              leaveTo="opacity-0 scale-95"
+            >
+              <Dialog.Panel className={`relative w-full max-w-md transform overflow-hidden rounded-lg ${config?.backgroundColor} ${config?.borderColor} shadow-xl transition-all border-2`}>
+                {/* Header */}
+                <div className="sticky top-0 flex items-center justify-between border-b border-gray-200 bg-white p-4">
+                  <div className="flex items-center gap-3 flex-1">
+                    <div className={`${config?.textColor}`}>{config?.icon}</div>
                     <div>
-                      <p className="text-xs text-gray-600">Content/User:</p>
-                      <p className="text-sm font-medium text-gray-900 line-clamp-2">
-                        {targetInfo.title}
-                      </p>
-                    </div>
-                  )}
-                  {targetInfo.author && (
-                    <div>
-                      <p className="text-xs text-gray-600">Author:</p>
-                      <p className="text-sm font-medium text-gray-900">
-                        {targetInfo.author}
-                      </p>
-                    </div>
-                  )}
-                  {targetInfo.reason && (
-                    <div>
-                      <p className="text-xs text-gray-600">Report Reason:</p>
-                      <p className="text-sm font-medium text-gray-900 capitalize">
-                        {targetInfo.reason.replace(/_/g, " ")}
-                      </p>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* Double Confirmation for Dangerous Actions */}
-              {requiresDoubleConfirm && confirmCount === 1 && (
-                <motion.div
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="bg-red-100 border border-red-300 rounded p-4 text-sm"
-                >
-                  <div className="flex items-start gap-2">
-                    <AlertTriangle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
-                    <div>
-                      <p className="font-semibold text-red-900">
-                        {isCritical
-                          ? "Are you absolutely sure?"
-                          : "Please confirm this action"}
-                      </p>
-                      <p className="text-red-800 text-xs mt-1">
-                        {isCritical
-                          ? "This action will permanently delete the user and cannot be reversed."
-                          : "This cannot be undone."}
-                      </p>
+                      <Dialog.Title className={`text-lg font-semibold ${config?.textColor}`}>
+                        {config?.title}
+                      </Dialog.Title>
+                      {isCritical && (
+                        <p className="text-xs font-medium text-red-600 flex items-center gap-1 mt-1">
+                          <AlertTriangle className="w-3 h-3" /> Critical Action
+                        </p>
+                      )}
                     </div>
                   </div>
-                </motion.div>
-              )}
-            </div>
+                  <button
+                    onClick={handleCancel}
+                    className="rounded-lg p-1 hover:bg-slate-100"
+                  >
+                    <X size={24} className="text-slate-600" />
+                  </button>
+                </div>
 
-            {/* Footer - Buttons */}
-            <div className="px-6 py-4 border-t border-gray-200 flex gap-3 justify-end">
-              <button
-                onClick={handleCancel}
-                disabled={isLoading}
-                className="px-4 py-2 rounded bg-gray-200 text-gray-800 hover:bg-gray-300 disabled:opacity-50 transition-colors font-medium text-sm"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleConfirm}
-                disabled={isLoading}
-                className={`px-4 py-2 rounded ${config.buttonColor} text-white disabled:opacity-50 transition-colors font-medium text-sm flex items-center gap-2`}
-              >
-                {isLoading ? (
-                  <Loader className="w-4 h-4 animate-spin" />
-                ) : (
-                  requiresDoubleConfirm &&
-                  confirmCount === 0 && <ChevronRight className="w-4 h-4" />
-                )}
-                {isLoading
-                  ? "Processing..."
-                  : requiresDoubleConfirm && confirmCount === 0
-                    ? "Confirm"
-                    : config.confirmText}
-              </button>
-            </div>
-          </motion.div>
-        </motion.div>
-      )}
-    </AnimatePresence>
+                {/* Content */}
+                <div className="p-6 space-y-4">
+                  {/* Description */}
+                  <p className={`text-sm ${config?.textColor}`}>
+                    {config?.description}
+                  </p>
+
+                  {/* Target Info */}
+                  {targetInfo && (
+                    <div className="bg-white rounded p-4 border border-gray-200 space-y-3">
+                      {targetInfo.title && (
+                        <div>
+                          <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Content/User:</p>
+                          <p className="text-sm font-medium text-gray-900 line-clamp-2">
+                            {targetInfo.title}
+                          </p>
+                        </div>
+                      )}
+                      {targetInfo.author && (
+                        <div>
+                          <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Author:</p>
+                          <p className="text-sm font-medium text-gray-900">
+                            {targetInfo.author}
+                          </p>
+                        </div>
+                      )}
+                      {targetInfo.reason && (
+                        <div>
+                          <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Report Reason:</p>
+                          <p className="text-sm font-medium text-gray-900 capitalize">
+                            {targetInfo.reason.replace(/_/g, " ")}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Double Confirmation for Dangerous Actions */}
+                  {requiresDoubleConfirm && confirmCount === 1 && (
+                    <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-sm">
+                      <div className="flex items-start gap-3">
+                        <AlertTriangle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+                        <div>
+                          <p className="font-semibold text-red-900">
+                            {isCritical
+                              ? "Are you absolutely sure?"
+                              : "Please confirm this action"}
+                          </p>
+                          <p className="text-red-800 text-xs mt-1">
+                            {isCritical
+                              ? "This action will permanently delete the user and cannot be reversed."
+                              : "This cannot be undone."}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Footer - Buttons */}
+                <div className="border-t border-gray-200 bg-white px-6 py-4 flex gap-3 justify-end">
+                  <button
+                    onClick={handleCancel}
+                    disabled={isLoading}
+                    className="px-4 py-2 rounded-lg bg-gray-100 text-gray-800 hover:bg-gray-200 disabled:opacity-50 transition-colors font-medium text-sm"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleConfirm}
+                    disabled={isLoading}
+                    className={`px-4 py-2 rounded-lg ${config?.buttonColor} text-white disabled:opacity-50 transition-colors font-medium text-sm flex items-center gap-2`}
+                  >
+                    {isLoading ? (
+                      <Loader className="w-4 h-4 animate-spin" />
+                    ) : (
+                      requiresDoubleConfirm &&
+                      confirmCount === 0 && <ChevronRight className="w-4 h-4" />
+                    )}
+                    {isLoading
+                      ? "Processing..."
+                      : requiresDoubleConfirm && confirmCount === 0
+                        ? "Confirm"
+                        : config?.confirmText}
+                  </button>
+                </div>
+              </Dialog.Panel>
+            </Transition.Child>
+          </div>
+        </div>
+      </Dialog>
+    </Transition>
   );
 };
