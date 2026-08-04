@@ -2,12 +2,13 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
-import { useRouter } from "next/navigation";
 import { toast } from "react-hot-toast";
 import useAuthStore from "@/stores/user/authStore";
 import RejectionModal from "@/components/modals/RejectionModal";
+import { ReportActionModal } from "@/components/modals/ReportActionModal";
+import ReportTargetModal from "@/components/modals/ReportTargetModal";
 import { DashboardLayout } from "@/components/dashboards/DashboardLayout";
-import { StatCard, StatsGrid } from "@/components/dashboards/StatCard";
+import { StatsGrid } from "@/components/dashboards/StatCard";
 import { DataTable, DataTableColumn } from "@/components/dashboards/DataTable";
 import { SectionCard, Toolbar } from "@/components/dashboards/SectionCard";
 import { UserProfileLink } from "@/components/shared/UserProfileLink";
@@ -22,7 +23,6 @@ import {
   Clock,
   AlertCircle,
   FileText,
-  Ban,
   TrendingUp,
 } from "lucide-react";
 import type {
@@ -46,7 +46,6 @@ interface SubmissionWithType extends PendingSubmission {
 }
 
 export default function ModeratorDashboard() {
-  const router = useRouter();
   const { user } = useAuthStore();
   const [activeNav, setActiveNav] = useState("overview");
   const [rejectionModal, setRejectionModal] = useState<RejectionModalState>({
@@ -57,6 +56,11 @@ export default function ModeratorDashboard() {
   });
   const [submissionSearch, setSubmissionSearch] = useState("");
   const [reportSearch, setReportSearch] = useState("");
+  const [selectedReport, setSelectedReport] = useState<ReportListItem | null>(
+    null,
+  );
+  const [selectedReportAction, setSelectedReportAction] =
+    useState<ReportAction | null>(null);
 
   // Store state
   const {
@@ -189,7 +193,7 @@ export default function ModeratorDashboard() {
   useEffect(() => {
     fetchAllPending();
     fetchReports();
-  }, []);
+  }, [fetchAllPending, fetchReports]);
 
   useEffect(() => {
     if (reportsError) {
@@ -202,7 +206,7 @@ export default function ModeratorDashboard() {
     try {
       await approveSubmission(id, type);
       toast.success("Submission approved");
-    } catch (error) {
+    } catch {
       toast.error("Failed to approve submission");
     }
   };
@@ -225,7 +229,7 @@ export default function ModeratorDashboard() {
       );
       toast.success("Submission rejected");
       setRejectionModal({ ...rejectionModal, isOpen: false });
-    } catch (error) {
+    } catch {
       toast.error("Failed to reject submission");
     }
   };
@@ -233,10 +237,16 @@ export default function ModeratorDashboard() {
   const handleReportAction = async (reportId: string, action: ReportAction) => {
     try {
       await applyReportAction(reportId, action);
-      toast.success(`Report action completed: ${action}`);
-    } catch (error) {
+      toast.success("Report action completed");
+      setSelectedReport(null);
+      setSelectedReportAction(null);
+    } catch {
       toast.error("Failed to apply report action");
     }
+  };
+
+  const openReportAction = (action: ReportAction) => {
+    setSelectedReportAction(action);
   };
 
   // Table columns for submissions
@@ -295,14 +305,18 @@ export default function ModeratorDashboard() {
       id: "target",
       header: "Target",
       accessor: (row) => (
-        <div>
+        <button
+          type="button"
+          onClick={() => setSelectedReport(row)}
+          className="text-left hover:text-blue-700"
+        >
           <p className="font-medium text-slate-900 line-clamp-1">
             {row.targetType === "user"
               ? row.targetEntity?.username || "Unknown User"
               : row.targetEntity?.content || "Unknown"}
           </p>
-          <p className="text-xs text-slate-500 capitalize">{row.targetType}</p>
-        </div>
+          <p className="text-xs capitalize text-blue-600">View {row.targetType}</p>
+        </button>
       ),
     },
     {
@@ -348,27 +362,15 @@ export default function ModeratorDashboard() {
     {
       id: "actions",
       header: "Actions",
-      accessor: (row) =>
-        row.status === "pending" ? (
-          <div className="flex gap-2">
-            <button
-              onClick={() => handleReportAction(row._id, "resolve")}
-              disabled={Boolean(reportPendingActions[row._id])}
-              className="px-2 py-1 text-xs rounded bg-emerald-100 text-emerald-700 hover:bg-emerald-200 disabled:opacity-50"
-            >
-              Resolve
-            </button>
-            <button
-              onClick={() => handleReportAction(row._id, "reject")}
-              disabled={Boolean(reportPendingActions[row._id])}
-              className="px-2 py-1 text-xs rounded bg-slate-100 text-slate-700 hover:bg-slate-200 disabled:opacity-50"
-            >
-              Dismiss
-            </button>
-          </div>
-        ) : (
-          <span className="text-xs text-slate-500">Resolved</span>
-        ),
+      accessor: (row) => (
+        <button
+          type="button"
+          onClick={() => setSelectedReport(row)}
+          className="rounded bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700 hover:bg-blue-200"
+        >
+          Review
+        </button>
+      ),
     },
   ];
 
@@ -497,6 +499,43 @@ export default function ModeratorDashboard() {
         itemType={rejectionModal.itemType}
         onClose={() => setRejectionModal({ ...rejectionModal, isOpen: false })}
         onSubmit={handleConfirmReject}
+      />
+
+      <ReportTargetModal
+        report={selectedReport}
+        isOpen={Boolean(selectedReport)}
+        pendingAction={
+          selectedReport ? reportPendingActions[selectedReport._id] : undefined
+        }
+        onAction={openReportAction}
+        onClose={() => setSelectedReport(null)}
+      />
+
+      <ReportActionModal
+        isOpen={Boolean(selectedReport && selectedReportAction)}
+        action={selectedReportAction}
+        targetType={selectedReport?.targetType || null}
+        targetInfo={
+          selectedReport
+            ? {
+                title:
+                  selectedReport.targetType === "user"
+                    ? selectedReport.targetEntity?.username
+                    : selectedReport.targetEntity?.content,
+                author: selectedReport.targetOwner?.username,
+                reason: selectedReport.reason,
+              }
+            : undefined
+        }
+        isLoading={Boolean(
+          selectedReport && reportPendingActions[selectedReport._id],
+        )}
+        onConfirm={async () => {
+          if (selectedReport && selectedReportAction) {
+            await handleReportAction(selectedReport._id, selectedReportAction);
+          }
+        }}
+        onCancel={() => setSelectedReportAction(null)}
       />
     </DashboardLayout>
   );

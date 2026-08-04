@@ -38,10 +38,12 @@ export const StatCard: React.FC<StatCardProps> = ({
 }) => {
   return (
     <div
-      className={`border rounded-2xl p-6 transition-all hover:shadow-lg hover:scale-105 duration-300 ${variantStyles[variant]}`}
+      className={`border rounded-2xl p-4 sm:p-5 lg:p-6 transition-all duration-300 hover:shadow-lg sm:hover:scale-[1.03] ${variantStyles[variant]}`}
     >
       <div className="flex items-start justify-between mb-4">
-        <div className={`p-3 rounded-xl ${iconVariantStyles[variant]}`}>
+        <div
+          className={`p-2.5 sm:p-3 rounded-xl ${iconVariantStyles[variant]}`}
+        >
           {icon}
         </div>
         {trend && trendValue && (
@@ -60,7 +62,9 @@ export const StatCard: React.FC<StatCardProps> = ({
         )}
       </div>
       <p className="text-sm font-medium text-slate-600 mb-2">{label}</p>
-      <p className="text-4xl font-bold text-slate-900 mb-2">{value}</p>
+      <p className="text-3xl sm:text-4xl font-bold text-slate-900 mb-2">
+        {value}
+      </p>
       {description && (
         <p className="text-xs text-slate-600 font-medium">{description}</p>
       )}
@@ -74,13 +78,17 @@ interface StatsGridProps {
 }
 
 export const StatsGrid: React.FC<StatsGridProps> = ({ stats, columns = 4 }) => {
+  const gridColumnsClass =
+    columns >= 4
+      ? "grid-cols-1 sm:grid-cols-2 xl:grid-cols-4"
+      : columns === 3
+        ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
+        : columns === 2
+          ? "grid-cols-1 sm:grid-cols-2"
+          : "grid-cols-1";
+
   return (
-    <div
-      className={`grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-${Math.min(
-        columns,
-        4,
-      )}`}
-    >
+    <div className={`grid gap-4 sm:gap-5 lg:gap-6 ${gridColumnsClass}`}>
       {stats.map((stat, index) => (
         <StatCard key={index} {...stat} />
       ))}

@@ -23,7 +23,7 @@ export interface DataTableColumn<T> {
 
 export interface DataTableRow {
   id: string;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 interface DataTableProps<T extends DataTableRow> {
@@ -45,8 +45,8 @@ interface DataTableProps<T extends DataTableRow> {
 
 type SortDirection = "asc" | "desc" | null;
 
-export const DataTable = React.forwardRef<HTMLDivElement, DataTableProps<any>>(
-  (
+export const DataTable = React.forwardRef(
+  <T extends DataTableRow>(
     {
       columns,
       data,
@@ -62,8 +62,8 @@ export const DataTable = React.forwardRef<HTMLDivElement, DataTableProps<any>>(
       onSelectRows,
       actions,
       className = "",
-    },
-    ref,
+    }: DataTableProps<T>,
+    ref: React.ForwardedRef<HTMLDivElement>,
   ) => {
     const [currentPage, setCurrentPage] = useState(1);
     const [sortConfig, setSortConfig] = useState<{
@@ -140,7 +140,7 @@ export const DataTable = React.forwardRef<HTMLDivElement, DataTableProps<any>>(
       }
     };
 
-    const handleSelectRow = (id: string, row: any) => {
+    const handleSelectRow = (id: string) => {
       setSelectedRows((prev) => {
         const newSelection = prev.includes(id)
           ? prev.filter((x) => x !== id)
@@ -181,7 +181,7 @@ export const DataTable = React.forwardRef<HTMLDivElement, DataTableProps<any>>(
       <div ref={ref} className={className}>
         {/* Search Bar */}
         {searchable && (
-          <div className="mb-6 flex gap-3">
+          <div className="mb-6 flex flex-col gap-3 sm:flex-row">
             <div className="flex-1 relative">
               <Search
                 size={18}
@@ -198,17 +198,77 @@ export const DataTable = React.forwardRef<HTMLDivElement, DataTableProps<any>>(
                 className="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-sm"
               />
             </div>
-            <button className="px-4 py-2.5 border border-slate-200 rounded-lg hover:bg-slate-50 hover:border-slate-300 transition-colors" title="Filter">
+            <button
+              className="inline-flex items-center justify-center px-4 py-2.5 border border-slate-200 rounded-lg hover:bg-slate-50 hover:border-slate-300 transition-colors sm:w-auto w-full"
+              title="Filter"
+            >
               <Filter size={18} className="text-slate-600" />
             </button>
           </div>
         )}
 
+        {/* Mobile cards */}
+        <div className="space-y-4 md:hidden">
+          {paginatedData.length === 0 ? (
+            <div className="rounded-2xl border border-slate-100 bg-white px-5 py-10 text-center shadow-sm">
+              <p className="text-slate-500 text-sm">{emptyMessage}</p>
+            </div>
+          ) : (
+            paginatedData.map((row) => (
+              <div
+                key={row.id}
+                className="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm"
+              >
+                <div className="space-y-4">
+                  {columns.map((column) => (
+                    <div key={`${row.id}-${column.id}`} className="space-y-1">
+                      <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                        {column.header}
+                      </p>
+                      <div
+                        className={`text-sm text-slate-700 ${column.className || ""}`}
+                        onClick={() => onRowClick?.(row)}
+                      >
+                        {column.cell ? column.cell(row) : column.accessor(row)}
+                      </div>
+                    </div>
+                  ))}
+                  {(selectable || actions || onView) && (
+                    <div className="flex flex-wrap items-center gap-2 border-t border-slate-100 pt-3">
+                      {selectable && (
+                        <label className="inline-flex items-center gap-2 text-sm font-medium text-slate-700">
+                          <input
+                            type="checkbox"
+                            checked={selectedRows.includes(row.id)}
+                            onChange={() => handleSelectRow(row.id)}
+                            className="rounded border-slate-300 cursor-pointer"
+                          />
+                          Select row
+                        </label>
+                      )}
+                      {onView && (
+                        <button
+                          onClick={() => onView(row)}
+                          className="inline-flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50"
+                        >
+                          <Eye size={16} />
+                          View
+                        </button>
+                      )}
+                      {actions && <div className="w-full">{actions(row)}</div>}
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+
         {/* Table */}
-        <div className="overflow-x-auto rounded-2xl border border-slate-100 bg-white shadow-sm hover:shadow-md transition-shadow">
-          <table className="w-full">
+        <div className="hidden overflow-x-auto rounded-2xl border border-slate-100 bg-white shadow-sm transition-shadow hover:shadow-md md:block">
+          <table className="min-w-full">
             <thead>
-              <tr className="border-b border-slate-100 bg-gradient-to-r from-slate-50 to-white">
+              <tr className="border-b border-slate-100 bg-linear-to-r from-slate-50 to-white">
                 {selectable && (
                   <th className="px-6 py-4">
                     <input
@@ -218,7 +278,7 @@ export const DataTable = React.forwardRef<HTMLDivElement, DataTableProps<any>>(
                         selectedRows.length === paginatedData.length
                       }
                       onChange={(e) => handleSelectAll(e.target.checked)}
-                      className="rounded border-slate-300 cursor-pointer"
+                      className="cursor-pointer rounded border-slate-300"
                     />
                   </th>
                 )}
@@ -228,13 +288,13 @@ export const DataTable = React.forwardRef<HTMLDivElement, DataTableProps<any>>(
                     className={`px-6 py-4 text-left ${column.className || ""}`}
                   >
                     <div className="flex items-center gap-2">
-                      <span className="font-semibold text-slate-900 text-sm">
+                      <span className="text-sm font-semibold text-slate-900">
                         {column.header}
                       </span>
                       {column.sortable && (
                         <button
                           onClick={() => handleSort(column.id)}
-                          className="hover:bg-slate-200 p-1 rounded transition-colors"
+                          className="rounded p-1 transition-colors hover:bg-slate-200"
                           title="Sort"
                         >
                           {getSortIcon(column.id)}
@@ -245,7 +305,7 @@ export const DataTable = React.forwardRef<HTMLDivElement, DataTableProps<any>>(
                 ))}
                 {(actions || onView) && (
                   <th className="px-6 py-4 text-right">
-                    <span className="font-semibold text-slate-900 text-sm">
+                    <span className="text-sm font-semibold text-slate-900">
                       Actions
                     </span>
                   </th>
@@ -263,22 +323,22 @@ export const DataTable = React.forwardRef<HTMLDivElement, DataTableProps<any>>(
                     }
                     className="px-6 py-12 text-center"
                   >
-                    <p className="text-slate-500 text-sm">{emptyMessage}</p>
+                    <p className="text-sm text-slate-500">{emptyMessage}</p>
                   </td>
                 </tr>
               ) : (
                 paginatedData.map((row) => (
                   <tr
                     key={row.id}
-                    className="border-b border-slate-100 hover:bg-blue-50/50 transition-colors duration-150 cursor-pointer"
+                    className="cursor-pointer border-b border-slate-100 transition-colors duration-150 hover:bg-blue-50/50"
                   >
                     {selectable && (
                       <td className="px-6 py-4">
                         <input
                           type="checkbox"
                           checked={selectedRows.includes(row.id)}
-                          onChange={() => handleSelectRow(row.id, row)}
-                          className="rounded border-slate-300 cursor-pointer"
+                          onChange={() => handleSelectRow(row.id)}
+                          className="cursor-pointer rounded border-slate-300"
                         />
                       </td>
                     )}
@@ -297,18 +357,18 @@ export const DataTable = React.forwardRef<HTMLDivElement, DataTableProps<any>>(
                           {onView && (
                             <button
                               onClick={() => onView(row)}
-                              className="p-2 hover:bg-slate-100 rounded-lg transition-colors text-slate-600 hover:text-slate-900"
+                              className="rounded-lg p-2 text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900"
                               title="View details"
                             >
                               <Eye size={16} />
                             </button>
                           )}
                           {actions && (
-                            <div className="relative group">
-                              <button className="p-2 hover:bg-slate-100 rounded-lg transition-colors text-slate-600 hover:text-slate-900">
+                            <div className="group relative">
+                              <button className="rounded-lg p-2 text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900">
                                 <MoreVertical size={16} />
                               </button>
-                              <div className="hidden group-hover:block absolute right-0 mt-0 w-48 bg-white border border-slate-200 rounded-lg shadow-lg z-10">
+                              <div className="absolute right-0 mt-0 hidden w-48 rounded-lg border border-slate-200 bg-white shadow-lg group-hover:block z-10">
                                 {actions(row)}
                               </div>
                             </div>
@@ -325,17 +385,24 @@ export const DataTable = React.forwardRef<HTMLDivElement, DataTableProps<any>>(
 
         {/* Pagination */}
         {paginated && totalPages > 1 && (
-          <div className="mt-8 flex items-center justify-between border-t border-slate-100 pt-6">
+          <div className="mt-8 flex flex-col gap-4 border-t border-slate-100 pt-6 sm:flex-row sm:items-center sm:justify-between">
             <div className="text-sm text-slate-600">
-              Showing <span className="font-semibold">{(currentPage - 1) * pageSize + 1}</span> to{" "}
-              <span className="font-semibold">{Math.min(currentPage * pageSize, sortedData.length)}</span> of{" "}
-              <span className="font-semibold">{sortedData.length}</span> results
+              Showing{" "}
+              <span className="font-semibold">
+                {(currentPage - 1) * pageSize + 1}
+              </span>{" "}
+              to{" "}
+              <span className="font-semibold">
+                {Math.min(currentPage * pageSize, sortedData.length)}
+              </span>{" "}
+              of <span className="font-semibold">{sortedData.length}</span>{" "}
+              results
             </div>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2 sm:justify-end">
               <button
                 onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                 disabled={currentPage === 1}
-                className="px-4 py-2 border border-slate-200 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-50 hover:border-slate-300 transition-colors text-sm font-medium"
+                className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium transition-colors hover:border-slate-300 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 Previous
               </button>
@@ -354,10 +421,10 @@ export const DataTable = React.forwardRef<HTMLDivElement, DataTableProps<any>>(
                   <button
                     key={`page-${i}-${pageNum}`}
                     onClick={() => setCurrentPage(pageNum)}
-                    className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+                    className={`rounded-lg px-3 py-2 text-sm font-medium transition-all ${
                       currentPage === pageNum
                         ? "bg-blue-600 text-white shadow-sm"
-                        : "border border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300"
+                        : "border border-slate-200 text-slate-700 hover:border-slate-300 hover:bg-slate-50"
                     }`}
                   >
                     {pageNum}
@@ -369,7 +436,7 @@ export const DataTable = React.forwardRef<HTMLDivElement, DataTableProps<any>>(
                   setCurrentPage((p) => Math.min(totalPages, p + 1))
                 }
                 disabled={currentPage === totalPages}
-                className="px-4 py-2 border border-slate-200 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-50 hover:border-slate-300 transition-colors text-sm font-medium"
+                className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium transition-colors hover:border-slate-300 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 Next
               </button>

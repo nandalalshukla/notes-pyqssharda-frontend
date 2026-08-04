@@ -39,11 +39,11 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   };
 
   return (
-    <div className="flex h-screen bg-slate-50 overflow-hidden">
+    <div className="flex min-h-dvh bg-slate-50 overflow-hidden">
       {/* Sidebar */}
       <aside
         className={`
-          fixed md:relative top-0 left-0 h-screen z-40
+          fixed inset-y-0 left-0 z-40 md:sticky md:top-0 md:h-dvh
           bg-white border-r border-slate-100 shadow-sm
           transition-all duration-300 ease-in-out
           ${sidebarOpen ? "w-64" : "w-20"}
@@ -55,7 +55,9 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
           {sidebarOpen && (
             <div>
               <h2 className="text-lg font-bold text-slate-900">Dashboard</h2>
-              <p className="text-xs text-slate-500 font-medium truncate">{userRole}</p>
+              <p className="text-xs text-slate-500 font-medium truncate">
+                {userRole}
+              </p>
             </div>
           )}
           <button
@@ -139,32 +141,37 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
       </aside>
 
       {/* Mobile Menu Button */}
-      <button
-        onClick={() => setCollapsedMobile(!collapsedMobile)}
-        className="md:hidden fixed top-4 left-4 z-50 p-2 bg-white rounded-lg shadow-md hover:bg-slate-50 transition-colors"
-        title="Toggle menu"
-      >
-        {collapsedMobile ? <X size={20} /> : <Menu size={20} />}
-      </button>
-
       {/* Main Content */}
-      <main className="flex-1 overflow-auto bg-slate-50">
+      <main className="flex min-w-0 flex-1 flex-col overflow-hidden bg-slate-50">
         {/* Header */}
         <div className="bg-white border-b border-slate-100 sticky top-0 z-20 shadow-sm">
-          <div className="px-4 md:px-8 py-6">
-            <h1 className="text-3xl md:text-4xl font-bold text-slate-900">
-              {title}
-            </h1>
-            {subtitle && (
-              <p className="text-slate-600 text-sm md:text-base mt-2">
-                {subtitle}
-              </p>
-            )}
+          <div className="px-4 sm:px-6 md:px-8 py-4 sm:py-5 lg:py-6">
+            <div className="flex items-start gap-3">
+              <button
+                onClick={() => setCollapsedMobile(!collapsedMobile)}
+                className="md:hidden mt-1 inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-700 shadow-sm transition-colors hover:bg-slate-50"
+                title="Toggle menu"
+              >
+                {collapsedMobile ? <X size={20} /> : <Menu size={20} />}
+              </button>
+              <div className="min-w-0 flex-1">
+                <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-slate-900">
+                  {title}
+                </h1>
+                {subtitle && (
+                  <p className="mt-1.5 text-sm text-slate-600 sm:text-base">
+                    {subtitle}
+                  </p>
+                )}
+              </div>
+            </div>
           </div>
         </div>
 
         {/* Content Area */}
-        <div className="p-4 md:p-8">{children}</div>
+        <div className="min-w-0 flex-1 overflow-y-auto p-4 sm:p-6 md:p-8">
+          {children}
+        </div>
       </main>
 
       {/* Mobile Overlay */}

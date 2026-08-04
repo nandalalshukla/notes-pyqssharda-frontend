@@ -114,7 +114,7 @@ const actionConfig: Record<
   delete_user: {
     title: "Delete User Account",
     description:
-      "This will permanently delete the user account and ALL associated data. This action CANNOT be undone.",
+      "This will permanently delete the user account. This action cannot be undone.",
     icon: <AlertTriangle className="w-6 h-6" />,
     confirmText: "Permanently Delete User",
     dangerLevel: "critical",
@@ -227,6 +227,14 @@ export const ReportActionModal: React.FC<ReportActionModalProps> = ({
                           <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Content/User:</p>
                           <p className="text-sm font-medium text-gray-900 line-clamp-2">
                             {targetInfo.title}
+                          </p>
+                        </div>
+                      )}
+                      {targetType && (
+                        <div>
+                          <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Target Type:</p>
+                          <p className="text-sm font-medium capitalize text-gray-900">
+                            {targetType}
                           </p>
                         </div>
                       )}

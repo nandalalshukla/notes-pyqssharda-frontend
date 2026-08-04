@@ -49,7 +49,9 @@ const RegisterForm = () => {
     }
 
     if (!/^[a-zA-Z0-9_]+$/.test(username)) {
-      toast.error("Username can only contain letters, numbers, and underscores");
+      toast.error(
+        "Username can only contain letters, numbers, and underscores",
+      );
       return;
     }
 
@@ -58,8 +60,8 @@ const RegisterForm = () => {
       return;
     }
 
-    if (password.length < 8) {
-      toast.error("Password must be at least 8 characters");
+    if (password.length < 6) {
+      toast.error("Password must be at least 6 characters");
       return;
     }
 
@@ -169,7 +171,7 @@ const RegisterForm = () => {
                 value={formData.password}
                 onChange={handleChange}
                 className="w-full px-4 py-2 pr-10 rounded-lg border-2 border-black focus:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] outline-none transition-all text-sm font-medium text-black placeholder:text-gray-500"
-                placeholder="Minimum 8 characters"
+                placeholder="Choose a password"
               />
               <button
                 type="button"
@@ -199,7 +201,11 @@ const RegisterForm = () => {
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                 className="absolute right-3 top-2.5 text-gray-600 hover:text-black transition-colors"
               >
-                {showConfirmPassword ? <FiEyeOff size={20} /> : <FiEye size={20} />}
+                {showConfirmPassword ? (
+                  <FiEyeOff size={20} />
+                ) : (
+                  <FiEye size={20} />
+                )}
               </button>
             </div>
           </div>
@@ -207,7 +213,7 @@ const RegisterForm = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full mt-2 bg-black hover:bg-gray-800 text-white font-bold py-3 rounded-lg transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,0.2)] disabled:opacity-70 disabled:cursor-not-allowed border-2 border-transparent hover:border-black"
+            className="w-full mt-2 bg-black hover:bg-gray-800 text-white font-bold py-3 rounded-lg transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)] hover:translate-y-0.5 hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,0.2)] disabled:opacity-70 disabled:cursor-not-allowed border-2 border-transparent hover:border-black"
           >
             {loading ? "Creating Account..." : "Register"}
           </button>

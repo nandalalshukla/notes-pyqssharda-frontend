@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Settings, RefreshCw } from "lucide-react";
+import { RefreshCw } from "lucide-react";
 
 interface SectionCardProps {
   title: string;
@@ -25,17 +25,19 @@ export const SectionCard: React.FC<SectionCardProps> = ({
   return (
     <div className="bg-white rounded-2xl border border-slate-100 overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300">
       {/* Header */}
-      <div className="border-b border-slate-100 px-6 py-5 flex items-start justify-between bg-gradient-to-r from-slate-50 to-white">
-        <div className="flex items-start gap-3 flex-1">
-          {icon && <div className="text-slate-700 flex-shrink-0 mt-0.5">{icon}</div>}
+      <div className="border-b border-slate-100 bg-linear-to-r from-slate-50 to-white px-4 py-4 flex flex-col gap-4 sm:px-6 sm:py-5 sm:flex-row sm:items-start sm:justify-between">
+        <div className="flex items-start gap-3 flex-1 min-w-0">
+          {icon && <div className="mt-0.5 shrink-0 text-slate-700">{icon}</div>}
           <div className="flex-1">
-            <h3 className="font-bold text-lg text-slate-900">{title}</h3>
+            <h3 className="font-bold text-base sm:text-lg text-slate-900">
+              {title}
+            </h3>
             {description && (
               <p className="text-sm text-slate-600 mt-0.5">{description}</p>
             )}
           </div>
         </div>
-        <div className="flex items-center gap-2 flex-shrink-0">
+        <div className="flex flex-wrap items-center gap-2 shrink-0">
           {onRefresh && (
             <button
               onClick={onRefresh}
@@ -54,7 +56,7 @@ export const SectionCard: React.FC<SectionCardProps> = ({
       </div>
 
       {/* Content */}
-      <div className="px-6 py-5">{children}</div>
+      <div className="px-4 sm:px-6 py-4 sm:py-5">{children}</div>
     </div>
   );
 };
@@ -82,13 +84,13 @@ export const Tabs: React.FC<TabsProps> = ({ tabs, defaultTab, onChange }) => {
   return (
     <div className="bg-white rounded-2xl border border-slate-100 overflow-hidden shadow-sm">
       {/* Tab List */}
-      <div className="flex gap-1 border-b border-slate-100 overflow-x-auto bg-slate-50 px-6">
+      <div className="flex gap-1 border-b border-slate-100 overflow-x-auto bg-slate-50 px-3 sm:px-6">
         {tabs.map((tab) => (
           <button
             key={tab.id}
             onClick={() => handleTabChange(tab.id)}
             className={`
-              px-4 py-4 font-medium text-sm
+              px-4 py-3 sm:py-4 font-medium text-sm
               border-b-2 transition-all duration-200
               flex items-center gap-2 whitespace-nowrap
               ${
@@ -119,7 +121,7 @@ export const Tabs: React.FC<TabsProps> = ({ tabs, defaultTab, onChange }) => {
       </div>
 
       {/* Tab Content */}
-      <div className="px-6 py-6">
+      <div className="px-4 sm:px-6 py-4 sm:py-6">
         {tabs.find((tab) => tab.id === activeTab)?.content}
       </div>
     </div>
@@ -140,15 +142,15 @@ export const Toolbar: React.FC<ToolbarProps> = ({
   children,
 }) => {
   return (
-    <div className="bg-white rounded-lg border border-slate-200 p-6 mb-6">
-      <div className="flex items-start justify-between mb-4">
-        <div>
+    <div className="bg-white rounded-lg border border-slate-200 p-4 sm:p-6 mb-6">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between mb-4">
+        <div className="min-w-0">
           <h2 className="font-bold text-slate-900">{title}</h2>
           {description && (
             <p className="text-sm text-slate-600 mt-1">{description}</p>
           )}
         </div>
-        {actions && <div className="flex gap-2">{actions}</div>}
+        {actions && <div className="flex flex-wrap gap-2">{actions}</div>}
       </div>
       {children && <div className="flex flex-wrap gap-4">{children}</div>}
     </div>

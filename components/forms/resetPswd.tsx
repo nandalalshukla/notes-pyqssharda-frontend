@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import { resetPassword } from "@/lib/api/user/auth.api";
@@ -9,7 +9,7 @@ import { FiEye, FiEyeOff } from "react-icons/fi";
 const ResetPasswordForm = () => {
   const router = useRouter();
 
-  const [email, setEmail] = useState<string | null>(null);
+  const emailRef = useRef<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -29,7 +29,7 @@ const ResetPasswordForm = () => {
       return;
     }
 
-    setEmail(storedEmail);
+    emailRef.current = storedEmail;
   }, [router]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -51,8 +51,8 @@ const ResetPasswordForm = () => {
       return;
     }
 
-    if (newPassword.length < 8) {
-      toast.error("Password must be at least 8 characters");
+    if (newPassword.length < 6) {
+      toast.error("Password must be at least 6 characters");
       return;
     }
 
@@ -60,6 +60,8 @@ const ResetPasswordForm = () => {
       toast.error("Passwords do not match");
       return;
     }
+
+    const email = emailRef.current;
 
     if (!email) return;
 
@@ -140,7 +142,7 @@ const ResetPasswordForm = () => {
                 value={formData.newPassword}
                 onChange={handleChange}
                 className="w-full px-4 py-2 pr-10 rounded-lg border-2 border-black focus:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] outline-none transition-all text-sm font-medium text-black placeholder:text-gray-500"
-                placeholder="Enter new password"
+                placeholder="Choose a password"
               />
               <button
                 type="button"
@@ -182,7 +184,7 @@ const ResetPasswordForm = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full mt-2 bg-black hover:bg-gray-800 text-white font-bold py-3 rounded-lg transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,0.2)] disabled:opacity-70 disabled:cursor-not-allowed border-2 border-transparent hover:border-black"
+            className="w-full mt-2 bg-black hover:bg-gray-800 text-white font-bold py-3 rounded-lg transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)] hover:translate-y-0.5 hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,0.2)] disabled:opacity-70 disabled:cursor-not-allowed border-2 border-transparent hover:border-black"
           >
             {loading ? "Resetting..." : "Reset Password"}
           </button>

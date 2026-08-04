@@ -24,6 +24,13 @@ export interface ReportTargetSummary {
   content?: string;
   post?: string;
   username?: string;
+  profilePic?: { url?: string } | null;
+  role?: string;
+  isActive?: boolean;
+  bio?: string;
+  course?: string;
+  followersCount?: number;
+  followingCount?: number;
   createdAt?: string;
   isDeleted?: boolean;
   media?: Array<{ url?: string }>;

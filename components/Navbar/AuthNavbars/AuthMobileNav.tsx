@@ -6,24 +6,26 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "react-hot-toast";
 import {
-  FiChevronDown,
+  FiGrid,
   FiKey,
   FiLogOut,
   FiMail,
+  FiMessageCircle,
   FiSettings,
   FiShield,
+  FiBookOpen,
+  FiInfo,
 } from "react-icons/fi";
-import { FaGithub, FaLinkedin } from "react-icons/fa";
 import ModRequestForm from "@/components/forms/ModRequestForm";
 import NotificationsDropdown from "@/components/social/NotificationsDropdown";
 import { resendOtp } from "@/lib/api/user/auth.api";
 import useAuthStore from "@/stores/user/authStore";
 
 const navLinks = [
-  { href: "/", label: "Social" },
-  { href: "/library", label: "Library" },
-  { href: "/library/dashboard", label: "Dashboard" },
-  { href: "/about-us", label: "About" },
+  { href: "/", label: "Social", icon: FiMessageCircle },
+  { href: "/library", label: "Library", icon: FiBookOpen },
+  { href: "/library/dashboard", label: "Dashboard", icon: FiGrid },
+  { href: "/about-us", label: "About", icon: FiInfo },
 ];
 
 const AuthMobileNav = () => {
@@ -91,20 +93,20 @@ const AuthMobileNav = () => {
   };
 
   return (
-    <div className="w-full px-4 text-gray-950">
+    <div className="w-full px-4 py-3 text-gray-950 sm:px-5">
       <div className="flex items-center justify-between gap-3">
         {/* Logo */}
         <Link
           href="/"
           onClick={handleLogoClick}
-          className="flex items-center gap-2 flex-shrink-0"
+          className="flex shrink-0 items-center gap-2"
         >
           <Image
             src="/shardasocial.png"
             alt="Sharda Social"
-            width={100}
-            height={100}
-            className="h-[80px] w-[80px] object-contain drop-shadow-md"
+            width={72}
+            height={72}
+            className="h-14 w-14 object-contain drop-shadow-md sm:h-16 sm:w-16"
             priority
           />
         </Link>
@@ -116,7 +118,7 @@ const AuthMobileNav = () => {
           <button
             ref={profileButtonRef}
             onClick={() => setIsProfileOpen(!isProfileOpen)}
-            className="flex h-9 w-9 overflow-hidden rounded-full bg-gray-100 ring-1 ring-gray-200 flex-shrink-0"
+            className="flex h-10 w-10 shrink-0 overflow-hidden rounded-full bg-gray-100 ring-1 ring-gray-200"
             aria-label="Profile menu"
           >
             {profileImage ? (
@@ -137,24 +139,28 @@ const AuthMobileNav = () => {
       </div>
 
       {/* Navigation Links - Always Visible */}
-      <div className="flex items-center justify-center border border-gray-500 p-1 backdrop-blur-sm">
+      <div className="mt-3 flex flex-wrap items-center justify-center gap-2 rounded-2xl border border-gray-200 bg-white/80 p-2 shadow-sm backdrop-blur-md">
         {navLinks.map((link) => {
           const active =
             link.href === "/"
               ? pathname === "/"
               : pathname.startsWith(link.href);
+          const Icon = link.icon;
 
           return (
             <Link
               key={link.href}
               href={link.href}
-              className={`rounded-lg px-3 py-1.5 text-xs font-semibold whitespace-nowrap transition-all duration-200 flex-shrink-0 ${
+              title={link.label}
+              aria-label={link.label}
+              className={`inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border text-base transition-all duration-200 ${
                 active
-                  ? "bg-white text-gray-950 shadow-sm"
-                  : "text-gray-600 hover:text-gray-950"
+                  ? "border-sky-200 bg-sky-50 text-sky-700 shadow-sm"
+                  : "border-transparent bg-transparent text-gray-700 hover:border-gray-200 hover:bg-white hover:text-gray-950"
               }`}
             >
-              {link.label}
+              <Icon aria-hidden="true" />
+              <span className="sr-only">{link.label}</span>
             </Link>
           );
         })}
@@ -176,24 +182,26 @@ const AuthMobileNav = () => {
               onClick={handleVerifyEmail}
               className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-50"
             >
-              <FiMail className="h-4 w-4 flex-shrink-0" />
-              {user?.isEmailVerified ? "Email Verified" : "Verify Email"}
+              <FiMail className="h-4 w-4 shrink-0" />
+              <span>
+                {user?.isEmailVerified ? "Email Verified" : "Verify Email"}
+              </span>
             </button>
             <Link
               href="/profile-settings"
               onClick={() => setIsProfileOpen(false)}
               className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-50"
             >
-              <FiSettings className="h-4 w-4 flex-shrink-0" />
-              Profile Settings
+              <FiSettings className="h-4 w-4 shrink-0" />
+              <span>Profile Settings</span>
             </Link>
             <Link
               href="/auth/change-password"
               onClick={() => setIsProfileOpen(false)}
               className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-50"
             >
-              <FiKey className="h-4 w-4 flex-shrink-0" />
-              Change Password
+              <FiKey className="h-4 w-4 shrink-0" />
+              <span>Change Password</span>
             </Link>
             {user?.role === "user" && (
               <button
@@ -203,16 +211,16 @@ const AuthMobileNav = () => {
                 }}
                 className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-50"
               >
-                <FiShield className="h-4 w-4 flex-shrink-0" />
-                Become Moderator
+                <FiShield className="h-4 w-4 shrink-0" />
+                <span>Become Moderator</span>
               </button>
             )}
             <button
               onClick={handleLogout}
               className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-semibold text-red-600 transition-colors hover:bg-red-50"
             >
-              <FiLogOut className="h-4 w-4 flex-shrink-0" />
-              Logout
+              <FiLogOut className="h-4 w-4 shrink-0" />
+              <span>Logout</span>
             </button>
           </div>
         </div>

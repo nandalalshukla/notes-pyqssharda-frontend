@@ -89,12 +89,12 @@ export default function Dashboard() {
 
   return (
     <AuthGuard>
-      <div className="min-h-screen bg-slate-50">
+      <div className="min-h-dvh bg-slate-50">
         {/* Dashboard Switcher - Only show if user has multiple dashboards */}
         {multiDashboard && (
           <div className="sticky top-0 z-40 bg-white border-b border-slate-200 shadow-sm">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              <div className="flex gap-2 py-4">
+              <div className="flex gap-2 overflow-x-auto py-3 sm:py-4">
                 {accessibleDashboards.map((dashboard) => {
                   const IconComponent = dashboard.icon;
                   const isActive = currentDashboard === dashboard.id;
@@ -127,12 +127,12 @@ export default function Dashboard() {
                       key={dashboard.id}
                       onClick={() => setCurrentDashboard(dashboard.id)}
                       className={`
-                        px-4 py-2.5 rounded-lg font-semibold text-sm
+                        min-w-max px-4 py-2.5 rounded-lg font-semibold text-sm
                         flex items-center gap-2.5 group
                         transition-all duration-200 ease-out
                         ${
                           isActive
-                            ? `bg-gradient-to-r ${colorConfig.gradient} text-white shadow-lg hover:shadow-xl`
+                            ? `bg-linear-to-r ${colorConfig.gradient} text-white shadow-lg hover:shadow-xl`
                             : `${colorConfig.bg} ${colorConfig.text} hover:shadow-md border border-slate-200`
                         }
                       `}
@@ -153,7 +153,7 @@ export default function Dashboard() {
         )}
 
         {/* Dashboard Content */}
-        <div className="min-h-screen">
+        <div className="min-h-dvh">
           {currentDashboard === "admin" && user.role === "admin" && (
             <AdminDashboardNew />
           )}
