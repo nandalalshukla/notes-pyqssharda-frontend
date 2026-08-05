@@ -91,7 +91,7 @@ const AuthDesktopNav = () => {
   };
 
   return (
-    <div className="mx-auto flex min-h-20 w-full max-w-7xl items-center justify-between gap-3 px-4 py-3 text-gray-950 sm:px-6 lg:px-8">
+    <div className="mx-auto flex min-h-0 w-full max-w-7xl items-center justify-between gap-3 px-4 py-2 text-gray-950 sm:px-6 sm:py-2 lg:px-8">
       {/* Logo */}
       <Link
         href="/"
@@ -101,15 +101,15 @@ const AuthDesktopNav = () => {
         <Image
           src="/shardasocial.png"
           alt="Sharda Social"
-          width={84}
-          height={84}
-          className="h-16 w-16 object-contain drop-shadow-md sm:h-21 sm:w-21"
+          width={72}
+          height={72}
+          className="h-14 w-14 object-contain drop-shadow-md sm:h-16 sm:w-16"
           priority
         />
       </Link>
 
       {/* Main Navigation Links */}
-      <div className="flex items-center justify-center gap-2 rounded-full border border-gray-200 bg-white/70 px-2 py-1.5 shadow-sm backdrop-blur-md">
+      <div className="flex items-center justify-center gap-2 rounded-full border border-gray-200 bg-white/70 px-2 py-1 shadow-sm backdrop-blur-md">
         {navLinks.map((link) => {
           const active =
             link.href === "/"
@@ -123,7 +123,7 @@ const AuthDesktopNav = () => {
               href={link.href}
               title={link.label}
               aria-label={link.label}
-              className={`inline-flex h-10 w-10 items-center justify-center rounded-xl border text-lg transition-all duration-200 sm:h-11 sm:w-11 ${
+              className={`inline-flex h-9 w-9 items-center justify-center rounded-xl border text-base transition-all duration-200 sm:h-10 sm:w-10 ${
                 active
                   ? "border-sky-200 bg-sky-50 text-sky-700 shadow-sm"
                   : "border-transparent bg-white/0 text-gray-700 hover:border-gray-200 hover:bg-white hover:text-gray-950"
@@ -145,9 +145,9 @@ const AuthDesktopNav = () => {
         <div className="relative" ref={wrapperRef}>
           <button
             onClick={() => setIsProfileOpen(!isProfileOpen)}
-            className="flex items-center gap-2.5 rounded-full border border-gray-200 bg-white/90 px-2 py-1.5 shadow-sm transition-all hover:border-gray-300 hover:shadow-md"
+            className="flex items-center gap-2 rounded-full border border-gray-200 bg-white/90 px-2 py-1 shadow-sm transition-all hover:border-gray-300 hover:shadow-md"
           >
-            <span className="relative flex h-8 w-8 overflow-hidden rounded-full bg-gray-100">
+            <span className="relative flex h-7 w-7 overflow-hidden rounded-full bg-gray-100 sm:h-8 sm:w-8">
               {profileImage ? (
                 <Image
                   src={profileImage}
