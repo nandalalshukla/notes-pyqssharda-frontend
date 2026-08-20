@@ -4,6 +4,7 @@ import { useCallback } from "react";
 import { useSocialStore } from "@/stores/social/social.store";
 import useAuthStore from "@/stores/user/authStore";
 import toast from "react-hot-toast";
+import { getErrorMessage } from "@/lib/utils/errorHandler";
 
 /**
  * Custom hook for social post operations
@@ -44,8 +45,8 @@ export function useSocialActions() {
         await createNewPost(formData);
         toast.success("Post created successfully");
         return true;
-      } catch {
-        toast.error("Failed to create post");
+      } catch (error) {
+        toast.error(getErrorMessage(error) || "Failed to create post");
         return false;
       }
     },
@@ -85,8 +86,8 @@ export function useSocialActions() {
         await updatePost(postId, formData);
         toast.success("Post updated successfully");
         return true;
-      } catch {
-        toast.error("Failed to update post");
+      } catch (error) {
+        toast.error(getErrorMessage(error) || "Failed to update post");
         return false;
       }
     },
@@ -101,8 +102,8 @@ export function useSocialActions() {
         await removePost(postId);
         toast.success("Post deleted");
         return true;
-      } catch {
-        toast.error("Failed to delete post");
+      } catch (error) {
+        toast.error(getErrorMessage(error) || "Failed to delete post");
         return false;
       }
     },
@@ -126,8 +127,8 @@ export function useSocialActions() {
         await addComment(postId, text);
         toast.success("Comment added");
         return true;
-      } catch {
-        toast.error("Failed to add comment");
+      } catch (error) {
+        toast.error(getErrorMessage(error) || "Failed to add comment");
         return false;
       }
     },
@@ -145,8 +146,8 @@ export function useSocialActions() {
         await updateComment(postId, commentId, text);
         toast.success("Comment updated");
         return true;
-      } catch {
-        toast.error("Failed to update comment");
+      } catch (error) {
+        toast.error(getErrorMessage(error) || "Failed to update comment");
         return false;
       }
     },
@@ -161,8 +162,8 @@ export function useSocialActions() {
         await removeComment(postId, commentId);
         toast.success("Comment deleted");
         return true;
-      } catch {
-        toast.error("Failed to delete comment");
+      } catch (error) {
+        toast.error(getErrorMessage(error) || "Failed to delete comment");
         return false;
       }
     },
@@ -180,8 +181,8 @@ export function useSocialActions() {
       try {
         await togglePostLike(postId);
         return true;
-      } catch {
-        toast.error("Failed to like post");
+      } catch (error) {
+        toast.error(getErrorMessage(error) || "Failed to like post");
         return false;
       }
     },
@@ -198,8 +199,8 @@ export function useSocialActions() {
       try {
         await toggleCommentLike(commentId);
         return true;
-      } catch {
-        toast.error("Failed to like comment");
+      } catch (error) {
+        toast.error(getErrorMessage(error) || "Failed to like comment");
         return false;
       }
     },
@@ -217,8 +218,8 @@ export function useSocialActions() {
       try {
         await toggleUserFollow(userId);
         return true;
-      } catch {
-        toast.error("Failed to follow user");
+      } catch (error) {
+        toast.error(getErrorMessage(error) || "Failed to follow user");
         return false;
       }
     },

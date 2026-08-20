@@ -1,8 +1,12 @@
 // lib/axios.ts
 import axios from "axios";
+import toast from "react-hot-toast";
 
+// Same-origin path, proxied to the real backend by the rewrite in
+// next.config.ts — see the comment there for why this can't be the
+// backend's own (cross-site) URL directly.
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_BACKEND_URL,
+  baseURL: "/api/proxy",
   withCredentials: true,
   headers: {
     "Content-Type": "application/json",
@@ -12,6 +16,10 @@ const api = axios.create({
 
 let isRefreshing = false;
 let refreshPromise: Promise<unknown> | null = null;
+// Only show the "session expired" toast once per page load — a burst of
+// components can all get a 401 around the same time, and logging back in
+// triggers a fresh page load anyway, which resets this naturally.
+let sessionExpiredNotified = false;
 
 const getPersistedAuthState = () => {
   if (typeof window === "undefined") return null;
@@ -64,8 +72,19 @@ api.interceptors.response.use(
         await refreshPromise;
         return api(originalRequest);
       } catch (refreshError) {
+        // Session is genuinely over — clear the persisted auth state (the
+        // authStore rehydrates "logged out" from this on next read) and
+        // tell the user once, rather than leaving requests silently
+        // failing with no explanation. Guarded so a burst of requests
+        // failing at once (common — several components refetch on the
+        // same 401) doesn't stack duplicate toasts.
         if (typeof window !== "undefined") {
+          const hadSession = Boolean(localStorage.getItem("auth-storage"));
           localStorage.removeItem("auth-storage");
+          if (hadSession && !sessionExpiredNotified) {
+            sessionExpiredNotified = true;
+            toast.error("Your session has expired. Please sign in again.");
+          }
         }
         return Promise.reject(refreshError);
       }

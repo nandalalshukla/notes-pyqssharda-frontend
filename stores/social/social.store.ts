@@ -18,6 +18,8 @@ import {
   getNotifications,
   markAllNotificationsAsRead,
   markNotificationAsRead,
+  deleteNotification as deleteNotificationApi,
+  NOTIFICATION_STREAM_URL,
   Post,
   PostType,
   Comment,
@@ -54,12 +56,22 @@ interface CommentsState {
   isLoadingReplies: Map<string, boolean>;
 }
 
+type NotificationStreamStatus =
+  | "idle"
+  | "connecting"
+  | "connected"
+  | "disconnected";
+
 interface NotificationsState {
   notifications: Notification[];
   unreadCount: number;
   notificationsPage: number;
   notificationsTotalPages: number;
   isLoadingNotifications: boolean;
+  // Separate from the store's generic `error` — a background sync hiccup
+  // shouldn't surface (or get clobbered by) unrelated feed/post errors.
+  notificationsError: string | null;
+  notificationStreamStatus: NotificationStreamStatus;
 }
 
 interface FollowState {
@@ -116,6 +128,14 @@ interface SocialStore
   fetchNotifications: (page?: number, read?: "true" | "false") => Promise<void>;
   markAllAsRead: () => Promise<void>;
   markOneAsRead: (notificationId: string) => Promise<void>;
+  removeNotification: (notificationId: string) => Promise<void>;
+  // Opens the live SSE connection (idempotent — safe to call from every
+  // component that wants notifications, even if several are mounted at
+  // once) and starts a polling fallback that only actually polls while the
+  // stream isn't connected. disconnectNotificationStream tears both down;
+  // call it once on logout, not on every consuming component's unmount.
+  connectNotificationStream: () => void;
+  disconnectNotificationStream: () => void;
 
   // Utility actions
   clearError: () => void;
@@ -150,6 +170,9 @@ const initialState: Omit<
     fetchNotifications: unknown;
     markAllAsRead: unknown;
     markOneAsRead: unknown;
+    removeNotification: unknown;
+    connectNotificationStream: unknown;
+    disconnectNotificationStream: unknown;
     clearError: unknown;
     resetStore: unknown;
   }
@@ -177,6 +200,8 @@ const initialState: Omit<
   notificationsPage: 1,
   notificationsTotalPages: 0,
   isLoadingNotifications: false,
+  notificationsError: null,
+  notificationStreamStatus: "idle",
 
   // Follow
   followStats: new Map(),
@@ -440,9 +465,20 @@ const updateAuthorFollowEverywhere = (
 
 /**
  * ═══════════════════════════════════════════════════════════════════════════════
- * ZUSTAND STORE
+ * NOTIFICATION STREAM — module-level singletons
  * ═══════════════════════════════════════════════════════════════════════════════
+ * EventSource/interval/listener handles aren't serializable store state, and
+ * more importantly must be process-wide singletons: the app mounts more than
+ * one component that wants the notification stream open at once (desktop
+ * AND mobile nav are both always in the DOM, just CSS-hidden), so
+ * connect/disconnect need to be idempotent rather than tied 1:1 to any one
+ * component's lifecycle.
  */
+let notificationEventSource: EventSource | null = null;
+let notificationPollTimer: ReturnType<typeof setInterval> | null = null;
+let notificationVisibilityHandler: (() => void) | null = null;
+
+const NOTIFICATION_POLL_FALLBACK_MS = 45_000;
 
 export const useSocialStore = create<SocialStore>((set, get) => ({
   ...initialState,
@@ -1402,41 +1438,43 @@ export const useSocialStore = create<SocialStore>((set, get) => ({
    */
 
   fetchNotifications: async (page = 1, read?: "true" | "false") => {
-    set({ isLoadingNotifications: true, error: null });
+    set({ isLoadingNotifications: true, notificationsError: null });
     try {
       const res = await getNotifications(page, 20, read);
-      if (res && res.data) {
+      if (res?.data) {
         const notificationsList = res.data.notifications || [];
         const paginationInfo = res.data.pagination;
         const calculatedTotalPages = paginationInfo?.total
           ? Math.ceil(paginationInfo.total / (paginationInfo?.limit || 20))
           : 0;
-        const unreadCount = notificationsList.filter(
-          (n) => !n.isRead && !n.read,
-        ).length;
 
         set({
           notifications: notificationsList,
           notificationsPage: page,
           notificationsTotalPages: calculatedTotalPages,
-          unreadCount,
+          // Authoritative count from the server (covers ALL unread
+          // notifications, not just whichever page happens to be loaded —
+          // deriving it via .filter() over one page undercounted whenever
+          // unread notifications existed beyond page 1).
+          unreadCount: res.data.unreadCount,
           isLoadingNotifications: false,
         });
       }
     } catch (error: unknown) {
       set({
-        error: getErrorMessage(error) || "Failed to fetch notifications",
+        notificationsError:
+          getErrorMessage(error) || "Failed to fetch notifications",
         isLoadingNotifications: false,
       });
     }
   },
 
   markAllAsRead: async () => {
-    set({ error: null });
+    set({ notificationsError: null });
     const previousNotifications = get().notifications;
     const previousUnreadCount = get().unreadCount;
     set({
-      notifications: get().notifications.map((n) => ({ ...n, read: true })),
+      notifications: get().notifications.map((n) => ({ ...n, isRead: true })),
       unreadCount: 0,
     });
     try {
@@ -1445,13 +1483,14 @@ export const useSocialStore = create<SocialStore>((set, get) => ({
       set({
         notifications: previousNotifications,
         unreadCount: previousUnreadCount,
-        error: getErrorMessage(error) || "Failed to mark all as read",
+        notificationsError: getErrorMessage(error) || "Failed to mark all as read",
       });
+      throw error;
     }
   },
 
   markOneAsRead: async (notificationId: string) => {
-    set({ error: null });
+    set({ notificationsError: null });
     const previousNotifications = get().notifications;
     const previousUnreadCount = get().unreadCount;
     set((state) => {
@@ -1460,10 +1499,10 @@ export const useSocialStore = create<SocialStore>((set, get) => ({
       );
       return {
         notifications: state.notifications.map((n) =>
-          n._id === notificationId ? { ...n, read: true } : n,
+          n._id === notificationId ? { ...n, isRead: true } : n,
         ),
         unreadCount:
-          notification && !notification.read
+          notification && !notification.isRead
             ? Math.max(0, state.unreadCount - 1)
             : state.unreadCount,
       };
@@ -1474,9 +1513,139 @@ export const useSocialStore = create<SocialStore>((set, get) => ({
       set({
         notifications: previousNotifications,
         unreadCount: previousUnreadCount,
-        error: getErrorMessage(error) || "Failed to mark as read",
+        notificationsError: getErrorMessage(error) || "Failed to mark as read",
       });
+      throw error;
     }
+  },
+
+  removeNotification: async (notificationId: string) => {
+    set({ notificationsError: null });
+    const previousNotifications = get().notifications;
+    const previousUnreadCount = get().unreadCount;
+    const notification = previousNotifications.find(
+      (n) => n._id === notificationId,
+    );
+    set({
+      notifications: previousNotifications.filter(
+        (n) => n._id !== notificationId,
+      ),
+      unreadCount:
+        notification && !notification.isRead
+          ? Math.max(0, previousUnreadCount - 1)
+          : previousUnreadCount,
+    });
+    try {
+      await deleteNotificationApi(notificationId);
+    } catch (error: unknown) {
+      set({
+        notifications: previousNotifications,
+        unreadCount: previousUnreadCount,
+        notificationsError: getErrorMessage(error) || "Failed to delete notification",
+      });
+      throw error;
+    }
+  },
+
+  connectNotificationStream: () => {
+    if (typeof window === "undefined") return;
+    if (notificationEventSource) return; // already connecting/connected
+
+    set({ notificationStreamStatus: "connecting" });
+
+    const stopPolling = () => {
+      if (notificationPollTimer) {
+        clearInterval(notificationPollTimer);
+        notificationPollTimer = null;
+      }
+    };
+
+    const startPolling = () => {
+      if (notificationPollTimer) return;
+      notificationPollTimer = setInterval(() => {
+        if (document.visibilityState !== "visible") return;
+        get().fetchNotifications(1);
+      }, NOTIFICATION_POLL_FALLBACK_MS);
+    };
+
+    const source = new EventSource(NOTIFICATION_STREAM_URL, {
+      withCredentials: true,
+    });
+    notificationEventSource = source;
+
+    source.addEventListener("open", () => {
+      set({ notificationStreamStatus: "connected" });
+      stopPolling();
+    });
+
+    source.addEventListener("error", () => {
+      // EventSource retries the connection on its own; we just track state
+      // and lean on polling as a safety net while it's down.
+      set({ notificationStreamStatus: "disconnected" });
+      startPolling();
+    });
+
+    source.addEventListener("unread-count", (event) => {
+      try {
+        const { unreadCount } = JSON.parse(
+          (event as MessageEvent).data,
+        ) as { unreadCount: number };
+        set({ unreadCount });
+      } catch {
+        // ignore malformed event
+      }
+    });
+
+    source.addEventListener("notification", (event) => {
+      try {
+        const notification = JSON.parse(
+          (event as MessageEvent).data,
+        ) as Notification;
+        set((state) => {
+          const alreadyPresent = state.notifications.some(
+            (n) => n._id === notification._id,
+          );
+          const notifications = alreadyPresent
+            ? state.notifications.map((n) =>
+                n._id === notification._id ? notification : n,
+              )
+            : [notification, ...state.notifications];
+          return { notifications };
+        });
+      } catch {
+        // ignore malformed event
+      }
+    });
+
+    // Pausing the polling fallback while the tab is hidden (handled inside
+    // startPolling's guard) isn't enough on its own — also catch up
+    // immediately when the tab regains focus, in case events were missed
+    // while backgrounded and the SSE connection itself dropped too.
+    if (!notificationVisibilityHandler) {
+      notificationVisibilityHandler = () => {
+        if (
+          document.visibilityState === "visible" &&
+          get().notificationStreamStatus !== "connected"
+        ) {
+          get().fetchNotifications(1);
+        }
+      };
+      document.addEventListener("visibilitychange", notificationVisibilityHandler);
+    }
+  },
+
+  disconnectNotificationStream: () => {
+    notificationEventSource?.close();
+    notificationEventSource = null;
+    if (notificationPollTimer) {
+      clearInterval(notificationPollTimer);
+      notificationPollTimer = null;
+    }
+    if (notificationVisibilityHandler) {
+      document.removeEventListener("visibilitychange", notificationVisibilityHandler);
+      notificationVisibilityHandler = null;
+    }
+    set({ notificationStreamStatus: "idle" });
   },
 
   /**
@@ -1487,5 +1656,33 @@ export const useSocialStore = create<SocialStore>((set, get) => ({
 
   clearError: () => set({ error: null }),
 
-  resetStore: () => set(initialState),
+  resetStore: () => {
+    // set(initialState) only resets Zustand state — the SSE connection,
+    // poll timer, and visibility listener are module-level singletons (see
+    // top of file) and need their own explicit teardown, or a logout would
+    // leave a live stream running against an endpoint that no longer has a
+    // valid session, retrying forever in the background.
+    get().disconnectNotificationStream();
+    set(initialState);
+  },
 }));
+
+// Drive the notification stream off auth state directly, rather than
+// requiring every call site that logs in/out to remember to connect or
+// disconnect it. This is a one-way dependency (social store reacts to auth
+// store); authStore.ts must never import back from here, or the two stores
+// would form an import cycle.
+if (typeof window !== "undefined") {
+  if (useAuthStore.getState().isAuthenticated) {
+    useSocialStore.getState().connectNotificationStream();
+  }
+
+  useAuthStore.subscribe((state, prevState) => {
+    if (state.isAuthenticated === prevState.isAuthenticated) return;
+    if (state.isAuthenticated) {
+      useSocialStore.getState().connectNotificationStream();
+    } else {
+      useSocialStore.getState().disconnectNotificationStream();
+    }
+  });
+}

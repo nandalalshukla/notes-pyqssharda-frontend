@@ -67,29 +67,22 @@ export interface CreateReportPayload {
   message?: string;
 }
 
+export type NotificationType = "like" | "comment" | "reply" | "follow" | "share";
+
 export interface Notification {
   _id: string;
-  type: "like" | "comment" | "follow" | "post" | "share";
+  type: NotificationType;
   actor: User;
-  post?: {
-    _id: string;
-    content: string;
-    author: { _id: string; username: string };
-    createdAt: string;
-  } | null;
-  comment?: {
-    _id: string;
-    content: string;
-    post: string;
-    author: { _id: string; username: string };
-    createdAt: string;
-  } | null;
+  // The backend only ever populates `_id` on post/comment (see
+  // getNotifications.ts) — content/author aren't fetched, so don't type
+  // them as present here; nothing in the UI needs them beyond the id.
+  post?: { _id: string } | null;
+  comment?: { _id: string; post: string } | null;
   message: string;
-  isRead: boolean; // Backend uses isRead, not read
-  read?: boolean; // Add optional read for backward compatibility
+  isRead: boolean;
   createdAt: string;
   updatedAt: string;
-  actionLink?: string; // Used for navigation
+  actionLink?: string;
 }
 
 // Custom type for notification response from backend
@@ -404,6 +397,18 @@ export const markNotificationAsRead = async (notificationId: string) => {
   );
   return response.data;
 };
+
+export const deleteNotification = async (notificationId: string) => {
+  const response = await api.delete<ApiResponse>(
+    `/social/notifications/${notificationId}`,
+  );
+  return response.data;
+};
+
+// Same-origin path for EventSource — must go through the next.config.ts
+// proxy like every other request (see lib/api/axios.ts), not the backend's
+// own cross-origin URL, or the connection's cookie wouldn't be sent/first-party.
+export const NOTIFICATION_STREAM_URL = "/api/proxy/social/notifications/stream";
 
 /**
  * ═══════════════════════════════════════════════════════════════════════════════

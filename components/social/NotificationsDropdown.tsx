@@ -1,39 +1,50 @@
 "use client";
 
-import React, { useEffect, useState, useRef } from "react";
-import { FiBell, FiCheck } from "react-icons/fi";
-import {
-  getNotifications,
-  markNotificationAsRead,
-  markAllNotificationsAsRead,
-  Notification,
-} from "@/lib/api/social/social.api";
+import React, { useEffect, useRef, useState } from "react";
+import { FiBell, FiCheck, FiTrash2 } from "react-icons/fi";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
+import { useSocialStore } from "@/stores/social/social.store";
+import { Notification } from "@/lib/api/social/social.api";
 import VerifiedBadge from "./VerifiedBadge";
 import { Avatar } from "@/components/ui";
 import { cn } from "@/lib/utils/cn";
 
+/**
+ * Pure view over useSocialStore's notification slice — no local
+ * fetch/polling state of its own. This component mounts twice at once
+ * (desktop nav + mobile nav are both always in the DOM, only one visible
+ * via CSS at a time), so any fetching/connecting logic here would run
+ * twice too; the store's connect/fetch functions are singletons/idempotent
+ * specifically so that's safe.
+ */
 export default function NotificationsDropdown() {
   const router = useRouter();
   const [showDropdown, setShowDropdown] = useState(false);
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [unreadCount, setUnreadCount] = useState(0);
-  const [isLoading, setIsLoading] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const hasFetchedRef = useRef(false);
 
-  // Update unread count when notifications change
+  const notifications = useSocialStore((s) => s.notifications);
+  const unreadCount = useSocialStore((s) => s.unreadCount);
+  const isLoading = useSocialStore((s) => s.isLoadingNotifications);
+  const fetchNotifications = useSocialStore((s) => s.fetchNotifications);
+  const markOneAsRead = useSocialStore((s) => s.markOneAsRead);
+  const markAllAsRead = useSocialStore((s) => s.markAllAsRead);
+  const removeNotification = useSocialStore((s) => s.removeNotification);
+
+  // One initial fetch to populate the list; everything after this arrives
+  // live over the SSE stream (connected globally off auth state — see
+  // social.store.ts), with the store's own polling fallback covering any
+  // gap while the stream isn't connected. No interval here.
   useEffect(() => {
-    const count = Array.isArray(notifications)
-      ? notifications.filter((n) => n && !(n.isRead || n.read)).length
-      : 0;
-    setUnreadCount(count);
-  }, [notifications]);
+    if (hasFetchedRef.current) return;
+    hasFetchedRef.current = true;
+    fetchNotifications(1);
+  }, [fetchNotifications]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
+    if (!showDropdown) return;
     const handleClickOutside = (e: MouseEvent) => {
       if (
         dropdownRef.current &&
@@ -42,107 +53,39 @@ export default function NotificationsDropdown() {
         setShowDropdown(false);
       }
     };
-
-    if (showDropdown) {
-      document.addEventListener("mousedown", handleClickOutside);
-      return () =>
-        document.removeEventListener("mousedown", handleClickOutside);
-    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [showDropdown]);
 
-  // Fetch notifications on mount and poll periodically
-  useEffect(() => {
-    // Fetch immediately on mount
-    fetchNotifications(1);
-
-    // Then set up polling for background updates every 30 seconds
-    const interval = setInterval(() => {
-      fetchNotifications(1);
-    }, 30000); // 30 seconds
-
-    return () => clearInterval(interval);
-  }, []);
-
-  // Fetch notifications when dropdown opens if not already fetched
-  useEffect(() => {
-    if (showDropdown && notifications.length === 0) {
-      fetchNotifications(1);
-    }
-  }, [showDropdown, notifications.length]);
-
-  const fetchNotifications = async (page: number) => {
-    setIsLoading(true);
-    try {
-      const response = await getNotifications(page, 10);
-      // Correctly map backend response structure
-      if (response && response.data) {
-        // Backend returns: { data: { notifications: [...], unreadCount, pagination: {...} } }
-        const notificationsList = response.data.notifications || [];
-        const paginationInfo = response.data.pagination;
-
-        // Normalize isRead to read for consistency
-        const normalizedNotifications = notificationsList.map((n: any) => ({
-          ...n,
-          read: n.isRead ?? n.read ?? false,
-        }));
-
-        setNotifications(normalizedNotifications);
-        // Calculate total pages from pagination info (total / limit)
-        const calculatedTotalPages = paginationInfo?.total
-          ? Math.ceil(paginationInfo.total / (paginationInfo?.limit || 10))
-          : 1;
-        setTotalPages(calculatedTotalPages);
-        setCurrentPage(page);
-      } else {
-        setNotifications([]);
-      }
-    } catch (error) {
-      console.error("Failed to fetch notifications:", error);
-      setNotifications([]);
-      toast.error("Failed to load notifications");
-    } finally {
-      setIsLoading(false);
-    }
+  const handleOpenDropdown = () => {
+    const next = !showDropdown;
+    setShowDropdown(next);
+    // Refresh on open in case the stream/poll missed something while closed.
+    if (next) fetchNotifications(1);
   };
 
   const handleNotificationClick = async (notification: Notification) => {
-    try {
-      // Mark as read if unread
-      const isRead = notification.isRead ?? notification.read ?? false;
-      if (!isRead) {
-        await markNotificationAsRead(notification._id);
-        setNotifications((prev) =>
-          prev.map((n) =>
-            n._id === notification._id ? { ...n, isRead: true, read: true } : n,
-          ),
-        );
-      }
+    if (!notification.isRead) {
+      markOneAsRead(notification._id).catch(() => {
+        toast.error("Failed to mark as read");
+      });
+    }
 
-      // Navigate based on notification type and available data
-      if (notification.post?._id) {
-        setShowDropdown(false);
-        router.push(`/?postId=${notification.post._id}`);
-      } else if (notification.comment?.post) {
-        setShowDropdown(false);
-        router.push(`/?postId=${notification.comment.post}`);
-      } else if (notification.type === "follow") {
-        setShowDropdown(false);
-        router.push(`/profile/${notification.actor._id}`);
-      }
-    } catch (error) {
-      console.error("Failed to mark notification as read:", error);
+    setShowDropdown(false);
+    if (notification.post?._id) {
+      router.push(`/?postId=${notification.post._id}`);
+    } else if (notification.comment?.post) {
+      router.push(`/?postId=${notification.comment.post}`);
+    } else if (notification.type === "follow") {
+      router.push(`/profile/${notification.actor._id}`);
     }
   };
 
   const handleMarkAllAsRead = async () => {
     try {
-      await markAllNotificationsAsRead();
-      setNotifications((prev) =>
-        prev.map((n) => ({ ...n, isRead: true, read: true })),
-      );
+      await markAllAsRead();
       toast.success("All notifications marked as read");
-    } catch (error) {
-      console.error("Failed to mark all as read:", error);
+    } catch {
       toast.error("Failed to mark all as read");
     }
   };
@@ -151,17 +94,20 @@ export default function NotificationsDropdown() {
     e: React.MouseEvent,
     notificationId: string,
   ) => {
-    e.stopPropagation(); // Prevent navigation
+    e.stopPropagation();
     try {
-      await markNotificationAsRead(notificationId);
-      setNotifications((prev) =>
-        prev.map((n) =>
-          n._id === notificationId ? { ...n, isRead: true, read: true } : n,
-        ),
-      );
-    } catch (error) {
-      console.error("Failed to mark as read:", error);
+      await markOneAsRead(notificationId);
+    } catch {
       toast.error("Failed to mark as read");
+    }
+  };
+
+  const handleDelete = async (e: React.MouseEvent, notificationId: string) => {
+    e.stopPropagation();
+    try {
+      await removeNotification(notificationId);
+    } catch {
+      toast.error("Failed to delete notification");
     }
   };
 
@@ -197,8 +143,9 @@ export default function NotificationsDropdown() {
     <div className="relative" ref={dropdownRef}>
       {/* Bell Icon Button */}
       <button
-        onClick={() => setShowDropdown(!showDropdown)}
+        onClick={handleOpenDropdown}
         className="relative rounded-full p-2 text-foreground transition-colors hover:bg-secondary cursor-pointer"
+        aria-label="Notifications"
       >
         <FiBell size={22} />
         {unreadCount > 0 && (
@@ -238,7 +185,6 @@ export default function NotificationsDropdown() {
             ) : (
               <div>
                 {notifications.map((notification) => {
-                  // Ensure actor exists before rendering
                   if (!notification.actor) return null;
 
                   return (
@@ -246,7 +192,7 @@ export default function NotificationsDropdown() {
                       key={notification._id}
                       className={cn(
                         "group flex w-full items-start gap-3 border-b border-border px-4 py-3 transition-colors last:border-b-0 hover:bg-secondary/60",
-                        !(notification.isRead ?? notification.read) && "bg-primary/5",
+                        !notification.isRead && "bg-primary/5",
                       )}
                     >
                       {/* Actor Avatar */}
@@ -278,25 +224,31 @@ export default function NotificationsDropdown() {
                           {getNotificationActionText(notification)}
                         </p>
 
-                        {/* Time */}
                         <p className="mt-1 text-xs text-muted-foreground">
                           {formatTimeAgo(notification.createdAt)}
                         </p>
                       </button>
 
-                      {/* Actions: Check button and unread indicator */}
-                      <div className="flex shrink-0 items-center gap-2">
-                        {!(notification.isRead ?? notification.read) && (
+                      {/* Actions: mark-read, delete, unread dot */}
+                      <div className="flex shrink-0 items-center gap-1">
+                        {!notification.isRead && (
                           <button
                             onClick={(e) => handleMarkOneAsRead(e, notification._id)}
-                            className="rounded-full p-1.5 text-muted-foreground transition-colors hover:bg-secondary hover:text-primary cursor-pointer"
+                            className="rounded-full p-1.5 text-muted-foreground opacity-0 transition-colors group-hover:opacity-100 hover:bg-secondary hover:text-primary cursor-pointer"
                             title="Mark as read"
                           >
-                            <FiCheck size={18} />
+                            <FiCheck size={16} />
                           </button>
                         )}
-                        {!(notification.isRead ?? notification.read) && (
-                          <div className="h-2 w-2 rounded-full bg-primary" />
+                        <button
+                          onClick={(e) => handleDelete(e, notification._id)}
+                          className="rounded-full p-1.5 text-muted-foreground opacity-0 transition-colors group-hover:opacity-100 hover:bg-destructive/10 hover:text-destructive cursor-pointer"
+                          title="Delete"
+                        >
+                          <FiTrash2 size={16} />
+                        </button>
+                        {!notification.isRead && (
+                          <div className="h-2 w-2 shrink-0 rounded-full bg-primary" />
                         )}
                       </div>
                     </div>
@@ -305,29 +257,6 @@ export default function NotificationsDropdown() {
               </div>
             )}
           </div>
-
-          {/* Pagination */}
-          {totalPages > 1 && (
-            <div className="flex justify-center gap-2 border-t border-border bg-muted px-4 py-2">
-              {Array.from(
-                { length: Math.min(totalPages, 3) },
-                (_, i) => i + 1,
-              ).map((page) => (
-                <button
-                  key={page}
-                  onClick={() => fetchNotifications(page)}
-                  className={cn(
-                    "rounded px-3 py-1 text-sm transition-colors cursor-pointer",
-                    currentPage === page
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-secondary text-foreground hover:bg-secondary-hover",
-                  )}
-                >
-                  {page}
-                </button>
-              ))}
-            </div>
-          )}
         </div>
       )}
     </div>

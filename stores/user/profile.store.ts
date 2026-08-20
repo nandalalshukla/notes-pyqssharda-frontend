@@ -8,6 +8,7 @@ import {
 } from "@/lib/api/user/user.api";
 import { toast } from "react-hot-toast";
 import useAuthStore from "./authStore";
+import { getErrorMessage } from "@/lib/utils/errorHandler";
 
 interface ProfileState {
   // State
@@ -54,8 +55,7 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
       useAuthStore.setState({ user: updatedUser });
       toast.success(response.message || "Profile updated successfully");
     } catch (error: unknown) {
-      const errorMessage =
-        error instanceof Error ? error.message : "Failed to update profile";
+      const errorMessage = getErrorMessage(error) || "Failed to update profile";
       set({ error: errorMessage, isLoading: false });
       toast.error(errorMessage);
       throw error;
@@ -73,9 +73,7 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
       toast.success(response.message || "Profile picture removed");
     } catch (error: unknown) {
       const errorMessage =
-        error instanceof Error
-          ? error.message
-          : "Failed to remove profile picture";
+        getErrorMessage(error) || "Failed to remove profile picture";
       set({ error: errorMessage, isLoading: false });
       toast.error(errorMessage);
       throw error;
@@ -92,7 +90,7 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
       toast.success("Account deactivated successfully");
     } catch (error: unknown) {
       const errorMessage =
-        error instanceof Error ? error.message : "Failed to deactivate account";
+        getErrorMessage(error) || "Failed to deactivate account";
       set({ error: errorMessage, isLoading: false });
       toast.error(errorMessage);
       throw error;
@@ -108,8 +106,7 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
       useAuthStore.setState({ user: null, isAuthenticated: false });
       toast.success("Account deleted successfully");
     } catch (error: unknown) {
-      const errorMessage =
-        error instanceof Error ? error.message : "Failed to delete account";
+      const errorMessage = getErrorMessage(error) || "Failed to delete account";
       set({ error: errorMessage, isLoading: false });
       toast.error(errorMessage);
       throw error;

@@ -1,6 +1,10 @@
 /**
- * Report-specific error handler with proper error code detection
+ * Report-specific error → UI feedback mapping. Message/code/status
+ * extraction itself lives in lib/utils/errorHandler.ts (the one place that
+ * knows how to read the backend's error contract) — this file only adds
+ * report-specific copy on top of it.
  */
+import { getApiError } from "./errorHandler";
 
 export interface ReportError {
   code: string;
@@ -9,46 +13,16 @@ export interface ReportError {
   retryAfter?: number;
 }
 
-export interface ApiErrorResponse {
-  success?: boolean;
-  code?: string;
-  message?: string;
-  retryAfter?: number;
-}
-
 export function getReportErrorDetails(error: unknown): ReportError {
-  const defaultError: ReportError = {
-    code: "UNKNOWN_ERROR",
+  const apiError = getApiError(error);
+  return {
+    code: apiError.code || "UNKNOWN_ERROR",
     message:
+      apiError.message ||
       "We encountered an issue while processing your report. Please try again.",
-    status: 500,
+    status: apiError.status || 500,
+    retryAfter: apiError.retryAfter,
   };
-
-  // Handle axios error structure
-  const anyError = error as any;
-
-  // Check for response data with error code
-  if (anyError?.response?.data) {
-    const data = anyError.response.data as ApiErrorResponse;
-    const status = anyError.response.status || 500;
-
-    return {
-      code: data.code || "ERROR",
-      message: data.message || defaultError.message,
-      status,
-      retryAfter: data.retryAfter,
-    };
-  }
-
-  // Check for error message from Error object
-  if (error instanceof Error) {
-    return {
-      ...defaultError,
-      message: error.message,
-    };
-  }
-
-  return defaultError;
 }
 
 export function getReportErrorFeedback(error: ReportError): {

@@ -22,8 +22,9 @@ export default function AccountDangerZone() {
       await deactivateUserAccount();
       toast.success("Account deactivated. Redirecting...");
       setTimeout(() => router.push("/"), 2000);
-    } catch (error) {
-      toast.error("Failed to deactivate account");
+    } catch {
+      // profile.store.ts already shows a toast with the real error message
+      // and rethrows — nothing more to do here than stop the spinner.
     } finally {
       setIsDeactivating(false);
     }
@@ -40,8 +41,9 @@ export default function AccountDangerZone() {
       await deleteUserAccount();
       toast.success("Account deleted. Redirecting...");
       setTimeout(() => router.push("/"), 2000);
-    } catch (error) {
-      toast.error("Failed to delete account");
+    } catch {
+      // profile.store.ts already shows a toast with the real error message
+      // and rethrows — nothing more to do here than stop the spinner.
     } finally {
       setIsDeleting(false);
     }

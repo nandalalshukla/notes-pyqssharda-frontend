@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import useAuthStore from "@/stores/user/authStore";
 import { FiEye, FiEyeOff } from "react-icons/fi";
 import { Button, Input } from "@/components/ui";
+import { getErrorMessage } from "@/lib/utils/errorHandler";
 
 const LoginForm = () => {
   const router = useRouter();
@@ -52,9 +53,7 @@ const LoginForm = () => {
       router.push("/library/dashboard");
     } catch (error: unknown) {
       // Preserve email on failed login, extract error message from response
-      const errorMessage = (error as any)?.response?.data?.message;
-      const displayMessage = errorMessage || "Invalid credentials";
-      toast.error(displayMessage);
+      toast.error(getErrorMessage(error) || "Invalid credentials");
       // Keep email, clear only password for better UX
       setFormData((prev) => ({
         ...prev,
