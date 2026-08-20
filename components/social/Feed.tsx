@@ -1,11 +1,11 @@
 "use client";
 
-import React, { useEffect, useState, useCallback, useRef } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import dynamic from "next/dynamic";
 import { useSocialStore } from "@/stores/social/social.store";
 import useAuthStore from "@/stores/user/authStore";
 import PostCard from "./PostCard";
-import { FeedLoadingState } from "./LoadingSkeletons";
+import { FeedLoadingState, PostCardSkeleton } from "./LoadingSkeletons";
 
 // Only rendered after clicking "New Post" — keep it out of the initial bundle.
 const CreatePostModal = dynamic(() => import("./CreatePostModal"));
@@ -61,6 +61,10 @@ export default function Feed() {
 
   const previousAuthState = useRef<boolean | null>(null);
   const previousSection = useRef<PostType>("general");
+  const loadMoreSentinelRef = useRef<HTMLDivElement>(null);
+
+  const hasMore = feedTotalPages > currentPage;
+  const isLoadingMore = isLoadingFeed && currentPage > 1;
 
   useEffect(() => {
     if (!authInitialized) return;
@@ -90,37 +94,50 @@ export default function Feed() {
     fetchFeed(currentPage, activeSection);
   }, [authInitialized, isAuthenticated, activeSection, currentPage, fetchFeed]);
 
-  const handleLoadMore = useCallback(() => {
-    if (currentPage < feedTotalPages) {
-      setCurrentPage(currentPage + 1);
-    }
-  }, [currentPage, feedTotalPages]);
+  // Auto-load the next page as the bottom of the feed approaches the
+  // viewport, instead of requiring a manual "Load More" click — the
+  // `rootMargin` fires this ~400px before the sentinel is actually on
+  // screen, so the next page is usually ready before the user reaches it.
+  useEffect(() => {
+    const node = loadMoreSentinelRef.current;
+    if (!node || !hasMore) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && !isLoadingFeed) {
+          setCurrentPage((page) => page + 1);
+        }
+      },
+      { rootMargin: "400px 0px" },
+    );
+
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [hasMore, isLoadingFeed]);
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Page Header */}
-      <div className="sticky top-0 z-10 border-b border-border bg-background/90 shadow-soft-sm backdrop-blur-xl">
-        <div className="mx-auto flex max-w-3xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
-          <div>
-            <h1 className="text-2xl font-extrabold text-foreground">Feed</h1>
-            <p className="mt-0.5 text-sm text-muted-foreground">
-              {feed.length > 0
-                ? `${feed.length} posts${feedTotalPages > 1 ? ` (Page ${currentPage})` : ""}`
-                : "No posts yet"}
-            </p>
-          </div>
+      {/* Page Header — just the section pills + new-post action. No
+          border/shadow of its own: the site navbar above already draws its
+          own edge on scroll, and adding a second one here framed the pills
+          row with a line above AND below it. `top` is offset by the site
+          navbar's own height (61px mobile / 81px desktop, matching its
+          `md:` breakpoint) — both this and the navbar are `sticky top-0`,
+          so without the offset they'd pin to the same spot and this bar
+          would render hidden behind the navbar's higher z-index. */}
+      <div className="sticky top-[61px] z-10 bg-background/90 backdrop-blur-xl md:top-[81px]">
+        <div className="mx-auto flex max-w-3xl items-center justify-between gap-3 px-4 py-4 sm:px-6 lg:px-8">
+          <Tabs
+            items={feedSections.map((s) => ({ value: s.value, label: s.label, icon: s.icon }))}
+            value={activeSection}
+            onChange={setActiveSection}
+            className="flex-1"
+          />
           {isAuthenticated && (
             <Button onClick={() => setShowCreateModal(true)} icon={<FiPlus size={18} />}>
               <span className="hidden sm:inline">New Post</span>
             </Button>
           )}
-        </div>
-        <div className="mx-auto max-w-3xl px-4 pb-4 sm:px-6 lg:px-8">
-          <Tabs
-            items={feedSections.map((s) => ({ value: s.value, label: s.label, icon: s.icon }))}
-            value={activeSection}
-            onChange={setActiveSection}
-          />
         </div>
       </div>
 
@@ -166,37 +183,36 @@ export default function Feed() {
                   post={post}
                   className="animate-fade-in"
                   style={{
-                    animationDelay: `${index * 0.05}s`,
+                    // Capped so a batch of newly-appended posts staggers in
+                    // quickly (instead of the delay growing unbounded with
+                    // the feed's total length — post #50 waiting 2.5s to
+                    // fade in reads as broken, not smooth).
+                    animationDelay: `${Math.min(index, 9) * 0.04}s`,
                   }}
                 />
               ))}
             </div>
 
-            {/* Load More Button */}
-            {feedTotalPages > currentPage && (
-              <div className="flex justify-center pt-6">
-                <Button
-                  onClick={handleLoadMore}
-                  loading={isLoadingFeed}
-                  size="lg"
-                  className="px-8"
-                >
-                  Load More Posts
-                </Button>
-              </div>
-            )}
-
-            {/* End of Feed Message */}
-            {currentPage === feedTotalPages && feed.length > 0 && (
-              <div className="rounded-2xl border border-border bg-card px-6 py-12 text-center shadow-soft-sm">
-                <p className="mb-1 font-semibold text-foreground">
-                  You&apos;re all caught up
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  Check back later for more posts from the community
-                </p>
-              </div>
-            )}
+            {/* Infinite-scroll sentinel — auto-loads the next page on
+                approach; shows a skeleton while that page is in flight, or
+                the "caught up" message once there's nothing left to load. */}
+            <div ref={loadMoreSentinelRef}>
+              {isLoadingMore && (
+                <div className="animate-fade-in">
+                  <PostCardSkeleton />
+                </div>
+              )}
+              {!hasMore && !isLoadingMore && (
+                <div className="animate-fade-in rounded-2xl border border-border bg-card px-6 py-12 text-center shadow-soft-sm">
+                  <p className="mb-1 font-semibold text-foreground">
+                    You&apos;re all caught up
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    Check back later for more posts from the community
+                  </p>
+                </div>
+              )}
+            </div>
           </>
         ) : (
           /* Empty State */
