@@ -29,7 +29,7 @@ const VerifiedBadge = ({
 
   return (
     <span
-      className={`relative inline-flex items-center group ${className}`}
+      className={`group relative inline-flex items-center ${className}`}
       aria-label={`Verified ${label}`}
     >
       <svg
@@ -48,11 +48,11 @@ const VerifiedBadge = ({
           d="m10.13 15.48-3.2-3.2 1.74-1.74 1.46 1.46 5.2-5.2 1.74 1.74-6.94 6.94z"
         />
       </svg>
-      <span className="pointer-events-none absolute left-1/2 top-full z-20 mt-2 w-44 -translate-x-1/2 rounded-xl border border-gray-200 bg-white px-3 py-2 text-left opacity-0 shadow-xl transition-opacity group-hover:opacity-100">
-        <span className="block text-sm font-bold text-gray-900">
+      <span className="pointer-events-none absolute top-full left-1/2 z-20 mt-2 w-44 -translate-x-1/2 rounded-xl border border-border bg-card px-3 py-2 text-left opacity-0 shadow-soft-lg transition-opacity group-hover:opacity-100">
+        <span className="block text-sm font-bold text-foreground">
           Verified {label}
         </span>
-        <span className="mt-0.5 block text-xs font-medium text-gray-500">
+        <span className="mt-0.5 block text-xs font-medium text-muted-foreground">
           Official {label.toLowerCase()} account
         </span>
       </span>

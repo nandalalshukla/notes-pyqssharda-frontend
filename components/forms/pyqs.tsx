@@ -2,8 +2,10 @@
 
 import React, { useState, useEffect } from "react";
 import { toast } from "react-hot-toast";
+import { X } from "lucide-react";
 import { Pyq } from "@/lib/api/pyqs/pyqs.api";
 import { usePYQsStore } from "@/stores/pyqs/pyqs.store";
+import { Button, Input, Select } from "@/components/ui";
 
 interface PyqsFormProps {
   onClose?: () => void;
@@ -120,7 +122,6 @@ export default function PyqsForm({
     }
 
     try {
-      console.log(formData.courseCode, file);
       const data = new FormData();
       data.append("title", formData.title.trim());
       data.append("program", formData.program);
@@ -154,18 +155,19 @@ export default function PyqsForm({
   };
 
   return (
-    <div className="w-full max-w-md mx-auto bg-white p-8 rounded-2xl border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-black text-black flex items-center gap-2">
-          <span className="w-4 h-4 rounded-full border-2 border-black bg-[#FF9F66]"></span>
+    <div className="mx-auto w-full max-w-md rounded-2xl border border-border bg-card p-8 shadow-soft-lg">
+      <div className="mb-6 flex items-center justify-between">
+        <h2 className="flex items-center gap-2 text-2xl font-black text-foreground">
+          <span className="h-4 w-4 rounded-full bg-accent-coral"></span>
           {initialData ? "Edit PYQ" : "Upload PYQ"}
         </h2>
         {onClose && (
           <button
             onClick={onClose}
-            className="text-black hover:text-gray-600 transition-colors font-bold text-xl"
+            aria-label="Close"
+            className="cursor-pointer text-foreground transition-colors hover:text-muted-foreground"
           >
-            ✕
+            <X size={20} />
           </button>
         )}
       </div>
@@ -173,23 +175,22 @@ export default function PyqsForm({
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Title */}
         <div>
-          <label className="block text-sm font-bold text-black mb-1">
+          <label className="mb-1 block text-sm font-bold text-foreground">
             Title
           </label>
-          <input
+          <Input
             type="text"
             name="title"
             value={formData.title}
             onChange={handleChange}
             placeholder="e.g. End Term 2023 Paper"
-            className="w-full px-4 py-2 rounded-lg border-2 border-black focus:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] outline-none transition-all text-sm font-medium text-black placeholder:text-gray-500"
             required
           />
         </div>
 
         {/* File Upload */}
         <div>
-          <label className="block text-sm font-bold text-black mb-1">
+          <label className="mb-1 block text-sm font-bold text-foreground">
             File
           </label>
           <div className="relative">
@@ -202,12 +203,12 @@ export default function PyqsForm({
             />
             <label
               htmlFor="pyq-file-upload"
-              className="w-full px-4 py-2 rounded-lg border-2 border-black cursor-pointer bg-white flex items-center focus-within:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all"
+              className="flex w-full cursor-pointer items-center rounded-xl border border-input bg-card px-3.5 py-2 transition-colors focus-within:ring-2 focus-within:ring-ring"
             >
-              <span className="mr-4 py-1 px-3 rounded-full border-2 border-black text-xs font-bold bg-[#FF9F66] text-black whitespace-nowrap">
+              <span className="mr-4 rounded-full bg-accent-coral px-3 py-1 text-xs font-bold whitespace-nowrap text-accent-coral-foreground">
                 Choose File
               </span>
-              <span className="text-sm font-medium text-gray-500 truncate">
+              <span className="truncate text-sm font-medium text-muted-foreground">
                 {file ? file.name : "No file chosen"}
               </span>
             </label>
@@ -219,7 +220,7 @@ export default function PyqsForm({
                 href={initialData.fileUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-blue-600 underline font-bold"
+                className="font-bold text-primary underline"
               >
                 View
               </a>
@@ -230,14 +231,13 @@ export default function PyqsForm({
         {/* Program & Year Row */}
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-bold text-black mb-1">
+            <label className="mb-1 block text-sm font-bold text-foreground">
               Program
             </label>
-            <select
+            <Select
               name="program"
               value={formData.program}
               onChange={handleChange}
-              className="w-full px-4 py-2 rounded-lg border-2 border-black focus:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] outline-none transition-all text-sm font-medium bg-white text-black"
               required
             >
               <option value="">Select</option>
@@ -246,17 +246,16 @@ export default function PyqsForm({
                   {p}
                 </option>
               ))}
-            </select>
+            </Select>
           </div>
           <div>
-            <label className="block text-sm font-bold text-black mb-1">
+            <label className="mb-1 block text-sm font-bold text-foreground">
               Year
             </label>
-            <select
+            <Select
               name="year"
               value={formData.year}
               onChange={handleChange}
-              className="w-full px-4 py-2 rounded-lg border-2 border-black focus:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] outline-none transition-all text-sm font-medium bg-white text-black"
               required
             >
               <option value="">Select</option>
@@ -265,37 +264,36 @@ export default function PyqsForm({
                   {y}
                 </option>
               ))}
-            </select>
+            </Select>
           </div>
         </div>
 
         {/* Course Code & Name Row */}
         <div className="grid grid-cols-3 gap-4">
           <div className="col-span-1">
-            <label className="block text-sm font-bold text-black mb-1">
+            <label className="mb-1 block text-sm font-bold text-foreground">
               Code
             </label>
-            <input
+            <Input
               type="text"
               name="courseCode"
               value={formData.courseCode}
               onChange={handleChange}
               placeholder="CSE101"
-              className="w-full px-4 py-2 rounded-lg border-2 border-black focus:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] outline-none transition-all text-sm font-medium uppercase text-black placeholder:text-gray-500"
+              className="uppercase"
               required
             />
           </div>
           <div className="col-span-2">
-            <label className="block text-sm font-bold text-black mb-1">
+            <label className="mb-1 block text-sm font-bold text-foreground">
               Course Name
             </label>
-            <input
+            <Input
               type="text"
               name="courseName"
               value={formData.courseName}
               onChange={handleChange}
               placeholder="Intro to Programming"
-              className="w-full px-4 py-2 rounded-lg border-2 border-black focus:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] outline-none transition-all text-sm font-medium text-black placeholder:text-gray-500"
               required
             />
           </div>
@@ -303,14 +301,13 @@ export default function PyqsForm({
 
         {/* Semester */}
         <div>
-          <label className="block text-sm font-bold text-black mb-1">
+          <label className="mb-1 block text-sm font-bold text-foreground">
             Semester
           </label>
-          <select
+          <Select
             name="semester"
             value={formData.semester}
             onChange={handleChange}
-            className="w-full px-4 py-2 rounded-lg border-2 border-black focus:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] outline-none transition-all text-sm font-medium bg-white text-black"
             required
           >
             <option value="">Select Semester</option>
@@ -319,14 +316,10 @@ export default function PyqsForm({
                 Semester {sem}
               </option>
             ))}
-          </select>
+          </Select>
         </div>
 
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full mt-6 bg-black hover:bg-gray-800 text-white font-bold py-3 rounded-lg transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,0.2)] disabled:opacity-70 disabled:cursor-not-allowed border-2 border-transparent hover:border-black"
-        >
+        <Button type="submit" loading={loading} className="mt-6 w-full" size="lg">
           {loading
             ? initialData
               ? "Updating..."
@@ -334,7 +327,7 @@ export default function PyqsForm({
             : initialData
               ? "Update PYQ"
               : "Upload PYQ"}
-        </button>
+        </Button>
       </form>
     </div>
   );

@@ -5,6 +5,7 @@ import { toast } from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import useAuthStore from "@/stores/user/authStore";
 import { FiEye, FiEyeOff } from "react-icons/fi";
+import { Button, Input } from "@/components/ui";
 
 const LoginForm = () => {
   const router = useRouter();
@@ -65,85 +66,80 @@ const LoginForm = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#F2F4F8] px-4">
+    <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <form
         onSubmit={handleSubmit}
-        className="w-full max-w-md bg-white p-8 rounded-2xl border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+        className="w-full max-w-md rounded-2xl border border-border bg-card p-6 shadow-soft-lg sm:p-8"
       >
-        <div className="text-center mb-6">
-          <div className="flex justify-center mb-4">
-            <span className="w-12 h-12 rounded-full border-2 border-black bg-[#4ADE80] flex items-center justify-center text-2xl">
+        <div className="mb-6 text-center">
+          <div className="mb-4 flex justify-center">
+            <span className="flex h-12 w-12 items-center justify-center rounded-full bg-accent-mint text-2xl shadow-soft-sm">
               👋
             </span>
           </div>
-          <h1 className="text-2xl font-black text-black">Welcome Back</h1>
-          <p className="text-sm text-gray-600 mt-1">
+          <h1 className="text-2xl font-black text-foreground">Welcome Back</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
             Login with your Sharda email
           </p>
         </div>
 
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-bold text-black mb-1">
+            <label className="mb-1 block text-sm font-bold text-foreground">
               Email
             </label>
-            <input
+            <Input
               type="email"
               name="email"
               value={formData.email}
               onChange={handleChange}
-              className="w-full px-4 py-2 rounded-lg border-2 border-black focus:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] outline-none transition-all text-sm font-medium text-black placeholder:text-gray-500"
               placeholder="yourname@ug.sharda.ac.in"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-bold text-black mb-1">
+            <label className="mb-1 block text-sm font-bold text-foreground">
               Password
             </label>
-            <div className="relative">
-              <input
-                type={showPassword ? "text" : "password"}
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                className="w-full px-4 py-2 pr-10 rounded-lg border-2 border-black focus:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] outline-none transition-all text-sm font-medium text-black placeholder:text-gray-500"
-                placeholder="Enter your password"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-2.5 text-gray-600 hover:text-black transition-colors"
-              >
-                {showPassword ? <FiEyeOff size={20} /> : <FiEye size={20} />}
-              </button>
-            </div>
+            <Input
+              type={showPassword ? "text" : "password"}
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+              placeholder="Enter your password"
+              endAdornment={
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="pointer-events-auto text-muted-foreground transition-colors hover:text-foreground cursor-pointer"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? <FiEyeOff size={18} /> : <FiEye size={18} />}
+                </button>
+              }
+            />
           </div>
 
           <div className="flex justify-end">
             <button
               type="button"
               onClick={() => router.push("/auth/forgot-password")}
-              className="text-sm font-bold text-black hover:text-[#4ADE80] transition-colors underline decoration-2"
+              className="text-sm font-bold text-foreground underline decoration-2 transition-colors hover:text-primary cursor-pointer"
             >
               Forgot password?
             </button>
           </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full mt-2 bg-black hover:bg-gray-800 text-white font-bold py-3 rounded-lg transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,0.2)] disabled:opacity-70 disabled:cursor-not-allowed border-2 border-transparent hover:border-black"
-          >
-            {loading ? "Logging in..." : "Login"}
-          </button>
+          <Button type="submit" loading={loading} className="mt-2 w-full">
+            Login
+          </Button>
 
-          <p className="text-center text-sm text-gray-600 mt-4">
+          <p className="mt-4 text-center text-sm text-muted-foreground">
             Don&apos;t have an account?{" "}
             <button
               type="button"
               onClick={() => router.push("/auth/register")}
-              className="font-bold text-black hover:text-[#4ADE80] underline decoration-2"
+              className="font-bold text-foreground underline decoration-2 hover:text-primary cursor-pointer"
             >
               Register
             </button>

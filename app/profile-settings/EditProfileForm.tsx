@@ -7,6 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { editProfileSchema, EditProfileInput } from "@/lib/validators/auth.zod";
 import { FiSave, FiAlertCircle } from "react-icons/fi";
 import toast from "react-hot-toast";
+import { Button, Input, Textarea } from "@/components/ui";
 
 export default function EditProfileForm() {
   const { user, isLoading, updateProfile } = useProfile();
@@ -51,137 +52,128 @@ export default function EditProfileForm() {
   };
 
   return (
-    <div className="bg-white rounded-xl border border-slate-200 p-8 shadow-sm">
-      <h2 className="text-2xl font-bold text-slate-900 mb-8">Edit Profile</h2>
+    <div className="rounded-2xl border border-border bg-card p-8 shadow-soft-sm">
+      <h2 className="mb-8 text-2xl font-bold text-foreground">Edit Profile</h2>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         {/* Name */}
         <div>
-          <label className="block text-sm font-semibold text-slate-900 mb-2">
-            Full Name <span className="text-red-500">*</span>
+          <label className="mb-2 block text-sm font-semibold text-foreground">
+            Full Name <span className="text-destructive">*</span>
           </label>
-          <input
+          <Input
             {...register("name")}
             type="text"
             placeholder="Enter your full name"
-            className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-slate-900 placeholder-slate-400 transition-all"
+            error={!!errors.name}
           />
           {errors.name && (
-            <div className="flex items-center gap-2 mt-2 text-red-600 text-sm">
+            <div className="mt-2 flex items-center gap-2 text-sm text-destructive">
               <FiAlertCircle size={16} />
               <span>{errors.name.message}</span>
             </div>
           )}
-          <p className="text-xs text-slate-500 mt-1">Letters and spaces only</p>
+          <p className="mt-1 text-xs text-muted-foreground">Letters and spaces only</p>
         </div>
 
         {/* Bio */}
         <div>
-          <label className="block text-sm font-semibold text-slate-900 mb-2">
+          <label className="mb-2 block text-sm font-semibold text-foreground">
             Bio
           </label>
-          <textarea
+          <Textarea
             {...register("bio")}
             placeholder="Tell us about yourself..."
             rows={4}
             maxLength={500}
-            className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-slate-900 placeholder-slate-400 resize-none transition-all"
+            error={!!errors.bio}
           />
           {errors.bio && (
-            <div className="flex items-center gap-2 mt-2 text-red-600 text-sm">
+            <div className="mt-2 flex items-center gap-2 text-sm text-destructive">
               <FiAlertCircle size={16} />
               <span>{errors.bio.message}</span>
             </div>
           )}
-          <p className="text-xs text-slate-500 mt-1">Maximum 500 characters</p>
+          <p className="mt-1 text-xs text-muted-foreground">Maximum 500 characters</p>
         </div>
 
         {/* Course */}
         <div>
-          <label className="block text-sm font-semibold text-slate-900 mb-2">
+          <label className="mb-2 block text-sm font-semibold text-foreground">
             Course / Program
           </label>
-          <input
+          <Input
             {...register("course")}
             type="text"
             placeholder="e.g., B.Tech Computer Science"
-            className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-slate-900 placeholder-slate-400 transition-all"
+            error={!!errors.course}
           />
           {errors.course && (
-            <div className="flex items-center gap-2 mt-2 text-red-600 text-sm">
+            <div className="mt-2 flex items-center gap-2 text-sm text-destructive">
               <FiAlertCircle size={16} />
               <span>{errors.course.message}</span>
             </div>
           )}
-          <p className="text-xs text-slate-500 mt-1">
+          <p className="mt-1 text-xs text-muted-foreground">
             Your degree program or course
           </p>
         </div>
 
         {/* Contact Number */}
         <div>
-          <label className="block text-sm font-semibold text-slate-900 mb-2">
+          <label className="mb-2 block text-sm font-semibold text-foreground">
             Contact Number
           </label>
-          <input
+          <Input
             {...register("contactNo")}
             type="tel"
             placeholder="10-digit mobile number"
-            className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-slate-900 placeholder-slate-400 transition-all"
+            error={!!errors.contactNo}
           />
           {errors.contactNo && (
-            <div className="flex items-center gap-2 mt-2 text-red-600 text-sm">
+            <div className="mt-2 flex items-center gap-2 text-sm text-destructive">
               <FiAlertCircle size={16} />
               <span>{errors.contactNo.message}</span>
             </div>
           )}
-          <p className="text-xs text-slate-500 mt-1">
+          <p className="mt-1 text-xs text-muted-foreground">
             Exactly 10 digits (no spaces or dashes)
           </p>
         </div>
 
         {/* Email (Read-only) */}
         <div>
-          <label className="block text-sm font-semibold text-slate-900 mb-2">
+          <label className="mb-2 block text-sm font-semibold text-foreground">
             Email Address
           </label>
-          <input
-            type="email"
-            value={user?.email || ""}
-            disabled
-            className="w-full px-4 py-3 border border-slate-200 rounded-lg bg-slate-50 text-slate-500 font-medium cursor-not-allowed"
-          />
-          <p className="text-xs text-slate-500 mt-1">Email cannot be changed</p>
+          <Input type="email" value={user?.email || ""} disabled className="cursor-not-allowed bg-muted" />
+          <p className="mt-1 text-xs text-muted-foreground">Email cannot be changed</p>
         </div>
 
         {/* Username (Read-only) */}
         <div>
-          <label className="block text-sm font-semibold text-slate-900 mb-2">
+          <label className="mb-2 block text-sm font-semibold text-foreground">
             Username
           </label>
-          <input
-            type="text"
-            value={user?.username || ""}
-            disabled
-            className="w-full px-4 py-3 border border-slate-200 rounded-lg bg-slate-50 text-slate-500 font-medium cursor-not-allowed"
-          />
-          <p className="text-xs text-slate-500 mt-1">
+          <Input type="text" value={user?.username || ""} disabled className="cursor-not-allowed bg-muted" />
+          <p className="mt-1 text-xs text-muted-foreground">
             Username cannot be changed
           </p>
         </div>
 
         {/* Submission */}
-        <div className="pt-6 border-t border-slate-200">
-          <button
+        <div className="border-t border-border pt-6">
+          <Button
             type="submit"
             disabled={!isDirty || isLoading || isSaving}
-            className="w-full flex items-center justify-center gap-2 px-8 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+            loading={isSaving}
+            icon={<FiSave size={20} />}
+            className="w-full"
           >
-            <FiSave size={20} />
-            {isSaving ? "Saving..." : "Save Changes"}
-          </button>
+            Save Changes
+          </Button>
           {!isDirty && (
-            <p className="text-center text-slate-500 text-sm mt-3">
+            <p className="mt-3 text-center text-sm text-muted-foreground">
               No changes made
             </p>
           )}

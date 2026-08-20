@@ -1,28 +1,184 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ---------------------------------------------------------------- *
+ * Design tokens — "Vibrant Campus"
+ * Raw values live here so `.dark` can swap them at runtime; the
+ * `@theme inline` block below maps them to Tailwind color utilities
+ * (bg-primary, text-muted-foreground, border-border, etc).
+ * ---------------------------------------------------------------- */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #faf9fd;
+  --foreground: #15131f;
+  --card: #ffffff;
+  --card-foreground: #15131f;
+  --popover: #ffffff;
+  --popover-foreground: #15131f;
+
+  --primary: #6366f1;
+  --primary-hover: #4f46e5;
+  --primary-foreground: #ffffff;
+
+  --secondary: #f1eff9;
+  --secondary-hover: #e6e2f5;
+  --secondary-foreground: #15131f;
+
+  --muted: #f1eff9;
+  --muted-foreground: #6b6478;
+
+  --border: #e6e2f2;
+  --input: #e6e2f2;
+  --ring: #6366f1;
+
+  --accent-coral: #ff9f66;
+  --accent-coral-foreground: #1a1207;
+  --accent-mint: #4ade80;
+  --accent-mint-foreground: #062b13;
+  --accent-purple: #c084fc;
+  --accent-purple-foreground: #250a3a;
+  --accent-sky: #38bdf8;
+  --accent-sky-foreground: #04222f;
+
+  --success: #16a34a;
+  --success-foreground: #ffffff;
+  --warning: #d97706;
+  --warning-foreground: #ffffff;
+  --destructive: #e11d48;
+  --destructive-foreground: #ffffff;
+  --info: #3b82f6;
+  --info-foreground: #ffffff;
+
+  --ink: #15131f;
+  /* ambient tinted shadow used by the soft elevation scale */
+  --shadow-tint: 15 15 20;
+}
+
+.dark {
+  --background: #100e1a;
+  --foreground: #f1eefb;
+  --card: #191726;
+  --card-foreground: #f1eefb;
+  --popover: #191726;
+  --popover-foreground: #f1eefb;
+
+  --primary: #818cf8;
+  --primary-hover: #a5b4fc;
+  --primary-foreground: #100e1a;
+
+  --secondary: #221e34;
+  --secondary-hover: #2b2640;
+  --secondary-foreground: #f1eefb;
+
+  --muted: #1d1a2c;
+  --muted-foreground: #a49cc4;
+
+  --border: #2b2640;
+  --input: #2b2640;
+  --ring: #818cf8;
+
+  --accent-coral: #ffb488;
+  --accent-coral-foreground: #1a1207;
+  --accent-mint: #6ee7a5;
+  --accent-mint-foreground: #062b13;
+  --accent-purple: #d8acfd;
+  --accent-purple-foreground: #250a3a;
+  --accent-sky: #7dd3fc;
+  --accent-sky-foreground: #04222f;
+
+  --success: #4ade80;
+  --success-foreground: #062b13;
+  --warning: #fbbf24;
+  --warning-foreground: #1a1207;
+  --destructive: #fb7185;
+  --destructive-foreground: #2a0510;
+  --info: #60a5fa;
+  --info-foreground: #04182f;
+
+  --ink: #ece9f9;
+  --shadow-tint: 0 0 0;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-foreground: var(--primary-foreground);
+
+  --color-secondary: var(--secondary);
+  --color-secondary-hover: var(--secondary-hover);
+  --color-secondary-foreground: var(--secondary-foreground);
+
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-accent-coral: var(--accent-coral);
+  --color-accent-coral-foreground: var(--accent-coral-foreground);
+  --color-accent-mint: var(--accent-mint);
+  --color-accent-mint-foreground: var(--accent-mint-foreground);
+  --color-accent-purple: var(--accent-purple);
+  --color-accent-purple-foreground: var(--accent-purple-foreground);
+  --color-accent-sky: var(--accent-sky);
+  --color-accent-sky-foreground: var(--accent-sky-foreground);
+
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
+
+  --color-ink: var(--ink);
+
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* Radius + soft elevation scale — static across themes */
+@theme {
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.25rem;
+  --radius-2xl: 1.75rem;
+
+  --shadow-soft-sm: 0 1px 2px 0 rgb(var(--shadow-tint) / 0.04),
+    0 1px 1px 0 rgb(var(--shadow-tint) / 0.03);
+  --shadow-soft-md: 0 4px 12px -2px rgb(var(--shadow-tint) / 0.06),
+    0 2px 4px -2px rgb(var(--shadow-tint) / 0.04);
+  --shadow-soft-lg: 0 12px 28px -8px rgb(var(--shadow-tint) / 0.1),
+    0 4px 10px -4px rgb(var(--shadow-tint) / 0.05);
+}
+
+/* Subtle lift used on hoverable cards/buttons — premium, not bouncy. */
+@utility lift-on-hover {
+  transition:
+    transform 200ms ease,
+    box-shadow 200ms ease;
+  &:hover {
+    transform: translateY(-2px);
   }
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-background);
+  color: var(--color-foreground);
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+  transition:
+    background-color 200ms ease,
+    color 200ms ease;
 }
 
 @keyframes fade-in-up {
@@ -71,6 +227,15 @@ body {
   }
 }
 
+@keyframes shimmer {
+  0% {
+    background-position: -400px 0;
+  }
+  100% {
+    background-position: 400px 0;
+  }
+}
+
 .animate-fade-in-up {
   animation: fade-in-up 0.6s ease-out forwards;
 }
@@ -85,4 +250,15 @@ body {
 
 .animate-bounce-in {
   animation: bounce-in 0.6s ease-out forwards;
+}
+
+.animate-shimmer {
+  background: linear-gradient(
+    90deg,
+    var(--color-muted) 0%,
+    var(--color-secondary-hover) 50%,
+    var(--color-muted) 100%
+  );
+  background-size: 800px 100%;
+  animation: shimmer 1.6s linear infinite;
 }

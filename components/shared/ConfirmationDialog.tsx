@@ -1,9 +1,9 @@
 "use client";
 
-import React, { Fragment } from "react";
-import { Dialog, Transition } from "@headlessui/react";
+import React from "react";
 import { FiAlertTriangle, FiCheck, FiX } from "react-icons/fi";
 import { useBodyScroll } from "@/hooks/useBodyScroll";
+import { Modal, Button } from "@/components/ui";
 
 interface ConfirmationDialogProps {
   isOpen: boolean;
@@ -30,80 +30,48 @@ export default function ConfirmationDialog({
 }: ConfirmationDialogProps) {
   // Prevent body scroll when dialog is open
   useBodyScroll(isOpen);
+
   return (
-    <Transition appear show={isOpen} as={Fragment}>
-      <Dialog as="div" className="relative z-50" onClose={onCancel}>
-        <Transition.Child
-          as={Fragment}
-          enter="ease-out duration-300"
-          enterFrom="opacity-0"
-          enterTo="opacity-100"
-          leave="ease-in duration-200"
-          leaveFrom="opacity-100"
-          leaveTo="opacity-0"
-        >
-          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" />
-        </Transition.Child>
-
-        <div className="fixed inset-0 overflow-y-auto">
-          <div className="flex min-h-full items-center justify-center p-4">
-            <Transition.Child
-              as={Fragment}
-              enter="ease-out duration-300"
-              enterFrom="opacity-0 scale-95"
-              enterTo="opacity-100 scale-100"
-              leave="ease-in duration-200"
-              leaveFrom="opacity-100 scale-100"
-              leaveTo="opacity-0 scale-95"
-            >
-              <Dialog.Panel className="w-full max-w-sm transform overflow-hidden rounded-xl bg-white p-6 shadow-xl transition-all border border-slate-200">
-                <div className="flex items-center gap-4 mb-4">
-                  <div
-                    className={`flex-shrink-0 w-12 h-12 rounded-lg flex items-center justify-center ${
-                      isDangerous ? "bg-red-100" : "bg-blue-100"
-                    }`}
-                  >
-                    <FiAlertTriangle
-                      size={24}
-                      className={isDangerous ? "text-red-600" : "text-blue-600"}
-                    />
-                  </div>
-                  <Dialog.Title className="text-lg font-bold text-slate-900">
-                    {title}
-                  </Dialog.Title>
-                </div>
-
-                <p className="text-slate-600 text-sm mb-6 leading-relaxed">
-                  {message}
-                </p>
-
-                <div className="flex gap-3">
-                  <button
-                    onClick={onCancel}
-                    disabled={isLoading}
-                    className="flex-1 px-4 py-2.5 bg-slate-100 text-slate-900 font-medium rounded-lg hover:bg-slate-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                  >
-                    <FiX size={18} />
-                    {cancelText}
-                  </button>
-                  <button
-                    onClick={onConfirm}
-                    disabled={isLoading}
-                    className={`flex-1 px-4 py-2.5 font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 ${
-                      isDangerous
-                        ? "bg-red-600 text-white hover:bg-red-700"
-                        : "bg-blue-600 text-white hover:bg-blue-700"
-                    }`}
-                  >
-                    <FiCheck size={18} />
-                    {isLoading ? "Processing..." : confirmText}
-                  </button>
-                </div>
-              </Dialog.Panel>
-            </Transition.Child>
-          </div>
+    <Modal
+      isOpen={isOpen}
+      onClose={onCancel}
+      size="sm"
+      hideCloseButton
+      footer={
+        <div className="flex w-full gap-3">
+          <Button
+            variant="secondary"
+            onClick={onCancel}
+            disabled={isLoading}
+            icon={<FiX size={18} />}
+            className="flex-1"
+          >
+            {cancelText}
+          </Button>
+          <Button
+            variant={isDangerous ? "destructive" : "primary"}
+            onClick={onConfirm}
+            loading={isLoading}
+            icon={<FiCheck size={18} />}
+            className="flex-1"
+          >
+            {confirmText}
+          </Button>
         </div>
-      </Dialog>
-    </Transition>
+      }
+    >
+      <div className="mb-4 flex items-center gap-4">
+        <div
+          className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ${
+            isDangerous ? "bg-destructive/15 text-destructive" : "bg-primary/15 text-primary"
+          }`}
+        >
+          <FiAlertTriangle size={24} />
+        </div>
+        <h2 className="text-lg font-bold text-foreground">{title}</h2>
+      </div>
+
+      <p className="text-sm leading-relaxed text-muted-foreground">{message}</p>
+    </Modal>
   );
 }

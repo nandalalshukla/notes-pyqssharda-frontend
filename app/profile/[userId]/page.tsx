@@ -10,6 +10,7 @@ import { ProfilePageLoadingState } from "@/components/social/LoadingSkeletons";
 import toast from "react-hot-toast";
 import { FiArrowLeft } from "react-icons/fi";
 import Link from "next/link";
+import { Button, EmptyState } from "@/components/ui";
 
 export default function UserProfilePage() {
   const params = useParams();
@@ -103,7 +104,7 @@ export default function UserProfilePage() {
 
   if (isLoadingProfile && !displayedProfile) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-background">
         <ProfilePageLoadingState />
       </div>
     );
@@ -111,36 +112,28 @@ export default function UserProfilePage() {
 
   if (!displayedProfile) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="text-center">
-          <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-red-100 mb-6">
-            <span className="text-4xl">⚠️</span>
-          </div>
-          <h1 className="text-2xl font-bold text-slate-900 mb-3">
-            Profile not found
-          </h1>
-          <p className="text-slate-500 mb-6">
-            The profile you&apos;re looking for doesn&apos;t exist.
-          </p>
-          <Link
-            href="/library"
-            className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
-          >
-            <FiArrowLeft size={18} />
-            Back to Feed
-          </Link>
-        </div>
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <EmptyState
+          icon={<span className="text-4xl">⚠️</span>}
+          title="Profile not found"
+          description="The profile you're looking for doesn't exist."
+          action={
+            <Link href="/library">
+              <Button icon={<FiArrowLeft size={18} />}>Back to Feed</Button>
+            </Link>
+          }
+        />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="sticky top-0 z-10 bg-white border-b border-slate-200">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+    <div className="min-h-screen bg-background">
+      <div className="sticky top-0 z-10 border-b border-border bg-background/90 backdrop-blur-xl">
+        <div className="mx-auto max-w-3xl px-4 py-4 sm:px-6 lg:px-8">
           <button
             onClick={() => router.back()}
-            className="flex items-center gap-2 text-slate-600 hover:text-slate-900 font-medium transition-colors"
+            className="flex items-center gap-2 font-medium text-muted-foreground transition-colors hover:text-foreground cursor-pointer"
           >
             <FiArrowLeft size={20} />
             Back
@@ -154,9 +147,9 @@ export default function UserProfilePage() {
         isFollowLoading={isFollowLoading}
       />
 
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+      <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6 lg:px-8">
         <div className="mb-12">
-          <h2 className="text-3xl font-bold text-slate-900 mb-8">Posts</h2>
+          <h2 className="mb-8 text-3xl font-bold text-foreground">Posts</h2>
           {isPostsLoading && posts.length === 0 ? (
             <ProfilePageLoadingState />
           ) : posts.length > 0 ? (
@@ -166,29 +159,24 @@ export default function UserProfilePage() {
               ))}
             </div>
           ) : (
-            <div className="text-center py-20">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-slate-100 mb-4">
-                <span className="text-2xl">📝</span>
-              </div>
-              <h3 className="text-xl font-semibold text-slate-900 mb-2">
-                No posts yet
-              </h3>
-              <p className="text-slate-500">
-                This user hasn&apos;t shared any posts.
-              </p>
-            </div>
+            <EmptyState
+              icon={<span className="text-2xl">📝</span>}
+              title="No posts yet"
+              description="This user hasn't shared any posts."
+            />
           )}
         </div>
 
         {currentPage < totalPages && (
           <div className="text-center">
-            <button
+            <Button
               onClick={handleLoadMore}
-              disabled={isPostsLoading}
-              className="px-8 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"
+              loading={isPostsLoading}
+              size="lg"
+              className="px-8"
             >
-              {isPostsLoading ? "Loading..." : "Load More Posts"}
-            </button>
+              Load More Posts
+            </Button>
           </div>
         )}
       </div>

@@ -2,6 +2,7 @@
 
 import React from "react";
 import { TrendingUp, TrendingDown } from "lucide-react";
+import { cn } from "@/lib/utils/cn";
 
 interface StatCardProps {
   label: string;
@@ -14,17 +15,17 @@ interface StatCardProps {
 }
 
 const variantStyles = {
-  primary: "bg-blue-50 border-blue-200 text-blue-600",
-  success: "bg-emerald-50 border-emerald-200 text-emerald-600",
-  warning: "bg-amber-50 border-amber-200 text-amber-600",
-  danger: "bg-red-50 border-red-200 text-red-600",
+  primary: "bg-primary/10 border-primary/20 text-primary",
+  success: "bg-success/10 border-success/20 text-success",
+  warning: "bg-warning/10 border-warning/20 text-warning",
+  danger: "bg-destructive/10 border-destructive/20 text-destructive",
 };
 
 const iconVariantStyles = {
-  primary: "bg-blue-100 text-blue-600",
-  success: "bg-emerald-100 text-emerald-600",
-  warning: "bg-amber-100 text-amber-600",
-  danger: "bg-red-100 text-red-600",
+  primary: "bg-primary/15 text-primary",
+  success: "bg-success/15 text-success",
+  warning: "bg-warning/15 text-warning",
+  danger: "bg-destructive/15 text-destructive",
 };
 
 export const StatCard: React.FC<StatCardProps> = ({
@@ -38,35 +39,29 @@ export const StatCard: React.FC<StatCardProps> = ({
 }) => {
   return (
     <div
-      className={`border rounded-2xl p-4 sm:p-5 lg:p-6 transition-all duration-300 hover:shadow-lg sm:hover:scale-[1.03] ${variantStyles[variant]}`}
+      className={cn(
+        "rounded-2xl border p-4 transition-all duration-300 hover:shadow-soft-md sm:p-5 sm:hover:scale-[1.03] lg:p-6",
+        variantStyles[variant],
+      )}
     >
-      <div className="flex items-start justify-between mb-4">
-        <div
-          className={`p-2.5 sm:p-3 rounded-xl ${iconVariantStyles[variant]}`}
-        >
-          {icon}
-        </div>
+      <div className="mb-4 flex items-start justify-between">
+        <div className={cn("rounded-xl p-2.5 sm:p-3", iconVariantStyles[variant])}>{icon}</div>
         {trend && trendValue && (
           <div
-            className={`flex items-center gap-1 text-sm font-bold ${
-              trend === "up" ? "text-emerald-600" : "text-red-600"
-            }`}
-          >
-            {trend === "up" ? (
-              <TrendingUp size={16} />
-            ) : (
-              <TrendingDown size={16} />
+            className={cn(
+              "flex items-center gap-1 text-sm font-bold",
+              trend === "up" ? "text-success" : "text-destructive",
             )}
+          >
+            {trend === "up" ? <TrendingUp size={16} /> : <TrendingDown size={16} />}
             {trendValue}%
           </div>
         )}
       </div>
-      <p className="text-sm font-medium text-slate-600 mb-2">{label}</p>
-      <p className="text-3xl sm:text-4xl font-bold text-slate-900 mb-2">
-        {value}
-      </p>
+      <p className="mb-2 text-sm font-medium text-muted-foreground">{label}</p>
+      <p className="mb-2 text-3xl font-bold text-foreground sm:text-4xl">{value}</p>
       {description && (
-        <p className="text-xs text-slate-600 font-medium">{description}</p>
+        <p className="text-xs font-medium text-muted-foreground">{description}</p>
       )}
     </div>
   );
@@ -88,7 +83,7 @@ export const StatsGrid: React.FC<StatsGridProps> = ({ stats, columns = 4 }) => {
           : "grid-cols-1";
 
   return (
-    <div className={`grid gap-4 sm:gap-5 lg:gap-6 ${gridColumnsClass}`}>
+    <div className={cn("grid gap-4 sm:gap-5 lg:gap-6", gridColumnsClass)}>
       {stats.map((stat, index) => (
         <StatCard key={index} {...stat} />
       ))}

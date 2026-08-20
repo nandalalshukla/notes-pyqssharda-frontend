@@ -4,6 +4,7 @@ import "./globals.css";
 import Navbar from "@/components/Navbar/navbar";
 import ToastProvider from "@/components/ToastProvide";
 import AuthProviders from "./providers";
+import { ThemeProvider } from "./theme-provider";
 import { Analytics } from "@vercel/analytics/next";
 
 const geistSans = Geist({
@@ -35,14 +36,16 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <ToastProvider />
-        <Navbar />
-        <AuthProviders>{children}</AuthProviders>
-        <Analytics />
+        <ThemeProvider>
+          <ToastProvider />
+          <Navbar />
+          <AuthProviders>{children}</AuthProviders>
+          <Analytics />
+        </ThemeProvider>
       </body>
     </html>
   );

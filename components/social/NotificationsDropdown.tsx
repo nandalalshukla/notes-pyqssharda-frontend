@@ -2,7 +2,6 @@
 
 import React, { useEffect, useState, useRef } from "react";
 import { FiBell, FiCheck } from "react-icons/fi";
-import Image from "next/image";
 import {
   getNotifications,
   markNotificationAsRead,
@@ -12,6 +11,8 @@ import {
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import VerifiedBadge from "./VerifiedBadge";
+import { Avatar } from "@/components/ui";
+import { cn } from "@/lib/utils/cn";
 
 export default function NotificationsDropdown() {
   const router = useRouter();
@@ -197,11 +198,11 @@ export default function NotificationsDropdown() {
       {/* Bell Icon Button */}
       <button
         onClick={() => setShowDropdown(!showDropdown)}
-        className="relative p-2 hover:bg-gray-100 rounded-full transition-colors"
+        className="relative rounded-full p-2 text-foreground transition-colors hover:bg-secondary cursor-pointer"
       >
-        <FiBell size={24} className="text-gray-700" />
+        <FiBell size={22} />
         {unreadCount > 0 && (
-          <span className="absolute top-1 right-1 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full min-w-[20px]">
+          <span className="absolute top-1 right-1 inline-flex min-w-[20px] translate-x-1/2 -translate-y-1/2 transform items-center justify-center rounded-full bg-destructive px-2 py-1 text-xs leading-none font-bold text-destructive-foreground">
             {unreadCount > 99 ? "99+" : unreadCount}
           </span>
         )}
@@ -209,14 +210,14 @@ export default function NotificationsDropdown() {
 
       {/* Dropdown Panel */}
       {showDropdown && (
-        <div className="fixed inset-x-3 top-16 w-auto bg-white rounded-xl shadow-2xl border border-gray-200 z-50 max-h-[70vh] flex flex-col overflow-hidden md:absolute md:inset-x-auto md:top-full md:right-0 md:mt-2 md:w-96 md:max-h-[600px]">
+        <div className="fixed inset-x-3 top-16 z-50 flex max-h-[70vh] w-auto flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-soft-lg md:absolute md:inset-x-auto md:top-full md:right-0 md:mt-2 md:max-h-[600px] md:w-96">
           {/* Header */}
-          <div className="sticky top-0 bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between">
-            <h2 className="text-lg font-bold text-gray-900">Notifications</h2>
+          <div className="sticky top-0 flex items-center justify-between border-b border-border bg-card px-4 py-3">
+            <h2 className="text-lg font-bold text-foreground">Notifications</h2>
             {unreadCount > 0 && (
               <button
                 onClick={handleMarkAllAsRead}
-                className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+                className="text-sm font-medium text-primary hover:text-primary-hover cursor-pointer"
               >
                 Mark all as read
               </button>
@@ -226,12 +227,12 @@ export default function NotificationsDropdown() {
           {/* Notifications List */}
           <div className="flex-1 overflow-y-auto">
             {isLoading && notifications.length === 0 ? (
-              <div className="flex items-center justify-center h-40">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500" />
+              <div className="flex h-40 items-center justify-center">
+                <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-primary" />
               </div>
             ) : notifications.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-40 text-gray-500">
-                <FiBell size={32} className="mb-2 text-gray-400" />
+              <div className="flex h-40 flex-col items-center justify-center text-muted-foreground">
+                <FiBell size={32} className="mb-2 text-muted-foreground" />
                 <p>No notifications yet</p>
               </div>
             ) : (
@@ -243,11 +244,10 @@ export default function NotificationsDropdown() {
                   return (
                     <div
                       key={notification._id}
-                      className={`w-full border-b border-gray-100 hover:bg-gray-50 transition-colors flex items-start gap-3 px-4 py-3 group ${
-                        !(notification.isRead ?? notification.read)
-                          ? "bg-blue-50"
-                          : ""
-                      }`}
+                      className={cn(
+                        "group flex w-full items-start gap-3 border-b border-border px-4 py-3 transition-colors last:border-b-0 hover:bg-secondary/60",
+                        !(notification.isRead ?? notification.read) && "bg-primary/5",
+                      )}
                     >
                       {/* Actor Avatar */}
                       <button
@@ -255,59 +255,48 @@ export default function NotificationsDropdown() {
                           setShowDropdown(false);
                           router.push(`/profile/${notification.actor._id}`);
                         }}
-                        className="flex-shrink-0 hover:opacity-80 transition-opacity rounded-full"
+                        className="shrink-0 rounded-full transition-opacity hover:opacity-80 cursor-pointer"
                         title="View profile"
                       >
-                        <Image
-                          src={
-                            notification.actor.profilePic?.url ||
-                            notification.actor.avatar ||
-                            "/images/default-avatar.png"
-                          }
+                        <Avatar
+                          src={notification.actor.profilePic?.url || notification.actor.avatar}
                           alt={notification.actor.username}
-                          width={40}
-                          height={40}
-                          className="rounded-full object-cover cursor-pointer"
+                          size="md"
                         />
                       </button>
 
                       {/* Notification Content */}
                       <button
                         onClick={() => handleNotificationClick(notification)}
-                        className="flex-1 min-w-0 text-left hover:opacity-80 transition-opacity"
+                        className="min-w-0 flex-1 text-left transition-opacity hover:opacity-80 cursor-pointer"
                       >
-                        <p className="text-sm text-gray-900">
+                        <p className="text-sm text-foreground">
                           <span className="inline-flex items-center gap-1 font-semibold">
                             {notification.actor.username}
-                            <VerifiedBadge
-                              role={notification.actor.role}
-                              size={12}
-                            />
+                            <VerifiedBadge role={notification.actor.role} size={12} />
                           </span>{" "}
                           {getNotificationActionText(notification)}
                         </p>
 
                         {/* Time */}
-                        <p className="text-xs text-gray-500 mt-1">
+                        <p className="mt-1 text-xs text-muted-foreground">
                           {formatTimeAgo(notification.createdAt)}
                         </p>
                       </button>
 
                       {/* Actions: Check button and unread indicator */}
-                      <div className="flex-shrink-0 flex items-center gap-2">
+                      <div className="flex shrink-0 items-center gap-2">
                         {!(notification.isRead ?? notification.read) && (
                           <button
-                            onClick={(e) =>
-                              handleMarkOneAsRead(e, notification._id)
-                            }
-                            className="p-1.5 rounded-full hover:bg-gray-200 transition-colors text-gray-600 hover:text-blue-600"
+                            onClick={(e) => handleMarkOneAsRead(e, notification._id)}
+                            className="rounded-full p-1.5 text-muted-foreground transition-colors hover:bg-secondary hover:text-primary cursor-pointer"
                             title="Mark as read"
                           >
                             <FiCheck size={18} />
                           </button>
                         )}
                         {!(notification.isRead ?? notification.read) && (
-                          <div className="w-2 h-2 bg-blue-500 rounded-full" />
+                          <div className="h-2 w-2 rounded-full bg-primary" />
                         )}
                       </div>
                     </div>
@@ -319,7 +308,7 @@ export default function NotificationsDropdown() {
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <div className="border-t border-gray-200 px-4 py-2 flex gap-2 justify-center bg-gray-50">
+            <div className="flex justify-center gap-2 border-t border-border bg-muted px-4 py-2">
               {Array.from(
                 { length: Math.min(totalPages, 3) },
                 (_, i) => i + 1,
@@ -327,11 +316,12 @@ export default function NotificationsDropdown() {
                 <button
                   key={page}
                   onClick={() => fetchNotifications(page)}
-                  className={`px-3 py-1 rounded text-sm transition-colors ${
+                  className={cn(
+                    "rounded px-3 py-1 text-sm transition-colors cursor-pointer",
                     currentPage === page
-                      ? "bg-blue-500 text-white"
-                      : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                  }`}
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-secondary text-foreground hover:bg-secondary-hover",
+                  )}
                 >
                   {page}
                 </button>

@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useEffect, useState, useRef, useCallback } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { getUserProfile, UserProfile } from "@/lib/api/social/social.api";
 import useAuthStore from "@/stores/user/authStore";
@@ -9,6 +8,8 @@ import { useSocialStore } from "@/stores/social/social.store";
 import { FiLoader } from "react-icons/fi";
 import toast from "react-hot-toast";
 import VerifiedBadge from "./VerifiedBadge";
+import { Avatar } from "@/components/ui";
+import { cn } from "@/lib/utils/cn";
 
 interface ProfileCardHoverProps {
   userId: string;
@@ -108,41 +109,30 @@ const ProfileCardHover = ({
       ref={cardRef}
       onMouseEnter={handleMouseEnterLocal}
       onMouseLeave={handleMouseLeave}
-      className={`w-80 bg-white border border-gray-200 rounded-lg shadow-2xl animate-in fade-in zoom-in-95 duration-200 overflow-hidden ${className}`}
+      className={cn(
+        "animate-in fade-in zoom-in-95 w-80 overflow-hidden rounded-2xl border border-border bg-card shadow-soft-lg duration-200",
+        className,
+      )}
     >
       {isLoading ? (
-        <div className="flex h-96 items-center justify-center bg-white">
+        <div className="flex h-96 items-center justify-center bg-card">
           <div className="flex flex-col items-center gap-2">
-            <FiLoader className="h-6 w-6 animate-spin text-gray-400" />
-            <p className="text-xs text-gray-500">Loading...</p>
+            <FiLoader className="h-6 w-6 animate-spin text-muted-foreground" />
+            <p className="text-xs text-muted-foreground">Loading...</p>
           </div>
         </div>
       ) : profile ? (
-        <div className="bg-white">
+        <div>
           {/* Profile Header Section */}
           <div className="px-5 pt-5 pb-4">
             {/* Top: Profile Pic + Follow Button */}
-            <div className="flex items-start justify-between gap-3 mb-4">
+            <div className="mb-4 flex items-start justify-between gap-3">
               <Link
                 href={`/profile/${profile._id}`}
                 onClick={() => onClose?.()}
-                className="flex-shrink-0"
+                className="shrink-0 transition-opacity hover:opacity-90"
               >
-                <div className="flex h-20 w-20 items-center justify-center rounded-full bg-gray-100 overflow-hidden border-2 border-gray-100 hover:opacity-90 transition-opacity">
-                  {profile.profilePic?.url ? (
-                    <Image
-                      src={profile.profilePic.url}
-                      alt={profile.username}
-                      width={80}
-                      height={80}
-                      className="h-full w-full object-cover"
-                    />
-                  ) : (
-                    <span className="flex h-full w-full items-center justify-center bg-gradient-to-br from-blue-500 to-purple-600 text-2xl font-bold text-white">
-                      {profile.username[0]?.toUpperCase()}
-                    </span>
-                  )}
-                </div>
+                <Avatar src={profile.profilePic?.url} alt={profile.username} size="lg" />
               </Link>
 
               {/* Follow/Following Button */}
@@ -150,14 +140,16 @@ const ProfileCardHover = ({
                 <button
                   onClick={handleFollowToggle}
                   disabled={isFollowLoading}
-                  className={`flex-1 rounded-lg px-4 py-2 text-sm font-bold transition-all duration-200 ${
+                  className={cn(
+                    "flex-1 rounded-xl px-4 py-2 text-sm font-bold transition-all duration-200 cursor-pointer",
                     isFollowingCurrent
-                      ? "border-2 border-gray-300 text-gray-900 bg-white hover:bg-gray-50"
-                      : "bg-blue-600 text-white hover:bg-blue-700"
-                  } ${isFollowLoading ? "opacity-60 cursor-not-allowed" : ""}`}
+                      ? "border-2 border-border bg-card text-foreground hover:bg-secondary"
+                      : "bg-primary text-primary-foreground hover:bg-primary-hover",
+                    isFollowLoading && "cursor-not-allowed opacity-60",
+                  )}
                 >
                   {isFollowLoading ? (
-                    <FiLoader className="h-4 w-4 animate-spin inline" />
+                    <FiLoader className="inline h-4 w-4 animate-spin" />
                   ) : isFollowingCurrent ? (
                     "Following"
                   ) : (
@@ -171,10 +163,10 @@ const ProfileCardHover = ({
             <Link
               href={`/profile/${profile._id}`}
               onClick={() => onClose?.()}
-              className="group inline-block mb-1"
+              className="group mb-1 inline-block"
             >
               <div className="flex items-center gap-1">
-                <h2 className="text-base font-bold text-gray-900 group-hover:text-blue-600 transition-colors line-clamp-1">
+                <h2 className="line-clamp-1 text-base font-bold text-foreground transition-colors group-hover:text-primary">
                   {profile.name}
                 </h2>
                 <VerifiedBadge role={profile.role} size={14} />
@@ -182,36 +174,36 @@ const ProfileCardHover = ({
             </Link>
 
             {/* Username */}
-            <p className="text-sm text-gray-600 mb-3 line-clamp-1">
+            <p className="mb-3 line-clamp-1 text-sm text-muted-foreground">
               @{profile.username}
             </p>
 
             {/* Bio */}
             {profile.bio && (
-              <p className="text-sm text-gray-800 leading-snug mb-4 line-clamp-2">
+              <p className="mb-4 line-clamp-2 text-sm leading-snug text-foreground">
                 {profile.bio}
               </p>
             )}
 
-            {/* Stats Grid - Instagram Style */}
-            <div className="grid grid-cols-3 gap-0 mb-4 text-center">
-              <div className="border-r border-gray-200 py-2">
-                <p className="text-base font-bold text-gray-900">
+            {/* Stats Grid */}
+            <div className="mb-4 grid grid-cols-3 gap-0 text-center">
+              <div className="border-r border-border py-2">
+                <p className="text-base font-bold text-foreground">
                   {profile.stats.postsCount}
                 </p>
-                <p className="text-xs text-gray-600">posts</p>
+                <p className="text-xs text-muted-foreground">posts</p>
               </div>
-              <div className="border-r border-gray-200 py-2">
-                <p className="text-base font-bold text-gray-900">
+              <div className="border-r border-border py-2">
+                <p className="text-base font-bold text-foreground">
                   {profile.stats.followersCount}
                 </p>
-                <p className="text-xs text-gray-600">followers</p>
+                <p className="text-xs text-muted-foreground">followers</p>
               </div>
               <div className="py-2">
-                <p className="text-base font-bold text-gray-900">
+                <p className="text-base font-bold text-foreground">
                   {profile.stats.followingCount}
                 </p>
-                <p className="text-xs text-gray-600">following</p>
+                <p className="text-xs text-muted-foreground">following</p>
               </div>
             </div>
 
@@ -220,7 +212,7 @@ const ProfileCardHover = ({
               <Link
                 href={`/profile/${profile._id}`}
                 onClick={() => onClose?.()}
-                className="flex items-center justify-center py-2 px-3 border-2 border-gray-300 text-gray-900 rounded-lg font-semibold text-sm hover:bg-gray-50 transition-colors"
+                className="flex items-center justify-center rounded-xl border-2 border-border px-3 py-2 text-sm font-semibold text-foreground transition-colors hover:bg-secondary"
               >
                 View Profile
               </Link>

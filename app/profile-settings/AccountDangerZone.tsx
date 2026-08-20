@@ -5,6 +5,7 @@ import { useProfile } from "@/hooks/useProfile";
 import { FiAlertTriangle, FiX, FiArrowRight } from "react-icons/fi";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
+import { Button, Input } from "@/components/ui";
 
 export default function AccountDangerZone() {
   const router = useRouter();
@@ -49,16 +50,16 @@ export default function AccountDangerZone() {
   return (
     <div className="space-y-6">
       {/* Deactivate Account */}
-      <div className="bg-white border border-slate-200 rounded-xl p-8 shadow-sm">
-        <div className="flex items-start gap-4 mb-6">
-          <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-amber-100 flex items-center justify-center">
-            <FiAlertTriangle size={24} className="text-amber-600" />
+      <div className="rounded-2xl border border-border bg-card p-8 shadow-soft-sm">
+        <div className="mb-6 flex items-start gap-4">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-warning/15">
+            <FiAlertTriangle size={24} className="text-warning" />
           </div>
           <div className="flex-1">
-            <h2 className="text-xl font-bold text-slate-900 mb-2">
+            <h2 className="mb-2 text-xl font-bold text-foreground">
               Deactivate Account
             </h2>
-            <p className="text-slate-600 text-sm">
+            <p className="text-sm text-muted-foreground">
               Temporarily disable your account. You can reactivate it anytime by
               logging in again. Your data will be preserved.
             </p>
@@ -66,60 +67,63 @@ export default function AccountDangerZone() {
         </div>
 
         {deactivateConfirm ? (
-          <div className="bg-slate-50 border border-slate-200 rounded-lg p-6 space-y-4">
-            <div className="flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-lg p-4">
+          <div className="space-y-4 rounded-xl border border-border bg-muted p-6">
+            <div className="flex items-start gap-3 rounded-lg border border-warning/30 bg-warning/10 p-4">
               <FiAlertTriangle
                 size={20}
-                className="text-amber-700 flex-shrink-0 mt-0.5"
+                className="mt-0.5 shrink-0 text-warning"
               />
               <div>
-                <h3 className="font-semibold text-slate-900 mb-1">
+                <h3 className="mb-1 font-semibold text-foreground">
                   Confirm Deactivation
                 </h3>
-                <p className="text-sm text-slate-600">
+                <p className="text-sm text-muted-foreground">
                   Your account will be deactivated but can be reactivated later.
                 </p>
               </div>
             </div>
 
             <div className="flex gap-3">
-              <button
+              <Button
+                variant="secondary"
                 onClick={() => setDeactivateConfirm(false)}
-                className="flex-1 py-2 px-4 bg-slate-100 text-slate-900 font-medium rounded-lg hover:bg-slate-200 transition-colors flex items-center justify-center gap-2"
+                icon={<FiX size={18} />}
+                className="flex-1"
               >
-                <FiX size={18} />
                 Cancel
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={handleDeactivate}
-                disabled={isDeactivating || isLoading}
-                className="flex-1 py-2 px-4 bg-amber-600 text-white font-medium rounded-lg hover:bg-amber-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                loading={isDeactivating}
+                disabled={isLoading}
+                className="flex-1 bg-warning text-warning-foreground hover:bg-warning/90"
               >
-                {isDeactivating ? "Deactivating..." : "Deactivate"}
-              </button>
+                Deactivate
+              </Button>
             </div>
           </div>
         ) : (
-          <button
+          <Button
+            variant="outline"
             onClick={() => setDeactivateConfirm(true)}
-            className="w-full py-2 px-4 bg-amber-50 text-amber-700 font-medium rounded-lg hover:bg-amber-100 transition-colors border border-amber-200"
+            className="w-full border-warning/30 bg-warning/10 text-warning hover:bg-warning/20"
           >
             Deactivate Account
-          </button>
+          </Button>
         )}
       </div>
 
       {/* Delete Account */}
-      <div className="bg-white border border-red-200 rounded-xl p-8 shadow-sm">
-        <div className="flex items-start gap-4 mb-6">
-          <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-red-100 flex items-center justify-center">
-            <FiAlertTriangle size={24} className="text-red-600" />
+      <div className="rounded-2xl border border-destructive/30 bg-card p-8 shadow-soft-sm">
+        <div className="mb-6 flex items-start gap-4">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-destructive/15">
+            <FiAlertTriangle size={24} className="text-destructive" />
           </div>
           <div className="flex-1">
-            <h2 className="text-xl font-bold text-slate-900 mb-2">
+            <h2 className="mb-2 text-xl font-bold text-foreground">
               Permanently Delete Account
             </h2>
-            <p className="text-slate-600 text-sm">
+            <p className="text-sm text-muted-foreground">
               This action is permanent and cannot be undone. All your data,
               posts, and information will be permanently deleted from our
               servers.
@@ -128,36 +132,37 @@ export default function AccountDangerZone() {
         </div>
 
         {deleteConfirm ? (
-          <div className="bg-slate-50 border border-slate-200 rounded-lg p-6 space-y-4">
-            <div className="flex items-start gap-3 bg-red-50 border border-red-200 rounded-lg p-4">
+          <div className="space-y-4 rounded-xl border border-border bg-muted p-6">
+            <div className="flex items-start gap-3 rounded-lg border border-destructive/30 bg-destructive/10 p-4">
               <FiAlertTriangle
                 size={20}
-                className="text-red-600 flex-shrink-0 mt-0.5"
+                className="mt-0.5 shrink-0 text-destructive"
               />
               <div>
-                <h3 className="font-semibold text-slate-900 mb-1">
+                <h3 className="mb-1 font-semibold text-foreground">
                   This action cannot be undone
                 </h3>
-                <p className="text-sm text-slate-600">
+                <p className="text-sm text-muted-foreground">
                   All your account data will be permanently deleted. Type
-                  "DELETE FOREVER" below to confirm.
+                  &quot;DELETE FOREVER&quot; below to confirm.
                 </p>
               </div>
             </div>
 
-            <input
+            <Input
               type="text"
               value={deleteConfirmText}
               onChange={(e) => setDeleteConfirmText(e.target.value)}
               placeholder='Type "DELETE FOREVER" to confirm'
-              className="w-full px-4 py-3 border border-red-200 rounded-lg font-medium focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-slate-900 placeholder-slate-400"
+              error
+              className="font-medium"
             />
 
-            <div className="text-sm text-slate-700 bg-red-50 p-4 rounded-lg border border-red-200">
-              <p className="font-semibold text-slate-900 mb-2">
+            <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-4 text-sm text-foreground">
+              <p className="mb-2 font-semibold text-foreground">
                 After deletion:
               </p>
-              <ul className="space-y-1 text-xs text-slate-600">
+              <ul className="space-y-1 text-xs text-muted-foreground">
                 <li>• Your account and all data will be removed</li>
                 <li>• Your posts, comments, and messages will be deleted</li>
                 <li>• This action is irreversible</li>
@@ -165,47 +170,47 @@ export default function AccountDangerZone() {
             </div>
 
             <div className="flex gap-3">
-              <button
+              <Button
+                variant="secondary"
                 onClick={() => {
                   setDeleteConfirm(false);
                   setDeleteConfirmText("");
                 }}
-                className="flex-1 py-2 px-4 bg-slate-100 text-slate-900 font-medium rounded-lg hover:bg-slate-200 transition-colors flex items-center justify-center gap-2"
+                icon={<FiX size={18} />}
+                className="flex-1"
               >
-                <FiX size={18} />
                 Cancel
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="destructive"
                 onClick={handleDelete}
-                disabled={
-                  deleteConfirmText !== "DELETE FOREVER" ||
-                  isDeleting ||
-                  isLoading
-                }
-                className="flex-1 py-2 px-4 bg-red-600 text-white font-medium rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={deleteConfirmText !== "DELETE FOREVER" || isLoading}
+                loading={isDeleting}
+                className="flex-1"
               >
-                {isDeleting ? "Deleting..." : "Delete Forever"}
-              </button>
+                Delete Forever
+              </Button>
             </div>
           </div>
         ) : (
-          <button
+          <Button
+            variant="outline"
             onClick={() => setDeleteConfirm(true)}
-            className="w-full py-2 px-4 bg-red-50 text-red-700 font-medium rounded-lg hover:bg-red-100 transition-colors border border-red-200"
+            className="w-full border-destructive/30 bg-destructive/10 text-destructive hover:bg-destructive/20"
           >
             Delete Account Permanently
-          </button>
+          </Button>
         )}
       </div>
 
       {/* Support Info */}
-      <div className="bg-blue-50 border border-blue-200 rounded-xl p-6">
-        <h3 className="font-semibold text-slate-900 mb-2">Need Help?</h3>
-        <p className="text-sm text-slate-600 mb-4">
+      <div className="rounded-2xl border border-primary/20 bg-primary/5 p-6">
+        <h3 className="mb-2 font-semibold text-foreground">Need Help?</h3>
+        <p className="mb-4 text-sm text-muted-foreground">
           If you have concerns about your account or need assistance, please
           contact our support team before taking action.
         </p>
-        <button className="text-blue-600 font-medium hover:text-blue-700 transition-colors flex items-center gap-1">
+        <button className="flex items-center gap-1 font-medium text-primary transition-colors hover:text-primary-hover cursor-pointer">
           Contact Support <FiArrowRight size={16} />
         </button>
       </div>

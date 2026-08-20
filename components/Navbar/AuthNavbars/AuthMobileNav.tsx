@@ -20,6 +20,8 @@ import ModRequestForm from "@/components/forms/ModRequestForm";
 import NotificationsDropdown from "@/components/social/NotificationsDropdown";
 import { resendOtp } from "@/lib/api/user/auth.api";
 import useAuthStore from "@/stores/user/authStore";
+import { ThemeToggle } from "@/components/ui";
+import { cn } from "@/lib/utils/cn";
 
 const navLinks = [
   { href: "/", label: "Social", icon: FiMessageCircle },
@@ -93,7 +95,7 @@ const AuthMobileNav = () => {
   };
 
   return (
-    <div className="w-full px-4 py-2 text-gray-950 sm:px-5 sm:py-2">
+    <div className="relative w-full px-3 py-2 text-foreground sm:px-5">
       <div className="flex items-center gap-2">
         {/* Logo */}
         <Link
@@ -106,13 +108,13 @@ const AuthMobileNav = () => {
             alt="Sharda Social"
             width={64}
             height={64}
-            className="h-12 w-12 object-contain drop-shadow-md sm:h-14 sm:w-14"
+            className="h-11 w-11 object-contain drop-shadow-md sm:h-14 sm:w-14"
             priority
           />
         </Link>
 
         {/* Navigation Links */}
-        <div className="flex flex-1 items-center justify-center gap-1.5 rounded-full border border-gray-200 bg-white/80 px-2 py-1 shadow-sm backdrop-blur-md sm:gap-2">
+        <div className="flex flex-1 items-center justify-center gap-1 rounded-full border border-border bg-card/80 px-1 py-1 shadow-soft-sm backdrop-blur-md">
           {navLinks.map((link) => {
             const active =
               link.href === "/"
@@ -126,11 +128,12 @@ const AuthMobileNav = () => {
                 href={link.href}
                 title={link.label}
                 aria-label={link.label}
-                className={`inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border text-sm transition-all duration-200 sm:h-9 sm:w-9 sm:text-base ${
+                className={cn(
+                  "inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm transition-all duration-200",
                   active
-                    ? "border-sky-200 bg-sky-50 text-sky-700 shadow-sm"
-                    : "border-transparent bg-transparent text-gray-700 hover:border-gray-200 hover:bg-white hover:text-gray-950"
-                }`}
+                    ? "bg-primary text-primary-foreground shadow-soft-sm"
+                    : "text-muted-foreground hover:bg-secondary hover:text-foreground",
+                )}
               >
                 <Icon aria-hidden="true" />
                 <span className="sr-only">{link.label}</span>
@@ -140,13 +143,14 @@ const AuthMobileNav = () => {
         </div>
 
         {/* Right Actions: Notifications & Profile */}
-        <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
+        <div className="flex shrink-0 items-center gap-1.5">
+          <ThemeToggle />
           <NotificationsDropdown />
 
           <button
             ref={profileButtonRef}
             onClick={() => setIsProfileOpen(!isProfileOpen)}
-            className="flex h-9 w-9 shrink-0 overflow-hidden rounded-full bg-gray-100 ring-1 ring-gray-200 sm:h-10 sm:w-10"
+            className="flex h-9 w-9 shrink-0 overflow-hidden rounded-full bg-muted ring-1 ring-border cursor-pointer"
             aria-label="Profile menu"
           >
             {profileImage ? (
@@ -158,7 +162,7 @@ const AuthMobileNav = () => {
                 className="h-full w-full object-cover"
               />
             ) : (
-              <span className="flex h-full w-full items-center justify-center bg-gray-950 text-xs font-bold text-white">
+              <span className="flex h-full w-full items-center justify-center bg-primary text-xs font-bold text-primary-foreground">
                 {displayName[0]?.toUpperCase() || "U"}
               </span>
             )}
@@ -170,17 +174,17 @@ const AuthMobileNav = () => {
       {isProfileOpen && (
         <div
           ref={profileRef}
-          className="absolute right-4 left-4 z-50 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-lg shadow-gray-950/10"
+          className="absolute right-3 left-3 z-50 mt-2 animate-scale-in overflow-hidden rounded-2xl border border-border bg-card shadow-soft-lg sm:right-5 sm:left-5"
         >
-          <div className="border-b border-gray-100 px-4 py-3">
-            <p className="truncate text-sm font-bold">{displayName}</p>
-            <p className="truncate text-xs text-gray-500">{user?.email}</p>
+          <div className="border-b border-border px-4 py-3">
+            <p className="truncate text-sm font-bold text-foreground">{displayName}</p>
+            <p className="truncate text-xs text-muted-foreground">{user?.email}</p>
           </div>
           <div className="p-2">
             <button
               type="button"
               onClick={handleVerifyEmail}
-              className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-50"
+              className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-semibold text-foreground transition-colors hover:bg-secondary cursor-pointer"
             >
               <FiMail className="h-4 w-4 shrink-0" />
               <span>
@@ -190,7 +194,7 @@ const AuthMobileNav = () => {
             <Link
               href="/profile-settings"
               onClick={() => setIsProfileOpen(false)}
-              className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-50"
+              className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold text-foreground transition-colors hover:bg-secondary"
             >
               <FiSettings className="h-4 w-4 shrink-0" />
               <span>Profile Settings</span>
@@ -198,7 +202,7 @@ const AuthMobileNav = () => {
             <Link
               href="/auth/change-password"
               onClick={() => setIsProfileOpen(false)}
-              className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-50"
+              className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold text-foreground transition-colors hover:bg-secondary"
             >
               <FiKey className="h-4 w-4 shrink-0" />
               <span>Change Password</span>
@@ -209,7 +213,7 @@ const AuthMobileNav = () => {
                   setShowModRequestModal(true);
                   setIsProfileOpen(false);
                 }}
-                className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-50"
+                className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-semibold text-foreground transition-colors hover:bg-secondary cursor-pointer"
               >
                 <FiShield className="h-4 w-4 shrink-0" />
                 <span>Become Moderator</span>
@@ -217,7 +221,7 @@ const AuthMobileNav = () => {
             )}
             <button
               onClick={handleLogout}
-              className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-semibold text-red-600 transition-colors hover:bg-red-50"
+              className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-semibold text-destructive transition-colors hover:bg-destructive/10 cursor-pointer"
             >
               <FiLogOut className="h-4 w-4 shrink-0" />
               <span>Logout</span>

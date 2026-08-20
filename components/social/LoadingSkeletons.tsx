@@ -1,40 +1,37 @@
 "use client";
 
-/**
- * Loading Skeleton Components for Social Feed
- * Provides visual feedback during data loading
- */
+import { Skeleton } from "@/components/ui";
 
 export function PostCardSkeleton() {
   return (
-    <div className="bg-white rounded-2xl border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] p-6 mb-6 animate-pulse">
+    <div className="mb-6 rounded-2xl border border-border bg-card p-6 shadow-soft-sm">
       {/* Header */}
-      <div className="flex items-center gap-3 mb-4">
-        <div className="w-12 h-12 bg-gray-300 rounded-full border-2 border-gray-300" />
+      <div className="mb-4 flex items-center gap-3">
+        <Skeleton className="h-12 w-12 rounded-full" />
         <div className="flex-1">
-          <div className="h-4 bg-gray-300 rounded w-24 mb-2" />
-          <div className="h-3 bg-gray-300 rounded w-32" />
+          <Skeleton className="mb-2 h-4 w-24" />
+          <Skeleton className="h-3 w-32" />
         </div>
       </div>
 
       {/* Content */}
-      <div className="space-y-3 mb-4">
-        <div className="h-4 bg-gray-300 rounded" />
-        <div className="h-4 bg-gray-300 rounded w-5/6" />
-        <div className="h-24 bg-gray-300 rounded" />
+      <div className="mb-4 space-y-3">
+        <Skeleton className="h-4" />
+        <Skeleton className="h-4 w-5/6" />
+        <Skeleton className="h-24" />
       </div>
 
       {/* Stats */}
-      <div className="flex gap-4 mb-4 py-3 border-y-2 border-gray-300">
-        <div className="h-4 bg-gray-300 rounded w-16" />
-        <div className="h-4 bg-gray-300 rounded w-20" />
+      <div className="mb-4 flex gap-4 border-y border-border py-3">
+        <Skeleton className="h-4 w-16" />
+        <Skeleton className="h-4 w-20" />
       </div>
 
       {/* Actions */}
       <div className="flex justify-between gap-2">
-        <div className="flex-1 h-10 bg-gray-300 rounded-lg" />
-        <div className="flex-1 h-10 bg-gray-300 rounded-lg" />
-        <div className="flex-1 h-10 bg-gray-300 rounded-lg" />
+        <Skeleton className="h-10 flex-1" />
+        <Skeleton className="h-10 flex-1" />
+        <Skeleton className="h-10 flex-1" />
       </div>
     </div>
   );
@@ -42,11 +39,11 @@ export function PostCardSkeleton() {
 
 export function CommentSkeleton() {
   return (
-    <div className="flex gap-3 animate-pulse">
-      <div className="w-10 h-10 bg-gray-300 rounded-full border-2 border-gray-300 flex-shrink-0" />
-      <div className="flex-1 bg-white border-2 border-gray-300 rounded-xl p-3">
-        <div className="h-3 bg-gray-300 rounded w-24 mb-2" />
-        <div className="h-12 bg-gray-300 rounded" />
+    <div className="flex gap-3">
+      <Skeleton className="h-10 w-10 shrink-0 rounded-full" />
+      <div className="flex-1 rounded-xl border border-border bg-card p-3">
+        <Skeleton className="mb-2 h-3 w-24" />
+        <Skeleton className="h-12" />
       </div>
     </div>
   );
@@ -54,15 +51,15 @@ export function CommentSkeleton() {
 
 export function UserCardSkeleton() {
   return (
-    <div className="bg-white border-2 border-black rounded-xl p-4 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] animate-pulse">
-      <div className="flex items-center gap-3 mb-3">
-        <div className="w-12 h-12 bg-gray-300 rounded-full border-2 border-gray-300" />
+    <div className="rounded-2xl border border-border bg-card p-4 shadow-soft-sm">
+      <div className="mb-3 flex items-center gap-3">
+        <Skeleton className="h-12 w-12 rounded-full" />
         <div className="flex-1">
-          <div className="h-3 bg-gray-300 rounded w-20 mb-2" />
-          <div className="h-2 bg-gray-300 rounded w-24" />
+          <Skeleton className="mb-2 h-3 w-20" />
+          <Skeleton className="h-2 w-24" />
         </div>
       </div>
-      <div className="h-10 bg-gray-300 rounded-lg" />
+      <Skeleton className="h-10" />
     </div>
   );
 }
@@ -79,33 +76,33 @@ export function FeedLoadingState() {
 
 export function ProfileHeaderSkeleton() {
   return (
-    <div className="bg-white border-b border-slate-200">
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-8 animate-pulse">
-          <div className="w-32 h-32 rounded-xl bg-slate-200" />
-          <div className="flex-1 min-w-0 w-full">
-            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
+    <div className="border-b border-border bg-card">
+      <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6 lg:px-8">
+        <div className="flex flex-col items-start gap-8 sm:flex-row sm:items-center">
+          <Skeleton className="h-32 w-32 rounded-2xl" />
+          <div className="w-full min-w-0 flex-1">
+            <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
               <div className="w-full">
-                <div className="h-8 bg-slate-200 rounded w-48 mb-3" />
-                <div className="h-4 bg-slate-200 rounded w-32" />
+                <Skeleton className="mb-3 h-8 w-48" />
+                <Skeleton className="h-4 w-32" />
               </div>
-              <div className="h-10 w-28 bg-slate-200 rounded-lg" />
+              <Skeleton className="h-10 w-28" />
             </div>
 
-            <div className="h-4 bg-slate-200 rounded w-2/3 mb-6" />
+            <Skeleton className="mb-6 h-4 w-2/3" />
 
-            <div className="flex gap-8 mb-8 py-6 border-y border-slate-200">
+            <div className="mb-8 flex gap-8 border-y border-border py-6">
               {[1, 2, 3].map((i) => (
                 <div key={i}>
-                  <div className="h-6 bg-slate-200 rounded w-12 mb-2" />
-                  <div className="h-3 bg-slate-200 rounded w-16" />
+                  <Skeleton className="mb-2 h-6 w-12" />
+                  <Skeleton className="h-3 w-16" />
                 </div>
               ))}
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               {[1, 2, 3].map((i) => (
-                <div key={i} className="h-4 bg-slate-200 rounded w-full" />
+                <Skeleton key={i} className="h-4 w-full" />
               ))}
             </div>
           </div>
@@ -117,11 +114,11 @@ export function ProfileHeaderSkeleton() {
 
 export function ProfilePageLoadingState() {
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       <ProfileHeaderSkeleton />
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+      <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6 lg:px-8">
         <div className="mb-8">
-          <div className="h-7 bg-slate-200 rounded w-28 mb-6 animate-pulse" />
+          <Skeleton className="mb-6 h-7 w-28" />
           <FeedLoadingState />
         </div>
       </div>

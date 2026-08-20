@@ -80,8 +80,8 @@ export default function Dashboard() {
   if (!user) {
     return (
       <AuthGuard>
-        <div className="min-h-screen flex items-center justify-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600"></div>
+        <div className="flex min-h-screen items-center justify-center bg-background">
+          <div className="h-12 w-12 animate-spin rounded-full border-t-2 border-b-2 border-primary"></div>
         </div>
       </AuthGuard>
     );
@@ -89,52 +89,45 @@ export default function Dashboard() {
 
   return (
     <AuthGuard>
-      <div className="min-h-dvh bg-slate-50">
+      <div className="min-h-dvh bg-background">
         {/* Dashboard Switcher - Only show if user has multiple dashboards */}
         {multiDashboard && (
-          <div className="sticky top-0 z-40 bg-white border-b border-slate-200 shadow-sm">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="sticky top-0 z-40 border-b border-border bg-card/90 shadow-soft-sm backdrop-blur-xl">
+            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
               <div className="flex gap-2 overflow-x-auto py-3 sm:py-4">
                 {accessibleDashboards.map((dashboard) => {
                   const IconComponent = dashboard.icon;
                   const isActive = currentDashboard === dashboard.id;
 
-                  const colorMap: Record<
-                    string,
-                    { bg: string; text: string; gradient: string }
-                  > = {
-                    blue: {
-                      bg: "bg-blue-50",
-                      text: "text-blue-700",
-                      gradient: "from-blue-500 to-blue-600",
-                    },
-                    red: {
-                      bg: "bg-red-50",
-                      text: "text-red-700",
-                      gradient: "from-red-500 to-red-600",
-                    },
-                    purple: {
-                      bg: "bg-purple-50",
-                      text: "text-purple-700",
-                      gradient: "from-purple-500 to-purple-600",
-                    },
+                  const colorMap: Record<string, string> = {
+                    blue: "primary",
+                    red: "coral",
+                    purple: "purple",
                   };
 
-                  const colorConfig = colorMap[dashboard.color];
+                  const accent = colorMap[dashboard.color] ?? "primary";
+                  const activeClass =
+                    accent === "primary"
+                      ? "bg-primary text-primary-foreground shadow-soft-md"
+                      : accent === "coral"
+                        ? "bg-accent-coral text-accent-coral-foreground shadow-soft-md"
+                        : "bg-accent-purple text-accent-purple-foreground shadow-soft-md";
+                  const inactiveClass =
+                    accent === "primary"
+                      ? "bg-primary/10 text-primary hover:shadow-soft-sm border border-border"
+                      : accent === "coral"
+                        ? "bg-accent-coral/15 text-accent-coral-foreground dark:text-accent-coral hover:shadow-soft-sm border border-border"
+                        : "bg-accent-purple/15 text-accent-purple-foreground dark:text-accent-purple hover:shadow-soft-sm border border-border";
 
                   return (
                     <button
                       key={dashboard.id}
                       onClick={() => setCurrentDashboard(dashboard.id)}
                       className={`
-                        min-w-max px-4 py-2.5 rounded-lg font-semibold text-sm
-                        flex items-center gap-2.5 group
+                        min-w-max px-4 py-2.5 rounded-xl font-semibold text-sm
+                        flex items-center gap-2.5 group cursor-pointer
                         transition-all duration-200 ease-out
-                        ${
-                          isActive
-                            ? `bg-linear-to-r ${colorConfig.gradient} text-white shadow-lg hover:shadow-xl`
-                            : `${colorConfig.bg} ${colorConfig.text} hover:shadow-md border border-slate-200`
-                        }
+                        ${isActive ? activeClass : inactiveClass}
                       `}
                     >
                       <IconComponent

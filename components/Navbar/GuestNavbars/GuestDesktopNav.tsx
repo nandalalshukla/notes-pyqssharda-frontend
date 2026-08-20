@@ -8,6 +8,8 @@ import {
   FiMessageCircle,
   FiUserPlus,
 } from "react-icons/fi";
+import { ThemeToggle } from "@/components/ui";
+import { cn } from "@/lib/utils/cn";
 
 const navLinks = [
   { href: "/", label: "Social", icon: FiMessageCircle },
@@ -24,7 +26,7 @@ const GuestDesktopNav = () => {
   };
 
   return (
-    <div className="mx-auto flex min-h-0 w-full max-w-7xl items-center justify-between gap-3 px-4 py-2 text-gray-950 sm:px-6 sm:py-2 lg:px-8">
+    <div className="mx-auto flex min-h-0 w-full max-w-7xl items-center justify-between gap-3 px-4 py-2 text-foreground sm:px-6 sm:py-2 lg:px-8">
       {/* Logo */}
       <Link
         href="/"
@@ -42,7 +44,7 @@ const GuestDesktopNav = () => {
       </Link>
 
       {/* Main Navigation Links */}
-      <div className="flex items-center justify-center gap-2 rounded-full border border-gray-200 bg-white/70 px-2 py-1 shadow-sm backdrop-blur-md">
+      <div className="flex items-center justify-center gap-1 rounded-full border border-border bg-card/70 px-1.5 py-1.5 shadow-soft-sm backdrop-blur-md">
         {navLinks.map((link) => {
           const active =
             link.href === "/"
@@ -54,16 +56,15 @@ const GuestDesktopNav = () => {
             <Link
               key={link.href}
               href={link.href}
-              title={link.label}
-              aria-label={link.label}
-              className={`inline-flex h-9 w-9 items-center justify-center rounded-xl border text-base transition-all duration-200 sm:h-10 sm:w-10 ${
+              className={cn(
+                "inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition-all duration-200",
                 active
-                  ? "border-sky-200 bg-sky-50 text-sky-700 shadow-sm"
-                  : "border-transparent bg-white/0 text-gray-700 hover:border-gray-200 hover:bg-white hover:text-gray-950"
-              }`}
+                  ? "bg-primary text-primary-foreground shadow-soft-sm"
+                  : "text-muted-foreground hover:bg-secondary hover:text-foreground",
+              )}
             >
-              <Icon aria-hidden="true" />
-              <span className="sr-only">{link.label}</span>
+              <Icon className="text-base" aria-hidden="true" />
+              {link.label}
             </Link>
           );
         })}
@@ -71,23 +72,20 @@ const GuestDesktopNav = () => {
 
       {/* Auth Buttons */}
       <div className="flex items-center gap-2">
+        <ThemeToggle />
         <Link
           href="/auth/login"
-          aria-label="Login"
-          title="Login"
-          className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-700 transition-all hover:border-gray-300 hover:bg-gray-50 hover:text-gray-950"
+          className="inline-flex h-9 items-center justify-center rounded-xl border border-border bg-card px-4 text-sm font-semibold text-foreground transition-all hover:bg-secondary"
         >
-          <FiLogIn className="text-base" />
-          <span className="sr-only">Login</span>
+          <FiLogIn className="mr-1.5 text-base" />
+          Login
         </Link>
         <Link
           href="/auth/register"
-          aria-label="Register"
-          title="Register"
-          className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-gray-950 text-white shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md hover:shadow-gray-950/20"
+          className="inline-flex h-9 items-center justify-center rounded-xl bg-primary px-4 text-sm font-semibold text-primary-foreground shadow-soft-sm transition-all hover:bg-primary-hover hover:shadow-soft-md"
         >
-          <FiUserPlus className="text-base" />
-          <span className="sr-only">Register</span>
+          <FiUserPlus className="mr-1.5 text-base" />
+          Register
         </Link>
       </div>
     </div>

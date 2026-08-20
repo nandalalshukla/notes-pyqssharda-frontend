@@ -1,17 +1,16 @@
 "use client";
 
-import React, { useState, Fragment } from "react";
-import { Dialog, Transition } from "@headlessui/react";
+import React, { useState } from "react";
 import {
   AlertTriangle,
   Trash2,
   Ban,
   AlertCircle,
   Loader,
-  X,
   ChevronRight,
 } from "lucide-react";
 import type { ReportAction, ReportTargetType } from "@/lib/api/mod/mod.api";
+import { Modal, Button } from "@/components/ui";
 
 export interface ReportActionModalProps {
   isOpen: boolean;
@@ -27,6 +26,8 @@ export interface ReportActionModalProps {
   onCancel: () => void;
 }
 
+type DangerLevel = "warning" | "danger" | "critical";
+
 const actionConfig: Record<
   ReportAction,
   {
@@ -34,95 +35,75 @@ const actionConfig: Record<
     description: string;
     icon: React.ReactNode;
     confirmText: string;
-    dangerLevel: "warning" | "danger" | "critical";
-    backgroundColor: string;
-    borderColor: string;
-    buttonColor: string;
-    textColor: string;
+    dangerLevel: DangerLevel;
   }
 > = {
   resolve: {
     title: "Approve Report",
     description: "Mark this report as reviewed and valid",
-    icon: <AlertCircle className="w-6 h-6" />,
+    icon: <AlertCircle className="h-6 w-6" />,
     confirmText: "Approve",
     dangerLevel: "warning",
-    backgroundColor: "bg-blue-50",
-    borderColor: "border-blue-200",
-    buttonColor: "bg-blue-600 hover:bg-blue-700",
-    textColor: "text-blue-900",
   },
   reject: {
     title: "Dismiss Report",
     description: "Mark this report as invalid and close it",
-    icon: <AlertCircle className="w-6 h-6" />,
+    icon: <AlertCircle className="h-6 w-6" />,
     confirmText: "Dismiss",
     dangerLevel: "warning",
-    backgroundColor: "bg-amber-50",
-    borderColor: "border-amber-200",
-    buttonColor: "bg-amber-600 hover:bg-amber-700",
-    textColor: "text-amber-900",
   },
   delete_post: {
     title: "Delete Reported Post",
     description:
       "This will permanently remove the post from the platform. This action cannot be undone.",
-    icon: <Trash2 className="w-6 h-6" />,
+    icon: <Trash2 className="h-6 w-6" />,
     confirmText: "Delete Post",
     dangerLevel: "danger",
-    backgroundColor: "bg-red-50",
-    borderColor: "border-red-200",
-    buttonColor: "bg-red-600 hover:bg-red-700",
-    textColor: "text-red-900",
   },
   delete_comment: {
     title: "Delete Reported Comment",
     description:
       "This will permanently remove the comment from the platform. This action cannot be undone.",
-    icon: <Trash2 className="w-6 h-6" />,
+    icon: <Trash2 className="h-6 w-6" />,
     confirmText: "Delete Comment",
     dangerLevel: "danger",
-    backgroundColor: "bg-red-50",
-    borderColor: "border-red-200",
-    buttonColor: "bg-red-600 hover:bg-red-700",
-    textColor: "text-red-900",
   },
   suspend_user: {
     title: "Suspend User",
     description:
       "This user will be temporarily suspended and unable to access the platform. They can be reactivated later.",
-    icon: <Ban className="w-6 h-6" />,
+    icon: <Ban className="h-6 w-6" />,
     confirmText: "Suspend User",
     dangerLevel: "danger",
-    backgroundColor: "bg-orange-50",
-    borderColor: "border-orange-200",
-    buttonColor: "bg-orange-600 hover:bg-orange-700",
-    textColor: "text-orange-900",
   },
   warn_user: {
     title: "Send Warning to User",
     description:
       "This will send a warning message to the user about their behavior. They will be notified.",
-    icon: <AlertTriangle className="w-6 h-6" />,
+    icon: <AlertTriangle className="h-6 w-6" />,
     confirmText: "Send Warning",
     dangerLevel: "warning",
-    backgroundColor: "bg-yellow-50",
-    borderColor: "border-yellow-200",
-    buttonColor: "bg-yellow-600 hover:bg-yellow-700",
-    textColor: "text-yellow-900",
   },
   delete_user: {
     title: "Delete User Account",
     description:
       "This will permanently delete the user account. This action cannot be undone.",
-    icon: <AlertTriangle className="w-6 h-6" />,
+    icon: <AlertTriangle className="h-6 w-6" />,
     confirmText: "Permanently Delete User",
     dangerLevel: "critical",
-    backgroundColor: "bg-red-50",
-    borderColor: "border-red-200",
-    buttonColor: "bg-red-700 hover:bg-red-800",
-    textColor: "text-red-900",
   },
+};
+
+const dangerTextClass: Record<DangerLevel, string> = {
+  warning: "text-warning",
+  danger: "text-destructive",
+  critical: "text-destructive",
+};
+
+const dangerButtonVariant: Record<DangerLevel, "primary" | "destructive"> = {
+  warning: "primary",
+  danger: "destructive",
+  critical: "destructive",
 };
 
 export const ReportActionModal: React.FC<ReportActionModalProps> = ({
@@ -162,155 +143,116 @@ export const ReportActionModal: React.FC<ReportActionModalProps> = ({
     onCancel();
   };
 
+  if (!config) return null;
+
   return (
-    <Transition appear show={isOpen && !!config} as={Fragment}>
-      <Dialog as="div" className="relative z-50" onClose={handleCancel}>
-        <Transition.Child
-          as={Fragment}
-          enter="ease-out duration-300"
-          enterFrom="opacity-0"
-          enterTo="opacity-100"
-          leave="ease-in duration-200"
-          leaveFrom="opacity-100"
-          leaveTo="opacity-0"
-        >
-          <div className="fixed inset-0 bg-black bg-opacity-50" />
-        </Transition.Child>
+    <Modal
+      isOpen={isOpen && !!config}
+      onClose={handleCancel}
+      size="sm"
+      title={
+        <span className="flex items-center gap-3">
+          <span className={dangerTextClass[config.dangerLevel]}>{config.icon}</span>
+          {config.title}
+        </span>
+      }
+      description={
+        isCritical ? (
+          <span className="mt-1 flex items-center gap-1 text-xs font-medium text-destructive">
+            <AlertTriangle className="h-3 w-3" /> Critical Action
+          </span>
+        ) : undefined
+      }
+      footer={
+        <>
+          <Button variant="outline" onClick={handleCancel} disabled={isLoading}>
+            Cancel
+          </Button>
+          <Button
+            variant={dangerButtonVariant[config.dangerLevel]}
+            onClick={handleConfirm}
+            disabled={isLoading}
+            icon={
+              isLoading ? (
+                <Loader className="h-4 w-4 animate-spin" />
+              ) : requiresDoubleConfirm && confirmCount === 0 ? (
+                <ChevronRight className="h-4 w-4" />
+              ) : undefined
+            }
+          >
+            {isLoading
+              ? "Processing..."
+              : requiresDoubleConfirm && confirmCount === 0
+                ? "Confirm"
+                : config.confirmText}
+          </Button>
+        </>
+      }
+    >
+      <div className="space-y-4">
+        <p className={`text-sm ${dangerTextClass[config.dangerLevel]}`}>
+          {config.description}
+        </p>
 
-        <div className="fixed inset-0 overflow-y-auto">
-          <div className="flex min-h-full items-center justify-center p-4">
-            <Transition.Child
-              as={Fragment}
-              enter="ease-out duration-300"
-              enterFrom="opacity-0 scale-95"
-              enterTo="opacity-100 scale-100"
-              leave="ease-in duration-200"
-              leaveFrom="opacity-100 scale-100"
-              leaveTo="opacity-0 scale-95"
-            >
-              <Dialog.Panel className={`relative w-full max-w-md transform overflow-hidden rounded-lg ${config?.backgroundColor} ${config?.borderColor} shadow-xl transition-all border-2`}>
-                {/* Header */}
-                <div className="sticky top-0 flex items-center justify-between border-b border-gray-200 bg-white p-4">
-                  <div className="flex items-center gap-3 flex-1">
-                    <div className={`${config?.textColor}`}>{config?.icon}</div>
-                    <div>
-                      <Dialog.Title className={`text-lg font-semibold ${config?.textColor}`}>
-                        {config?.title}
-                      </Dialog.Title>
-                      {isCritical && (
-                        <p className="text-xs font-medium text-red-600 flex items-center gap-1 mt-1">
-                          <AlertTriangle className="w-3 h-3" /> Critical Action
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                  <button
-                    onClick={handleCancel}
-                    className="rounded-lg p-1 hover:bg-slate-100"
-                  >
-                    <X size={24} className="text-slate-600" />
-                  </button>
-                </div>
-
-                {/* Content */}
-                <div className="p-6 space-y-4">
-                  {/* Description */}
-                  <p className={`text-sm ${config?.textColor}`}>
-                    {config?.description}
-                  </p>
-
-                  {/* Target Info */}
-                  {targetInfo && (
-                    <div className="bg-white rounded p-4 border border-gray-200 space-y-3">
-                      {targetInfo.title && (
-                        <div>
-                          <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Content/User:</p>
-                          <p className="text-sm font-medium text-gray-900 line-clamp-2">
-                            {targetInfo.title}
-                          </p>
-                        </div>
-                      )}
-                      {targetType && (
-                        <div>
-                          <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Target Type:</p>
-                          <p className="text-sm font-medium capitalize text-gray-900">
-                            {targetType}
-                          </p>
-                        </div>
-                      )}
-                      {targetInfo.author && (
-                        <div>
-                          <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Author:</p>
-                          <p className="text-sm font-medium text-gray-900">
-                            {targetInfo.author}
-                          </p>
-                        </div>
-                      )}
-                      {targetInfo.reason && (
-                        <div>
-                          <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Report Reason:</p>
-                          <p className="text-sm font-medium text-gray-900 capitalize">
-                            {targetInfo.reason.replace(/_/g, " ")}
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Double Confirmation for Dangerous Actions */}
-                  {requiresDoubleConfirm && confirmCount === 1 && (
-                    <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-sm">
-                      <div className="flex items-start gap-3">
-                        <AlertTriangle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
-                        <div>
-                          <p className="font-semibold text-red-900">
-                            {isCritical
-                              ? "Are you absolutely sure?"
-                              : "Please confirm this action"}
-                          </p>
-                          <p className="text-red-800 text-xs mt-1">
-                            {isCritical
-                              ? "This action will permanently delete the user and cannot be reversed."
-                              : "This cannot be undone."}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                {/* Footer - Buttons */}
-                <div className="border-t border-gray-200 bg-white px-6 py-4 flex gap-3 justify-end">
-                  <button
-                    onClick={handleCancel}
-                    disabled={isLoading}
-                    className="px-4 py-2 rounded-lg bg-gray-100 text-gray-800 hover:bg-gray-200 disabled:opacity-50 transition-colors font-medium text-sm"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={handleConfirm}
-                    disabled={isLoading}
-                    className={`px-4 py-2 rounded-lg ${config?.buttonColor} text-white disabled:opacity-50 transition-colors font-medium text-sm flex items-center gap-2`}
-                  >
-                    {isLoading ? (
-                      <Loader className="w-4 h-4 animate-spin" />
-                    ) : (
-                      requiresDoubleConfirm &&
-                      confirmCount === 0 && <ChevronRight className="w-4 h-4" />
-                    )}
-                    {isLoading
-                      ? "Processing..."
-                      : requiresDoubleConfirm && confirmCount === 0
-                        ? "Confirm"
-                        : config?.confirmText}
-                  </button>
-                </div>
-              </Dialog.Panel>
-            </Transition.Child>
+        {targetInfo && (
+          <div className="space-y-3 rounded-xl border border-border bg-muted p-4">
+            {targetInfo.title && (
+              <div>
+                <p className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+                  Content/User:
+                </p>
+                <p className="line-clamp-2 text-sm font-medium text-foreground">
+                  {targetInfo.title}
+                </p>
+              </div>
+            )}
+            {targetType && (
+              <div>
+                <p className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+                  Target Type:
+                </p>
+                <p className="text-sm font-medium text-foreground capitalize">{targetType}</p>
+              </div>
+            )}
+            {targetInfo.author && (
+              <div>
+                <p className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+                  Author:
+                </p>
+                <p className="text-sm font-medium text-foreground">{targetInfo.author}</p>
+              </div>
+            )}
+            {targetInfo.reason && (
+              <div>
+                <p className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+                  Report Reason:
+                </p>
+                <p className="text-sm font-medium text-foreground capitalize">
+                  {targetInfo.reason.replace(/_/g, " ")}
+                </p>
+              </div>
+            )}
           </div>
-        </div>
-      </Dialog>
-    </Transition>
+        )}
+
+        {requiresDoubleConfirm && confirmCount === 1 && (
+          <div className="rounded-xl border border-destructive/30 bg-destructive/10 p-4 text-sm">
+            <div className="flex items-start gap-3">
+              <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-destructive" />
+              <div>
+                <p className="font-semibold text-destructive">
+                  {isCritical ? "Are you absolutely sure?" : "Please confirm this action"}
+                </p>
+                <p className="mt-1 text-xs text-destructive/80">
+                  {isCritical
+                    ? "This action will permanently delete the user and cannot be reversed."
+                    : "This cannot be undone."}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </Modal>
   );
 };

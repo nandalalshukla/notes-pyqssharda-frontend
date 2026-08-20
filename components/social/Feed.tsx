@@ -1,11 +1,14 @@
 "use client";
 
 import React, { useEffect, useState, useCallback, useRef } from "react";
+import dynamic from "next/dynamic";
 import { useSocialStore } from "@/stores/social/social.store";
 import useAuthStore from "@/stores/user/authStore";
 import PostCard from "./PostCard";
-import CreatePostModal from "./CreatePostModal";
 import { FeedLoadingState } from "./LoadingSkeletons";
+
+// Only rendered after clicking "New Post" — keep it out of the initial bundle.
+const CreatePostModal = dynamic(() => import("./CreatePostModal"));
 import {
   FiPlus,
   FiStar,
@@ -15,37 +18,42 @@ import {
   FiCalendar,
 } from "react-icons/fi";
 import { PostType } from "@/lib/api/social/social.api";
+import { Button, EmptyState, Tabs } from "@/components/ui";
 
 const feedSections: {
   value: PostType;
   label: string;
   empty: string;
-  Icon: React.ComponentType<{ size?: number; className?: string }>;
+  icon: React.ComponentType<{ size?: number; className?: string }>;
 }[] = [
   {
     value: "general",
     label: "General",
     empty: "No posts yet",
-    Icon: FiMessageSquare,
+    icon: FiMessageSquare,
   },
   {
     value: "announcement",
     label: "Announcements",
     empty: "No announcements yet",
-    Icon: FiBell,
+    icon: FiBell,
   },
   {
     value: "event",
     label: "Events",
     empty: "No events yet",
-    Icon: FiCalendar,
+    icon: FiCalendar,
   },
 ];
 
 export default function Feed() {
-  const { isAuthenticated, authInitialized } = useAuthStore();
-  const { feed, feedPage, feedTotalPages, isLoadingFeed, fetchFeed, error } =
-    useSocialStore();
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const authInitialized = useAuthStore((s) => s.authInitialized);
+  const feed = useSocialStore((s) => s.feed);
+  const feedTotalPages = useSocialStore((s) => s.feedTotalPages);
+  const isLoadingFeed = useSocialStore((s) => s.isLoadingFeed);
+  const fetchFeed = useSocialStore((s) => s.fetchFeed);
+  const error = useSocialStore((s) => s.error);
 
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
@@ -89,47 +97,30 @@ export default function Feed() {
   }, [currentPage, feedTotalPages]);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       {/* Page Header */}
-      <div className="border-b border-gray-200 bg-white sticky top-0 z-10 shadow-sm">
+      <div className="sticky top-0 z-10 border-b border-border bg-background/90 shadow-soft-sm backdrop-blur-xl">
         <div className="mx-auto flex max-w-3xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Feed</h1>
-            <p className="mt-0.5 text-sm text-gray-500">
+            <h1 className="text-2xl font-extrabold text-foreground">Feed</h1>
+            <p className="mt-0.5 text-sm text-muted-foreground">
               {feed.length > 0
                 ? `${feed.length} posts${feedTotalPages > 1 ? ` (Page ${currentPage})` : ""}`
                 : "No posts yet"}
             </p>
           </div>
           {isAuthenticated && (
-            <button
-              onClick={() => setShowCreateModal(true)}
-              className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 transition-colors shadow-sm hover:shadow-md"
-            >
-              <FiPlus size={18} />
+            <Button onClick={() => setShowCreateModal(true)} icon={<FiPlus size={18} />}>
               <span className="hidden sm:inline">New Post</span>
-            </button>
+            </Button>
           )}
         </div>
-        <div className="mx-auto flex max-w-3xl gap-2 overflow-x-auto px-4 pb-4 sm:px-6 lg:px-8">
-          {feedSections.map(({ value, label, Icon }) => {
-            const selected = activeSection === value;
-            return (
-              <button
-                key={value}
-                type="button"
-                onClick={() => setActiveSection(value)}
-                className={`inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-sm font-semibold transition-colors ${
-                  selected
-                    ? "border-blue-600 bg-blue-50 text-blue-700"
-                    : "border-gray-200 bg-white text-gray-700 hover:bg-gray-50"
-                }`}
-              >
-                <Icon size={16} />
-                {label}
-              </button>
-            );
-          })}
+        <div className="mx-auto max-w-3xl px-4 pb-4 sm:px-6 lg:px-8">
+          <Tabs
+            items={feedSections.map((s) => ({ value: s.value, label: s.label, icon: s.icon }))}
+            value={activeSection}
+            onChange={setActiveSection}
+          />
         </div>
       </div>
 
@@ -137,16 +128,16 @@ export default function Feed() {
       <div className="mx-auto max-w-3xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">
         {/* Auth Prompt */}
         {!isAuthenticated && (
-          <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-8 text-center shadow-sm">
-            <div className="flex items-center justify-center mb-4">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-100">
-                <FiStar size={32} className="text-blue-600" />
+          <div className="rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/10 to-accent-purple/10 p-8 text-center shadow-soft-sm">
+            <div className="mb-4 flex items-center justify-center">
+              <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-primary/15">
+                <FiStar size={32} className="text-primary" />
               </div>
             </div>
-            <h2 className="text-lg font-semibold text-blue-900 mb-1">
+            <h2 className="mb-1 text-lg font-semibold text-foreground">
               Sign in to share your thoughts
             </h2>
-            <p className="text-sm text-blue-700">
+            <p className="text-sm text-muted-foreground">
               Create posts, comment, and connect with your community
             </p>
           </div>
@@ -154,11 +145,11 @@ export default function Feed() {
 
         {/* Error State */}
         {error && (
-          <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-center shadow-sm">
-            <p className="text-red-900 font-semibold mb-1">
+          <div className="rounded-2xl border border-destructive/20 bg-destructive/5 p-6 text-center shadow-soft-sm">
+            <p className="mb-1 font-semibold text-destructive">
               Something went wrong
             </p>
-            <p className="text-sm text-red-700">{error}</p>
+            <p className="text-sm text-destructive/80">{error}</p>
           </div>
         )}
 
@@ -184,30 +175,24 @@ export default function Feed() {
             {/* Load More Button */}
             {feedTotalPages > currentPage && (
               <div className="flex justify-center pt-6">
-                <button
+                <Button
                   onClick={handleLoadMore}
-                  disabled={isLoadingFeed}
-                  className="px-8 py-2.5 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow-md"
+                  loading={isLoadingFeed}
+                  size="lg"
+                  className="px-8"
                 >
-                  {isLoadingFeed ? (
-                    <span className="flex items-center gap-2">
-                      <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                      Loading...
-                    </span>
-                  ) : (
-                    "Load More Posts"
-                  )}
-                </button>
+                  Load More Posts
+                </Button>
               </div>
             )}
 
             {/* End of Feed Message */}
             {currentPage === feedTotalPages && feed.length > 0 && (
-              <div className="text-center py-12 px-6 bg-white rounded-xl border border-gray-200 shadow-sm">
-                <p className="text-gray-900 font-semibold mb-1">
-                  You're all caught up
+              <div className="rounded-2xl border border-border bg-card px-6 py-12 text-center shadow-soft-sm">
+                <p className="mb-1 font-semibold text-foreground">
+                  You&apos;re all caught up
                 </p>
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-muted-foreground">
                   Check back later for more posts from the community
                 </p>
               </div>
@@ -215,27 +200,21 @@ export default function Feed() {
           </>
         ) : (
           /* Empty State */
-          <div className="text-center py-20 px-6 bg-white rounded-xl border border-gray-200 shadow-sm">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-6">
-              <FiFileText size={32} className="text-gray-400" />
-            </div>
-            <h2 className="text-xl font-semibold text-gray-900 mb-2">
-              {feedSections.find((section) => section.value === activeSection)
-                ?.empty || "No posts yet"}
-            </h2>
-            <p className="text-gray-500 mb-6 text-sm">
-              Be the first to share something with the community!
-            </p>
-            {isAuthenticated && (
-              <button
-                onClick={() => setShowCreateModal(true)}
-                className="inline-flex items-center gap-2 px-6 py-2.5 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors shadow-sm hover:shadow-md"
-              >
-                <FiPlus size={18} />
-                Create First Post
-              </button>
-            )}
-          </div>
+          <EmptyState
+            icon={<FiFileText size={32} />}
+            title={
+              feedSections.find((section) => section.value === activeSection)
+                ?.empty || "No posts yet"
+            }
+            description="Be the first to share something with the community!"
+            action={
+              isAuthenticated && (
+                <Button onClick={() => setShowCreateModal(true)} icon={<FiPlus size={18} />}>
+                  Create First Post
+                </Button>
+              )
+            }
+          />
         )}
       </div>
 

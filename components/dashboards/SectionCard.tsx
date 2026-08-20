@@ -2,6 +2,7 @@
 
 import React from "react";
 import { RefreshCw } from "lucide-react";
+import { cn } from "@/lib/utils/cn";
 
 interface SectionCardProps {
   title: string;
@@ -23,32 +24,27 @@ export const SectionCard: React.FC<SectionCardProps> = ({
   isLoading = false,
 }) => {
   return (
-    <div className="bg-white rounded-2xl border border-slate-100 overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300">
+    <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-soft-sm transition-shadow duration-300 hover:shadow-soft-md">
       {/* Header */}
-      <div className="border-b border-slate-100 bg-linear-to-r from-slate-50 to-white px-4 py-4 flex flex-col gap-4 sm:px-6 sm:py-5 sm:flex-row sm:items-start sm:justify-between">
-        <div className="flex items-start gap-3 flex-1 min-w-0">
-          {icon && <div className="mt-0.5 shrink-0 text-slate-700">{icon}</div>}
+      <div className="flex flex-col gap-4 border-b border-border px-4 py-4 sm:flex-row sm:items-start sm:justify-between sm:px-6 sm:py-5">
+        <div className="flex min-w-0 flex-1 items-start gap-3">
+          {icon && <div className="mt-0.5 shrink-0 text-muted-foreground">{icon}</div>}
           <div className="flex-1">
-            <h3 className="font-bold text-base sm:text-lg text-slate-900">
-              {title}
-            </h3>
+            <h3 className="text-base font-bold text-foreground sm:text-lg">{title}</h3>
             {description && (
-              <p className="text-sm text-slate-600 mt-0.5">{description}</p>
+              <p className="mt-0.5 text-sm text-muted-foreground">{description}</p>
             )}
           </div>
         </div>
-        <div className="flex flex-wrap items-center gap-2 shrink-0">
+        <div className="flex shrink-0 flex-wrap items-center gap-2">
           {onRefresh && (
             <button
               onClick={onRefresh}
               disabled={isLoading}
-              className="p-2 hover:bg-slate-100 rounded-lg transition-colors disabled:opacity-50"
+              className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-secondary disabled:opacity-50 cursor-pointer"
               title="Refresh"
             >
-              <RefreshCw
-                size={18}
-                className={`text-slate-600 ${isLoading ? "animate-spin" : ""}`}
-              />
+              <RefreshCw size={18} className={isLoading ? "animate-spin" : ""} />
             </button>
           )}
           {headerAction}
@@ -56,7 +52,7 @@ export const SectionCard: React.FC<SectionCardProps> = ({
       </div>
 
       {/* Content */}
-      <div className="px-4 sm:px-6 py-4 sm:py-5">{children}</div>
+      <div className="px-4 py-4 sm:px-6 sm:py-5">{children}</div>
     </div>
   );
 };
@@ -82,36 +78,30 @@ export const Tabs: React.FC<TabsProps> = ({ tabs, defaultTab, onChange }) => {
   };
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-100 overflow-hidden shadow-sm">
+    <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-soft-sm">
       {/* Tab List */}
-      <div className="flex gap-1 border-b border-slate-100 overflow-x-auto bg-slate-50 px-3 sm:px-6">
+      <div className="flex gap-1 overflow-x-auto border-b border-border bg-muted px-3 sm:px-6">
         {tabs.map((tab) => (
           <button
             key={tab.id}
             onClick={() => handleTabChange(tab.id)}
-            className={`
-              px-4 py-3 sm:py-4 font-medium text-sm
-              border-b-2 transition-all duration-200
-              flex items-center gap-2 whitespace-nowrap
-              ${
-                activeTab === tab.id
-                  ? "border-blue-600 text-blue-700 bg-blue-50/50"
-                  : "border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-100/50"
-              }
-            `}
+            className={cn(
+              "flex items-center gap-2 border-b-2 px-4 py-3 text-sm font-medium whitespace-nowrap transition-all duration-200 sm:py-4 cursor-pointer",
+              activeTab === tab.id
+                ? "border-primary bg-primary/5 text-primary"
+                : "border-transparent text-muted-foreground hover:bg-secondary/60 hover:text-foreground",
+            )}
           >
             {tab.icon && <span className="text-base">{tab.icon}</span>}
             <span>{tab.label}</span>
             {tab.badge !== undefined && (
               <span
-                className={`
-                  ml-2 px-2.5 py-0.5 rounded-full text-xs font-bold
-                  ${
-                    activeTab === tab.id
-                      ? "bg-blue-200 text-blue-800"
-                      : "bg-slate-200 text-slate-700"
-                  }
-                `}
+                className={cn(
+                  "ml-2 rounded-full px-2.5 py-0.5 text-xs font-bold",
+                  activeTab === tab.id
+                    ? "bg-primary/20 text-primary"
+                    : "bg-muted-foreground/15 text-muted-foreground",
+                )}
               >
                 {tab.badge}
               </span>
@@ -121,7 +111,7 @@ export const Tabs: React.FC<TabsProps> = ({ tabs, defaultTab, onChange }) => {
       </div>
 
       {/* Tab Content */}
-      <div className="px-4 sm:px-6 py-4 sm:py-6">
+      <div className="px-4 py-4 sm:px-6 sm:py-6">
         {tabs.find((tab) => tab.id === activeTab)?.content}
       </div>
     </div>
@@ -142,12 +132,12 @@ export const Toolbar: React.FC<ToolbarProps> = ({
   children,
 }) => {
   return (
-    <div className="bg-white rounded-lg border border-slate-200 p-4 sm:p-6 mb-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between mb-4">
+    <div className="mb-6 rounded-xl border border-border bg-card p-4 sm:p-6">
+      <div className="mb-4 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
-          <h2 className="font-bold text-slate-900">{title}</h2>
+          <h2 className="font-bold text-foreground">{title}</h2>
           {description && (
-            <p className="text-sm text-slate-600 mt-1">{description}</p>
+            <p className="mt-1 text-sm text-muted-foreground">{description}</p>
           )}
         </div>
         {actions && <div className="flex flex-wrap gap-2">{actions}</div>}

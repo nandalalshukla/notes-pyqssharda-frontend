@@ -1,23 +1,16 @@
 "use client";
 
-import React, {
-  useEffect,
-  useState,
-  useRef,
-  useCallback,
-  Fragment,
-} from "react";
-import { Dialog, Transition } from "@headlessui/react";
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import { User } from "@/lib/api/social/social.api";
 import { getPostLikes } from "@/lib/api/social/social.api";
 import { useBodyScroll } from "@/hooks/useBodyScroll";
-import Image from "next/image";
-import { FiX } from "react-icons/fi";
 import useAuthStore from "@/stores/user/authStore";
 import { useSocialStore } from "@/stores/social/social.store";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import VerifiedBadge from "./VerifiedBadge";
+import { Modal, Avatar } from "@/components/ui";
+import { cn } from "@/lib/utils/cn";
 
 interface LikesModalProps {
   postId: string;
@@ -56,6 +49,7 @@ export default function LikesModal({
     if (isOpen && currentPage === 1) {
       fetchLikes(1);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, postId]);
 
   // Reset state when modal closes
@@ -184,142 +178,78 @@ export default function LikesModal({
   );
 
   return (
-    <Transition appear show={isOpen} as={Fragment}>
-      <Dialog as="div" className="relative z-50" onClose={onClose}>
-        <Transition.Child
-          as={Fragment}
-          enter="ease-out duration-300"
-          enterFrom="opacity-0"
-          enterTo="opacity-100"
-          leave="ease-in duration-200"
-          leaveFrom="opacity-100"
-          leaveTo="opacity-0"
-        >
-          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" />
-        </Transition.Child>
-
-        <div className="fixed inset-0 overflow-y-auto">
-          <div className="flex min-h-full items-center justify-center p-4 sm:p-6">
-            <Transition.Child
-              as={Fragment}
-              enter="ease-out duration-300"
-              enterFrom="opacity-0 scale-95"
-              enterTo="opacity-100 scale-100"
-              leave="ease-in duration-200"
-              leaveFrom="opacity-100 scale-100"
-              leaveTo="opacity-0 scale-95"
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={likeCount === 1 ? "1 Like" : `${likeCount} Likes`}
+      size="sm"
+      padding="none"
+    >
+      {likes.length === 0 && !isLoading ? (
+        <div className="flex h-32 items-center justify-center text-muted-foreground">
+          No likes yet
+        </div>
+      ) : (
+        <div>
+          {likes.map((like) => (
+            <div
+              key={like._id}
+              className="flex items-center justify-between border-b border-border px-1 py-3 transition-colors duration-200 last:border-b-0 hover:bg-secondary/60"
             >
-              <Dialog.Panel className="bg-white rounded-2xl shadow-xl w-full max-w-md max-h-[80vh] flex flex-col overflow-hidden">
-                {/* Header */}
-                <div className="sticky top-0 bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between z-10 shrink-0">
-                  <Dialog.Title className="text-lg font-bold text-gray-900">
-                    {likeCount === 1 ? "1 Like" : `${likeCount} Likes`}
-                  </Dialog.Title>
-                  <button
-                    onClick={onClose}
-                    className="p-1.5 hover:bg-gray-100 rounded-full transition-colors text-gray-600 hover:text-gray-900"
-                  >
-                    <FiX size={24} />
-                  </button>
+              <div
+                className="flex min-w-0 flex-1 cursor-pointer items-center gap-3"
+                onClick={() => handleViewProfile(like._id)}
+              >
+                <Avatar src={like.profilePic?.url || like.avatar} alt={like.username} size="md" />
+                <div className="min-w-0">
+                  <p className="inline-flex max-w-full items-center gap-1 text-sm font-semibold text-foreground">
+                    <span className="truncate">{like.username}</span>
+                    <VerifiedBadge role={like.role} size={12} />
+                  </p>
+                  <p className="truncate text-xs text-muted-foreground">
+                    @{like.username.toLowerCase().replace(/\s+/g, "_")}
+                  </p>
                 </div>
+              </div>
 
-                {/* Likes List */}
-                <div className="flex-1 overflow-y-auto">
-                  {likes.length === 0 && !isLoading ? (
-                    <div className="flex items-center justify-center h-32 text-gray-500">
-                      No likes yet
-                    </div>
-                  ) : (
-                    <div>
-                      {likes.map((like) => (
-                        <div
-                          key={like._id}
-                          className="px-6 py-3 border-b border-gray-50 flex items-center justify-between hover:bg-gray-50 transition-colors duration-200"
-                        >
-                          <div
-                            className="flex items-center gap-3 flex-1 min-w-0 cursor-pointer"
-                            onClick={() => handleViewProfile(like._id)}
-                          >
-                            <div className="flex-shrink-0">
-                              <Image
-                                src={
-                                  like.profilePic?.url ||
-                                  like.avatar ||
-                                  "/images/default-avatar.png"
-                                }
-                                alt={like.username}
-                                width={40}
-                                height={40}
-                                className="rounded-full object-cover"
-                              />
-                            </div>
-                            <div className="min-w-0">
-                              <p className="inline-flex max-w-full items-center gap-1 font-semibold text-gray-900 text-sm">
-                                <span className="truncate">
-                                  {like.username}
-                                </span>
-                                <VerifiedBadge role={like.role} size={12} />
-                              </p>
-                              <p className="text-xs text-gray-500 truncate">
-                                @
-                                {like.username
-                                  .toLowerCase()
-                                  .replace(/\s+/g, "_")}
-                              </p>
-                            </div>
-                          </div>
-
-                          {user?._id !== like._id && (
-                            <button
-                              onClick={() =>
-                                handleFollow(
-                                  like._id,
-                                  followingStates[like._id] || false,
-                                )
-                              }
-                              disabled={followingLoads[like._id]}
-                              className={`ml-3 px-4 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 flex-shrink-0 ${
-                                followingStates[like._id] || false
-                                  ? "bg-gray-100 text-gray-900 hover:bg-gray-200 border border-gray-300"
-                                  : "bg-blue-600 text-white hover:bg-blue-700 border border-blue-600 shadow-sm"
-                              } ${followingLoads[like._id] ? "opacity-60 cursor-not-allowed" : ""}`}
-                            >
-                              {followingLoads[like._id]
-                                ? "..."
-                                : followingStates[like._id]
-                                  ? "Following"
-                                  : "Follow"}
-                            </button>
-                          )}
-                        </div>
-                      ))}
-
-                      {/* Loading indicator or end of list */}
-                      <div ref={observerTarget} className="p-4 text-center">
-                        {isLoading && (
-                          <div className="flex justify-center items-center gap-2">
-                            <div className="animate-spin rounded-full h-5 w-5 border-2 border-gray-300 border-t-blue-600" />
-                            <span className="text-sm text-gray-500">
-                              Loading...
-                            </span>
-                          </div>
-                        )}
-                        {!isLoading &&
-                          currentPage >= totalPages &&
-                          likes.length > 0 && (
-                            <p className="text-xs text-gray-400">
-                              End of likes
-                            </p>
-                          )}
-                      </div>
-                    </div>
+              {user?._id !== like._id && (
+                <button
+                  onClick={() =>
+                    handleFollow(like._id, followingStates[like._id] || false)
+                  }
+                  disabled={followingLoads[like._id]}
+                  className={cn(
+                    "ml-3 shrink-0 rounded-lg border px-4 py-1.5 text-xs font-semibold transition-all duration-200 cursor-pointer",
+                    followingStates[like._id] || false
+                      ? "border-border bg-secondary text-foreground hover:bg-secondary-hover"
+                      : "border-primary bg-primary text-primary-foreground shadow-soft-sm hover:bg-primary-hover",
+                    followingLoads[like._id] && "cursor-not-allowed opacity-60",
                   )}
-                </div>
-              </Dialog.Panel>
-            </Transition.Child>
+                >
+                  {followingLoads[like._id]
+                    ? "..."
+                    : followingStates[like._id]
+                      ? "Following"
+                      : "Follow"}
+                </button>
+              )}
+            </div>
+          ))}
+
+          {/* Loading indicator or end of list */}
+          <div ref={observerTarget} className="p-4 text-center">
+            {isLoading && (
+              <div className="flex items-center justify-center gap-2">
+                <div className="h-5 w-5 animate-spin rounded-full border-2 border-muted border-t-primary" />
+                <span className="text-sm text-muted-foreground">Loading...</span>
+              </div>
+            )}
+            {!isLoading && currentPage >= totalPages && likes.length > 0 && (
+              <p className="text-xs text-muted-foreground">End of likes</p>
+            )}
           </div>
         </div>
-      </Dialog>
-    </Transition>
+      )}
+    </Modal>
   );
 }

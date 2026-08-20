@@ -2,6 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { User } from "lucide-react";
 
 export interface UserProfileLinkProps {
@@ -24,7 +25,7 @@ export const UserProfileLink: React.FC<UserProfileLinkProps> = ({
   profilePic,
   showAvatar = true,
   className = "",
-  linkClassName = "text-blue-600 hover:text-blue-700 hover:underline font-medium",
+  linkClassName = "text-primary hover:text-primary-hover hover:underline font-medium",
 }) => {
   if (!userId) {
     return <span className={className}>{username}</span>;
@@ -36,16 +37,18 @@ export const UserProfileLink: React.FC<UserProfileLinkProps> = ({
       className={`inline-flex items-center gap-2 transition-colors ${linkClassName} ${className}`}
     >
       {showAvatar && (
-        <div className="relative w-6 h-6 rounded-full overflow-hidden bg-slate-200 flex-shrink-0">
+        <div className="relative w-6 h-6 rounded-full overflow-hidden bg-muted flex-shrink-0">
           {profilePic?.url ? (
-            <img
+            <Image
               src={profilePic.url}
               alt={username}
-              className="w-full h-full object-cover"
+              fill
+              sizes="24px"
+              className="object-cover"
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center">
-              <User size={14} className="text-slate-600" />
+              <User size={14} className="text-muted-foreground" />
             </div>
           )}
         </div>

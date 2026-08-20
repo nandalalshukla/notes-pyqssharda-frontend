@@ -31,9 +31,9 @@ export default function SocialSidebar() {
   ];
 
   return (
-    <aside className="hidden lg:block fixed left-0 top-16 h-[calc(100vh-64px)] w-64 border-r-2 border-black bg-white">
-      <div className="p-6 space-y-4">
-        <h2 className="text-2xl font-black mb-8">Menu</h2>
+    <aside className="fixed top-16 left-0 hidden h-[calc(100vh-64px)] w-64 border-r border-border bg-card lg:block">
+      <div className="space-y-4 p-6">
+        <h2 className="mb-8 text-2xl font-black text-foreground">Menu</h2>
 
         <nav className="space-y-2">
           {menuItems
@@ -44,7 +44,7 @@ export default function SocialSidebar() {
                 <Link
                   key={idx}
                   href={item.href}
-                  className="flex items-center gap-3 p-3 rounded-xl border-2 border-black font-bold hover:bg-black hover:text-white transition-all"
+                  className="flex items-center gap-3 rounded-xl border border-border p-3 font-bold text-foreground transition-all hover:bg-primary hover:text-primary-foreground"
                 >
                   <Icon size={20} />
                   <span>{item.label}</span>
@@ -54,8 +54,8 @@ export default function SocialSidebar() {
         </nav>
 
         {/* Trending Section */}
-        <div className="mt-8 pt-6 border-t-2 border-black">
-          <h3 className="text-lg font-bold mb-4">Trending</h3>
+        <div className="mt-8 border-t border-border pt-6">
+          <h3 className="mb-4 text-lg font-bold text-foreground">Trending</h3>
           <div className="space-y-2">
             {[
               "#ShardaStudents",
@@ -66,7 +66,7 @@ export default function SocialSidebar() {
             ].map((tag, idx) => (
               <button
                 key={idx}
-                className="w-full text-left p-3 rounded-lg border-2 border-black hover:bg-gray-100 transition-colors font-semibold text-sm"
+                className="w-full rounded-xl border border-border p-3 text-left text-sm font-semibold text-foreground transition-colors hover:bg-secondary cursor-pointer"
               >
                 {tag}
               </button>
@@ -75,10 +75,10 @@ export default function SocialSidebar() {
         </div>
 
         {/* Quick Stats */}
-        <div className="mt-8 pt-6 border-t-2 border-black">
-          <div className="bg-gradient-to-br from-blue-50 to-purple-50 border-2 border-black rounded-xl p-4">
-            <h3 className="font-bold text-sm mb-3">Community Stats</h3>
-            <div className="space-y-2 text-xs font-semibold">
+        <div className="mt-8 border-t border-border pt-6">
+          <div className="rounded-2xl border border-border bg-gradient-to-br from-primary/10 to-accent-purple/10 p-4">
+            <h3 className="mb-3 text-sm font-bold text-foreground">Community Stats</h3>
+            <div className="space-y-2 text-xs font-semibold text-muted-foreground">
               <div>📝 1,234 posts today</div>
               <div>💬 5,678 comments</div>
               <div>❤️ 12,345 likes</div>

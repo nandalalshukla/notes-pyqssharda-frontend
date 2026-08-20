@@ -6,10 +6,10 @@ import useAuthStore from "@/stores/user/authStore";
 import { User } from "@/lib/api/social/social.api";
 import { FiUserPlus, FiUserCheck } from "react-icons/fi";
 import toast from "react-hot-toast";
-import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import VerifiedBadge from "./VerifiedBadge";
+import { Avatar, Button } from "@/components/ui";
 
 interface UserCardProps {
   user: User;
@@ -54,62 +54,36 @@ export default function UserCard({
   const avatarUrl = user.profilePic?.url || user.avatar || "";
 
   return (
-    <div className="bg-white border-2 border-black rounded-xl p-4 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all">
-      <div className="flex items-center gap-3 mb-3">
-        <Link
-          href={`/profile/${user._id}`}
-          className="w-12 h-12 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full border-2 border-black flex items-center justify-center flex-shrink-0 overflow-hidden"
-        >
-          {avatarUrl ? (
-            <Image
-              src={avatarUrl}
-              alt={user.username || "User"}
-              width={48}
-              height={48}
-              className="w-full h-full object-cover"
-            />
-          ) : (
-            <span className="text-white font-bold text-lg">
-              {(user.username || "U")[0].toUpperCase()}
-            </span>
-          )}
+    <div className="rounded-2xl border border-border bg-card p-4 shadow-soft-sm transition-shadow hover:shadow-soft-md">
+      <div className="mb-3 flex items-center gap-3">
+        <Link href={`/profile/${user._id}`} className="shrink-0">
+          <Avatar src={avatarUrl} alt={user.username || "User"} size="md" />
         </Link>
-        <div className="flex-1 min-w-0">
+        <div className="min-w-0 flex-1">
           <Link
             href={`/profile/${user._id}`}
-            className="inline-flex items-center gap-1 font-bold text-sm truncate hover:text-blue-600"
+            className="inline-flex items-center gap-1 truncate text-sm font-bold text-foreground hover:text-primary"
           >
             {user.username || "Anonymous"}
             <VerifiedBadge role={user.role} size={12} />
           </Link>
-          <p className="text-xs text-gray-500 truncate">
+          <p className="truncate text-xs text-muted-foreground">
             {user.email || "No email"}
           </p>
         </div>
       </div>
 
       {!isCurrentUser && (
-        <button
+        <Button
           onClick={handleToggleFollow}
-          disabled={isLoading}
-          className={`w-full py-2 px-3 rounded-lg font-bold border-2 border-black transition-all flex items-center justify-center gap-2 text-sm ${
-            isFollowingCurrent
-              ? "bg-white text-black hover:bg-gray-100"
-              : "bg-black text-white hover:bg-white hover:text-black hover:border-black"
-          } disabled:opacity-50`}
+          loading={isLoading}
+          variant={isFollowingCurrent ? "outline" : "primary"}
+          size="sm"
+          icon={isFollowingCurrent ? <FiUserCheck size={16} /> : <FiUserPlus size={16} />}
+          className="w-full"
         >
-          {isFollowingCurrent ? (
-            <>
-              <FiUserCheck size={16} />
-              Following
-            </>
-          ) : (
-            <>
-              <FiUserPlus size={16} />
-              Follow
-            </>
-          )}
-        </button>
+          {isFollowingCurrent ? "Following" : "Follow"}
+        </Button>
       )}
     </div>
   );

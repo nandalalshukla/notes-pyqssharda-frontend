@@ -11,9 +11,9 @@ import NotesForm from "@/components/forms/Notes";
 import PyqsForm from "@/components/forms/pyqs";
 import SyllabusForm from "@/components/forms/Syllabus";
 import { DashboardLayout } from "@/components/dashboards/DashboardLayout";
-import { StatCard, StatsGrid } from "@/components/dashboards/StatCard";
-import { DataTable, DataTableColumn } from "@/components/dashboards/DataTable";
+import { StatsGrid } from "@/components/dashboards/StatCard";
 import { SectionCard, Toolbar } from "@/components/dashboards/SectionCard";
+import { DataTable, DataTableColumn, Badge, Button, Input, Select } from "@/components/ui";
 import { Note } from "@/lib/api/notes/notes.api";
 import { Pyq } from "@/lib/api/pyqs/pyqs.api";
 import { Syllabus } from "@/lib/api/syllabus/syllabus.api";
@@ -29,6 +29,7 @@ import {
   Clock,
   CheckCircle,
   Activity,
+  Search,
 } from "lucide-react";
 
 type ContentItem = Note | Pyq | Syllabus;
@@ -156,8 +157,8 @@ export default function UserDashboard() {
           "description" in row && typeof row.description === "string" ? row.description : "";
         return (
           <div>
-            <p className="font-medium text-slate-900 line-clamp-1">{row.title}</p>
-            {desc && <p className="text-xs text-slate-500 line-clamp-1">{desc}</p>}
+            <p className="line-clamp-1 font-medium text-foreground">{row.title}</p>
+            {desc && <p className="line-clamp-1 text-xs text-muted-foreground">{desc}</p>}
           </div>
         );
       },
@@ -168,14 +169,14 @@ export default function UserDashboard() {
       header: "Type",
       accessor: (row) => {
         const typeLabels = { note: "📝 Note", pyq: "❓ PYQ", syllabus: "📋 Syllabus" };
-        return <span className="font-medium">{typeLabels[row.type]}</span>;
+        return <span className="font-medium text-foreground">{typeLabels[row.type]}</span>;
       },
     },
     {
       id: "createdAt",
       header: "Created",
       accessor: (row) => (
-        <span className="text-sm text-slate-600">
+        <span className="text-sm text-muted-foreground">
           {new Date(row.createdAt).toLocaleDateString()}
         </span>
       ),
@@ -185,17 +186,13 @@ export default function UserDashboard() {
       id: "status",
       header: "Status",
       accessor: (row) => (
-        <span
-          className={`inline-block px-2 py-1 rounded text-xs font-semibold ${
-            row.status === "approved"
-              ? "bg-emerald-100 text-emerald-700"
-              : row.status === "pending"
-                ? "bg-amber-100 text-amber-700"
-                : "bg-red-100 text-red-700"
-          }`}
+        <Badge
+          variant={
+            row.status === "approved" ? "success" : row.status === "pending" ? "warning" : "destructive"
+          }
         >
           {row.status?.charAt(0).toUpperCase() + row.status?.slice(1)}
-        </span>
+        </Badge>
       ),
     },
     {
@@ -203,18 +200,12 @@ export default function UserDashboard() {
       header: "Actions",
       accessor: (row) => (
         <div className="flex gap-2">
-          <button
-            onClick={() => openModal(row.type, row)}
-            className="px-3 py-1 text-xs rounded bg-blue-100 text-blue-700 hover:bg-blue-200 flex items-center gap-1"
-          >
-            <Edit size={14} /> Edit
-          </button>
-          <button
-            onClick={() => handleDelete(row.type, row._id)}
-            className="px-3 py-1 text-xs rounded bg-red-100 text-red-700 hover:bg-red-200 flex items-center gap-1"
-          >
-            <Trash2 size={14} /> Delete
-          </button>
+          <Button size="sm" variant="secondary" icon={<Edit size={14} />} onClick={() => openModal(row.type, row)}>
+            Edit
+          </Button>
+          <Button size="sm" variant="destructive" icon={<Trash2 size={14} />} onClick={() => handleDelete(row.type, row._id)}>
+            Delete
+          </Button>
         </div>
       ),
     },
@@ -256,22 +247,22 @@ export default function UserDashboard() {
       {activeNav === "overview" && (
         <div className="mt-8 space-y-6">
           <SectionCard title="Quick Stats" description="Your contribution overview">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="p-4 border rounded-lg">
-                <p className="text-sm text-slate-600">Approved Content</p>
-                <p className="text-2xl font-bold">
+            <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+              <div className="rounded-xl border border-border p-4">
+                <p className="text-sm text-muted-foreground">Approved Content</p>
+                <p className="text-2xl font-bold text-foreground">
                   {allContent.filter((c) => c.status === "approved").length}
                 </p>
               </div>
-              <div className="p-4 border rounded-lg">
-                <p className="text-sm text-slate-600">Pending Review</p>
-                <p className="text-2xl font-bold">
+              <div className="rounded-xl border border-border p-4">
+                <p className="text-sm text-muted-foreground">Pending Review</p>
+                <p className="text-2xl font-bold text-foreground">
                   {allContent.filter((c) => c.status === "pending").length}
                 </p>
               </div>
-              <div className="p-4 border rounded-lg">
-                <p className="text-sm text-slate-600">Rejection Rate</p>
-                <p className="text-2xl font-bold">
+              <div className="rounded-xl border border-border p-4">
+                <p className="text-sm text-muted-foreground">Rejection Rate</p>
+                <p className="text-2xl font-bold text-foreground">
                   {allContent.length > 0
                     ? Math.round(
                         (allContent.filter((c) => c.status === "rejected").length /
@@ -282,9 +273,9 @@ export default function UserDashboard() {
                   %
                 </p>
               </div>
-              <div className="p-4 border rounded-lg">
-                <p className="text-sm text-slate-600">Last Contribution</p>
-                <p className="text-2xl font-bold">
+              <div className="rounded-xl border border-border p-4">
+                <p className="text-sm text-muted-foreground">Last Contribution</p>
+                <p className="text-2xl font-bold text-foreground">
                   {allContent.length > 0
                     ? new Date(allContent[0].createdAt).toLocaleDateString()
                     : "—"}
@@ -302,23 +293,23 @@ export default function UserDashboard() {
             title="My Content Library"
             description={`Manage ${filteredContent.length} ${contentFilter === "all" ? "items" : contentFilter + "s"}`}
           >
-            <input
-              type="text"
+            <Input
+              icon={<Search size={16} />}
               placeholder="Search content..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="flex-1 px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+              className="flex-1"
             />
-            <select
+            <Select
               value={contentFilter}
               onChange={(e) => setContentFilter(e.target.value as ContentType | "all")}
-              className="px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm font-medium"
+              className="w-auto"
             >
               <option value="all">All Types</option>
               <option value="note">Notes Only</option>
               <option value="pyq">PYQs Only</option>
               <option value="syllabus">Syllabus Only</option>
-            </select>
+            </Select>
           </Toolbar>
 
           <SectionCard
@@ -333,7 +324,7 @@ export default function UserDashboard() {
               searchable={false}
               paginated
               pageSize={15}
-              emptyMessage="No content yet. Upload your first note, PYQ, or syllabus!"
+              emptyTitle="No content yet. Upload your first note, PYQ, or syllabus!"
             />
           </SectionCard>
         </div>
@@ -347,16 +338,16 @@ export default function UserDashboard() {
             description="Share educational resources with the community"
           />
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
             {/* Notes Upload Card */}
-            <div className="bg-white rounded-lg border-2 border-dashed border-emerald-200 p-6 hover:border-emerald-400 hover:shadow-md transition-all cursor-pointer group">
+            <div className="group cursor-pointer rounded-xl border-2 border-dashed border-accent-mint/40 bg-card p-6 transition-all hover:border-accent-mint hover:shadow-soft-md">
               <div onClick={() => openModal("note")} className="text-center">
-                <div className="mx-auto w-12 h-12 bg-emerald-100 rounded-lg flex items-center justify-center mb-3 group-hover:bg-emerald-200 transition-colors">
-                  <BookOpen size={24} className="text-emerald-600" />
+                <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-accent-mint/20 transition-colors group-hover:bg-accent-mint/30">
+                  <BookOpen size={24} className="text-accent-mint-foreground dark:text-accent-mint" />
                 </div>
-                <h3 className="font-semibold text-slate-900 mb-1">Share Notes</h3>
-                <p className="text-sm text-slate-600 mb-4">{myNotes.length} uploaded</p>
-                <button className="px-4 py-2 bg-emerald-100 text-emerald-700 rounded-lg hover:bg-emerald-200 transition-colors font-medium text-sm flex items-center gap-2 justify-center w-full">
+                <h3 className="mb-1 font-semibold text-foreground">Share Notes</h3>
+                <p className="mb-4 text-sm text-muted-foreground">{myNotes.length} uploaded</p>
+                <button className="flex w-full items-center justify-center gap-2 rounded-lg bg-accent-mint/20 px-4 py-2 text-sm font-medium text-accent-mint-foreground transition-colors hover:bg-accent-mint/30 dark:text-accent-mint cursor-pointer">
                   <Plus size={16} />
                   Add Notes
                 </button>
@@ -364,14 +355,14 @@ export default function UserDashboard() {
             </div>
 
             {/* PYQ Upload Card */}
-            <div className="bg-white rounded-lg border-2 border-dashed border-orange-200 p-6 hover:border-orange-400 hover:shadow-md transition-all cursor-pointer group">
+            <div className="group cursor-pointer rounded-xl border-2 border-dashed border-accent-coral/40 bg-card p-6 transition-all hover:border-accent-coral hover:shadow-soft-md">
               <div onClick={() => openModal("pyq")} className="text-center">
-                <div className="mx-auto w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center mb-3 group-hover:bg-orange-200 transition-colors">
-                  <FileText size={24} className="text-orange-600" />
+                <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-accent-coral/20 transition-colors group-hover:bg-accent-coral/30">
+                  <FileText size={24} className="text-accent-coral-foreground dark:text-accent-coral" />
                 </div>
-                <h3 className="font-semibold text-slate-900 mb-1">Share PYQs</h3>
-                <p className="text-sm text-slate-600 mb-4">{myPyqs.length} uploaded</p>
-                <button className="px-4 py-2 bg-orange-100 text-orange-700 rounded-lg hover:bg-orange-200 transition-colors font-medium text-sm flex items-center gap-2 justify-center w-full">
+                <h3 className="mb-1 font-semibold text-foreground">Share PYQs</h3>
+                <p className="mb-4 text-sm text-muted-foreground">{myPyqs.length} uploaded</p>
+                <button className="flex w-full items-center justify-center gap-2 rounded-lg bg-accent-coral/20 px-4 py-2 text-sm font-medium text-accent-coral-foreground transition-colors hover:bg-accent-coral/30 dark:text-accent-coral cursor-pointer">
                   <Plus size={16} />
                   Add PYQ
                 </button>
@@ -379,14 +370,14 @@ export default function UserDashboard() {
             </div>
 
             {/* Syllabus Upload Card */}
-            <div className="bg-white rounded-lg border-2 border-dashed border-blue-200 p-6 hover:border-blue-400 hover:shadow-md transition-all cursor-pointer group">
+            <div className="group cursor-pointer rounded-xl border-2 border-dashed border-accent-purple/40 bg-card p-6 transition-all hover:border-accent-purple hover:shadow-soft-md">
               <div onClick={() => openModal("syllabus")} className="text-center">
-                <div className="mx-auto w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-3 group-hover:bg-blue-200 transition-colors">
-                  <ListChecks size={24} className="text-blue-600" />
+                <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-accent-purple/20 transition-colors group-hover:bg-accent-purple/30">
+                  <ListChecks size={24} className="text-accent-purple-foreground dark:text-accent-purple" />
                 </div>
-                <h3 className="font-semibold text-slate-900 mb-1">Share Syllabus</h3>
-                <p className="text-sm text-slate-600 mb-4">{mySyllabus.length} uploaded</p>
-                <button className="px-4 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors font-medium text-sm flex items-center gap-2 justify-center w-full">
+                <h3 className="mb-1 font-semibold text-foreground">Share Syllabus</h3>
+                <p className="mb-4 text-sm text-muted-foreground">{mySyllabus.length} uploaded</p>
+                <button className="flex w-full items-center justify-center gap-2 rounded-lg bg-accent-purple/20 px-4 py-2 text-sm font-medium text-accent-purple-foreground transition-colors hover:bg-accent-purple/30 dark:text-accent-purple cursor-pointer">
                   <Plus size={16} />
                   Add Syllabus
                 </button>
@@ -399,11 +390,11 @@ export default function UserDashboard() {
       {/* Modals */}
       {activeModal === "note" && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-ink/60 p-4 backdrop-blur-sm"
           onClick={closeModal}
         >
           <div
-            className="w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+            className="max-h-[90vh] w-full max-w-2xl overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
             <NotesForm
@@ -420,11 +411,11 @@ export default function UserDashboard() {
 
       {activeModal === "pyq" && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-ink/60 p-4 backdrop-blur-sm"
           onClick={closeModal}
         >
           <div
-            className="w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+            className="max-h-[90vh] w-full max-w-2xl overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
             <PyqsForm
@@ -441,11 +432,11 @@ export default function UserDashboard() {
 
       {activeModal === "syllabus" && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-ink/60 p-4 backdrop-blur-sm"
           onClick={closeModal}
         >
           <div
-            className="w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+            className="max-h-[90vh] w-full max-w-2xl overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
             <SyllabusForm
@@ -462,4 +453,3 @@ export default function UserDashboard() {
     </DashboardLayout>
   );
 }
-

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useCallback, useMemo } from "react";
+import dynamic from "next/dynamic";
 import { useSocialStore } from "@/stores/social/social.store";
 import useAuthStore from "@/stores/user/authStore";
 import { useRouter } from "next/navigation";
@@ -21,16 +22,22 @@ import {
 } from "react-icons/fi";
 import { FaHeart } from "react-icons/fa";
 import toast from "react-hot-toast";
-import CommentsModal from "./CommentsModal";
-import EditPostModal from "./EditPostModal";
-import LikesModal from "./LikesModal";
 import ProfileCardHover from "./ProfileCardHover";
-import ConfirmationDialog from "@/components/shared/ConfirmationDialog";
 import Image from "next/image";
 import { Menu, Transition } from "@headlessui/react";
 import { Fragment } from "react";
 import VerifiedBadge from "./VerifiedBadge";
-import ReportModal from "./ReportModal";
+import { Avatar, Badge, type BadgeVariant } from "@/components/ui";
+
+// Interaction-only modals: only needed after a click, so keep them out of
+// PostCard's (list-rendered) initial bundle.
+const CommentsModal = dynamic(() => import("./CommentsModal"));
+const EditPostModal = dynamic(() => import("./EditPostModal"));
+const LikesModal = dynamic(() => import("./LikesModal"));
+const ReportModal = dynamic(() => import("./ReportModal"));
+const ConfirmationDialog = dynamic(
+  () => import("@/components/shared/ConfirmationDialog"),
+);
 
 interface PostCardProps {
   post: Post;
@@ -43,23 +50,23 @@ const postTypeMeta: Record<
   {
     label: string;
     Icon: React.ComponentType<{ size?: number; className?: string }>;
-    className: string;
+    badgeVariant: BadgeVariant;
   }
 > = {
   general: {
     label: "General",
     Icon: FiMessageSquare,
-    className: "bg-slate-100 text-slate-700 border-slate-200",
+    badgeVariant: "default",
   },
   announcement: {
     label: "Announcement",
     Icon: FiBell,
-    className: "bg-amber-50 text-amber-700 border-amber-200",
+    badgeVariant: "coral",
   },
   event: {
     label: "Event",
     Icon: FiCalendar,
-    className: "bg-emerald-50 text-emerald-700 border-emerald-200",
+    badgeVariant: "mint",
   },
 };
 
@@ -69,15 +76,13 @@ export default function PostCard({
   style,
 }: PostCardProps) {
   const router = useRouter();
-  const { user } = useAuthStore();
-  const {
-    togglePostLike,
-    removePost,
-    toggleUserFollow,
-    followStats,
-    feed,
-    userPosts,
-  } = useSocialStore();
+  const user = useAuthStore((s) => s.user);
+  const togglePostLike = useSocialStore((s) => s.togglePostLike);
+  const removePost = useSocialStore((s) => s.removePost);
+  const toggleUserFollow = useSocialStore((s) => s.toggleUserFollow);
+  const followStats = useSocialStore((s) => s.followStats);
+  const feed = useSocialStore((s) => s.feed);
+  const userPosts = useSocialStore((s) => s.userPosts);
 
   const [showComments, setShowComments] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -332,28 +337,26 @@ export default function PostCard({
     <>
       <div
         style={style}
-        className={`relative isolate overflow-visible bg-white border-gray-600 border-2 rounded-xl border border-gray-200 shadow-sm hover:shadow-lg transition-all duration-300 ${
+        className={`relative isolate overflow-visible rounded-2xl border border-border bg-card shadow-soft-sm transition-all duration-300 hover:shadow-soft-md ${
           showProfileHover ? "z-50" : "z-0"
         } ${className}`}
       >
         {/* Header Section */}
-        <div className="px-5 pt-4 pb-3 border-b border-gray-100 flex items-center justify-between">
-          <div className="relative flex items-center gap-3 flex-1 min-w-0">
+        <div className="flex items-center justify-between border-b border-border px-5 pt-4 pb-3">
+          <div className="relative flex min-w-0 flex-1 items-center gap-3">
             <span
               onClick={handleViewProfile}
               onMouseEnter={openProfileHover}
               onMouseLeave={scheduleProfileHoverClose}
               className="cursor-pointer flex-shrink-0"
             >
-              <Image
-                src={authorImage || "/images/default-avatar.png"}
+              <Avatar
+                src={authorImage}
                 alt={
                   (currentPost.author as { username?: string })?.username ||
                   "User"
                 }
-                width={44}
-                height={44}
-                className="rounded-full object-cover"
+                size="md"
               />
             </span>
             <div className="min-w-0 flex-1">
@@ -363,7 +366,7 @@ export default function PostCard({
                 onMouseLeave={scheduleProfileHoverClose}
               >
                 <p
-                  className="font-semibold text-gray-900 text-sm truncate cursor-pointer hover:underline underline-offset-2 decoration-2 transition-opacity"
+                  className="cursor-pointer truncate text-sm font-semibold text-foreground underline-offset-2 decoration-2 transition-opacity hover:underline"
                   onClick={handleViewProfile}
                 >
                   <span className="inline-flex items-center gap-1">
@@ -371,7 +374,7 @@ export default function PostCard({
                     <VerifiedBadge role={authorRole} size={12} />
                   </span>
                 </p>
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-muted-foreground">
                   {formatDate(currentPost.createdAt)}
                 </p>
 
@@ -387,17 +390,14 @@ export default function PostCard({
             </div>
           </div>
 
-          <div
-            className={`mr-2 inline-flex shrink-0 items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-semibold ${typeMeta.className}`}
-          >
-            <TypeIcon size={13} />
+          <Badge variant={typeMeta.badgeVariant} icon={<TypeIcon size={13} />} className="mr-2 shrink-0">
             {typeMeta.label}
-          </div>
+          </Badge>
 
           {/* More Menu */}
           <Menu as="div" className="relative flex-shrink-0">
-            <Menu.Button className="p-1.5 hover:bg-gray-100 rounded-full focus:outline-none transition-colors">
-              <FiMoreVertical className="h-5 w-5 text-gray-600 hover:text-gray-900" />
+            <Menu.Button className="rounded-full p-1.5 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground focus:outline-none cursor-pointer">
+              <FiMoreVertical className="h-5 w-5" />
             </Menu.Button>
             <Transition
               as={Fragment}
@@ -408,7 +408,7 @@ export default function PostCard({
               leaveFrom="transform opacity-100 scale-100"
               leaveTo="transform opacity-0 scale-95"
             >
-              <Menu.Items className="absolute right-0 mt-2 w-44 origin-top-right bg-white rounded-lg shadow-lg border border-gray-200 focus:outline-none z-20">
+              <Menu.Items className="absolute right-0 z-20 mt-2 w-44 origin-top-right rounded-xl border border-border bg-card shadow-soft-lg focus:outline-none">
                 <div className="py-1">
                   {!isAuthor && (
                     <Menu.Item>
@@ -416,10 +416,10 @@ export default function PostCard({
                         <button
                           onClick={handleFollow}
                           disabled={isFollowLoading}
-                          className={`w-full flex items-center gap-2 px-4 py-2.5 text-sm font-medium transition-colors ${
+                          className={`flex w-full items-center gap-2 px-4 py-2.5 text-sm font-medium transition-colors cursor-pointer ${
                             active
-                              ? "bg-blue-50 text-blue-600"
-                              : "text-gray-900"
+                              ? "bg-primary/10 text-primary"
+                              : "text-foreground"
                           } ${isFollowLoading ? "opacity-50" : ""}`}
                         >
                           {isFollowing ? (
@@ -443,10 +443,10 @@ export default function PostCard({
                         {({ active }) => (
                           <button
                             onClick={() => openReportModal("post", post._id)}
-                            className={`w-full flex items-center gap-2 px-4 py-2.5 text-sm font-medium transition-colors ${
+                            className={`flex w-full items-center gap-2 px-4 py-2.5 text-sm font-medium transition-colors cursor-pointer ${
                               active
-                                ? "bg-amber-50 text-amber-700"
-                                : "text-gray-900"
+                                ? "bg-warning/10 text-warning"
+                                : "text-foreground"
                             }`}
                           >
                             <FiFlag size={16} />
@@ -461,10 +461,10 @@ export default function PostCard({
                               onClick={() =>
                                 openReportModal("user", authorId)
                               }
-                              className={`w-full flex items-center gap-2 px-4 py-2.5 text-sm font-medium transition-colors ${
+                              className={`flex w-full items-center gap-2 px-4 py-2.5 text-sm font-medium transition-colors cursor-pointer ${
                                 active
-                                  ? "bg-amber-50 text-amber-700"
-                                  : "text-gray-900"
+                                  ? "bg-warning/10 text-warning"
+                                  : "text-foreground"
                               }`}
                             >
                               <FiFlag size={16} />
@@ -481,10 +481,10 @@ export default function PostCard({
                         {({ active }) => (
                           <button
                             onClick={() => setShowEditModal(true)}
-                            className={`w-full flex items-center gap-2 px-4 py-2.5 text-sm font-medium transition-colors ${
+                            className={`flex w-full items-center gap-2 px-4 py-2.5 text-sm font-medium transition-colors cursor-pointer ${
                               active
-                                ? "bg-blue-50 text-blue-600"
-                                : "text-gray-900"
+                                ? "bg-primary/10 text-primary"
+                                : "text-foreground"
                             }`}
                           >
                             <FiEdit2 size={16} />
@@ -496,8 +496,8 @@ export default function PostCard({
                         {({ active }) => (
                           <button
                             onClick={() => setShowDeleteDialog(true)}
-                            className={`w-full flex items-center gap-2 px-4 py-2.5 text-sm font-medium transition-colors ${
-                              active ? "bg-red-50 text-red-600" : "text-red-600"
+                            className={`flex w-full items-center gap-2 px-4 py-2.5 text-sm font-medium transition-colors cursor-pointer ${
+                              active ? "bg-destructive/10 text-destructive" : "text-destructive"
                             }`}
                           >
                             <FiTrash2 size={16} />
@@ -515,16 +515,16 @@ export default function PostCard({
 
         {/* Content Section */}
         <div className="px-5 py-4">
-          <p className="text-base leading-relaxed text-black whitespace-pre-wrap break-words">
+          <p className="whitespace-pre-wrap break-words text-base leading-relaxed text-foreground">
             {post.content}
           </p>
         </div>
 
         {/* Media Gallery */}
         {post.files && post.files.length > 0 && (
-          <div className="px-5 py-3 bg-gray-50 border-t border-b border-gray-100">
+          <div className="border-t border-b border-border bg-muted/50 px-5 py-3">
             <div
-              className={`grid gap-2 rounded-lg overflow-hidden ${
+              className={`grid gap-2 rounded-xl overflow-hidden ${
                 post.files.length === 1
                   ? "grid-cols-1"
                   : post.files.length === 2
@@ -538,7 +538,7 @@ export default function PostCard({
               {post.files.map((file, idx) => (
                 <div
                   key={idx}
-                  className="group/media relative overflow-hidden rounded-lg bg-gray-100 aspect-square cursor-pointer"
+                  className="group/media relative aspect-square cursor-pointer overflow-hidden rounded-lg bg-muted"
                   onDoubleClick={handleDoubleTap}
                 >
                   {file.match(/\.(jpg|jpeg|png|gif|webp)$/i) ? (
@@ -576,9 +576,9 @@ export default function PostCard({
                       href={file}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center justify-center h-full bg-gradient-to-br from-gray-200 to-gray-300 hover:from-gray-300 hover:to-gray-400 transition-colors"
+                      className="flex h-full items-center justify-center bg-gradient-to-br from-secondary to-secondary-hover transition-colors hover:opacity-80"
                     >
-                      <span className="text-sm font-semibold text-gray-700">
+                      <span className="text-sm font-semibold text-foreground">
                         File
                       </span>
                     </a>
@@ -589,18 +589,18 @@ export default function PostCard({
           </div>
         )}
 
-        <div className="px-5 py-3 border-t border-gray-100 flex items-center gap-6 text-sm font-semibold text-gray-700">
+        <div className="flex items-center gap-6 border-t border-border px-5 py-3 text-sm font-semibold text-muted-foreground">
           {/* Like Section */}
           <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={handleLike}
-              className="flex items-center p-1 hover:text-red-600 group cursor-pointer"
+              className="group flex items-center p-1 hover:text-destructive cursor-pointer"
             >
               {isLiked ? (
                 <FaHeart
                   size={20}
-                  className="text-red-600 group-hover:scale-110"
+                  className="text-destructive group-hover:scale-110"
                 />
               ) : (
                 <FiHeart size={20} className="group-hover:scale-110" />
@@ -610,7 +610,7 @@ export default function PostCard({
               type="button"
               onClick={() => setShowLikesModal(true)}
               disabled={likeCount === 0}
-              className="font-bold text-gray-900 hover:text-red-600 disabled:opacity-50 cursor-pointer"
+              className="font-bold text-foreground hover:text-destructive disabled:opacity-50 cursor-pointer"
             >
               {likeCount > 1000
                 ? (likeCount / 1000).toFixed(1) + "K"
@@ -623,17 +623,17 @@ export default function PostCard({
             <button
               type="button"
               onClick={handleComment}
-              className="flex items-center hover:text-blue-600 transition-colors group cursor-pointer"
+              className="group flex items-center transition-colors hover:text-primary cursor-pointer"
             >
               <FiMessageCircle
                 size={20}
-                className="group-hover:scale-110 transition-transform"
+                className="transition-transform group-hover:scale-110"
               />
             </button>
             <button
               type="button"
               onClick={handleComment}
-              className="font-bold text-gray-900 hover:text-blue-600 transition-colors cursor-pointer"
+              className="font-bold text-foreground transition-colors hover:text-primary cursor-pointer"
             >
               {post.commentCount}
             </button>
@@ -642,11 +642,11 @@ export default function PostCard({
           {/* Share Section */}
           <button
             onClick={handleShare}
-            className="flex items-center hover:text-green-600 transition-colors group cursor-pointer"
+            className="group flex items-center transition-colors hover:text-success cursor-pointer"
           >
             <FiShare2
               size={20}
-              className="group-hover:scale-110 transition-transform"
+              className="transition-transform group-hover:scale-110"
             />
           </button>
         </div>

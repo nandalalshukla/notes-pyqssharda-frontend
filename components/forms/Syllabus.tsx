@@ -2,8 +2,10 @@
 
 import React, { useState, useEffect } from "react";
 import { toast } from "react-hot-toast";
+import { X } from "lucide-react";
 import { Syllabus } from "@/lib/api/syllabus/syllabus.api";
 import { useSyllabusStore } from "@/stores/syllabus/syllabus.store";
+import { Button, Input, Select } from "@/components/ui";
 
 interface SyllabusFormProps {
   onClose?: () => void;
@@ -114,7 +116,6 @@ export default function SyllabusForm({
       if (file) {
         data.append("file", file);
       }
-      console.log("Submitting Syllabus:", data);
 
       if (initialData) {
         await editSyllabus(initialData._id, data);
@@ -139,18 +140,19 @@ export default function SyllabusForm({
   };
 
   return (
-    <div className="w-full max-w-md mx-auto bg-white p-8 rounded-2xl border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-black text-black flex items-center gap-2">
-          <span className="w-4 h-4 rounded-full border-2 border-black bg-[#C084FC]"></span>
+    <div className="mx-auto w-full max-w-md rounded-2xl border border-border bg-card p-8 shadow-soft-lg">
+      <div className="mb-6 flex items-center justify-between">
+        <h2 className="flex items-center gap-2 text-2xl font-black text-foreground">
+          <span className="h-4 w-4 rounded-full bg-accent-purple"></span>
           {initialData ? "Edit Syllabus" : "Upload Syllabus"}
         </h2>
         {onClose && (
           <button
             onClick={onClose}
-            className="text-black hover:text-gray-600 transition-colors font-bold text-xl"
+            aria-label="Close"
+            className="cursor-pointer text-foreground transition-colors hover:text-muted-foreground"
           >
-            ✕
+            <X size={20} />
           </button>
         )}
       </div>
@@ -158,34 +160,31 @@ export default function SyllabusForm({
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Title */}
         <div>
-          <label className="block text-sm font-bold text-black mb-1">
+          <label className="mb-1 block text-sm font-bold text-foreground">
             Title
           </label>
-          <input
+          <Input
             type="text"
             name="title"
             value={formData.title}
             onChange={handleChange}
             placeholder="e.g. CSE Syllabus 2024"
-            className="w-full px-4 py-2 rounded-lg border-2 border-black focus:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] outline-none transition-all text-sm font-medium text-black placeholder:text-gray-500"
             required
           />
         </div>
 
         {/* File Upload */}
         <div>
-          <label className="block text-sm font-bold text-black mb-1">
+          <label className="mb-1 block text-sm font-bold text-foreground">
             File
           </label>
-          <div className="relative">
-            <input
-              type="file"
-              onChange={handleFileChange}
-              accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
-              className="w-full px-4 py-2 rounded-lg border-2 border-black focus:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] outline-none transition-all text-sm font-medium text-black placeholder:text-gray-500 file:mr-4 file:py-1 file:px-3 file:rounded-full file:border-2 file:border-black file:text-xs file:font-bold file:bg-[#C084FC] file:text-black hover:file:bg-[#a855f7] cursor-pointer"
-              required={!initialData}
-            />
-          </div>
+          <input
+            type="file"
+            onChange={handleFileChange}
+            accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+            className="w-full cursor-pointer rounded-xl border border-input bg-card px-3.5 py-2 text-sm font-medium text-foreground outline-none transition-colors file:mr-4 file:cursor-pointer file:rounded-full file:border-0 file:bg-accent-purple file:px-3 file:py-1 file:text-xs file:font-bold file:text-accent-purple-foreground hover:file:opacity-90 focus:ring-2 focus:ring-ring"
+            required={!initialData}
+          />
           {initialData && initialData.fileUrl && (
             <div className="mt-1 text-xs">
               Current file:{" "}
@@ -193,7 +192,7 @@ export default function SyllabusForm({
                 href={initialData.fileUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-blue-600 underline font-bold"
+                className="font-bold text-primary underline"
               >
                 View
               </a>
@@ -204,14 +203,13 @@ export default function SyllabusForm({
         {/* Program & Semester Row */}
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-bold text-black mb-1">
+            <label className="mb-1 block text-sm font-bold text-foreground">
               Program
             </label>
-            <select
+            <Select
               name="program"
               value={formData.program}
               onChange={handleChange}
-              className="w-full px-4 py-2 rounded-lg border-2 border-black focus:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] outline-none transition-all text-sm font-medium bg-white text-black"
               required
             >
               <option value="">Select</option>
@@ -220,17 +218,16 @@ export default function SyllabusForm({
                   {p}
                 </option>
               ))}
-            </select>
+            </Select>
           </div>
           <div>
-            <label className="block text-sm font-bold text-black mb-1">
+            <label className="mb-1 block text-sm font-bold text-foreground">
               Semester
             </label>
-            <select
+            <Select
               name="semester"
               value={formData.semester}
               onChange={handleChange}
-              className="w-full px-4 py-2 rounded-lg border-2 border-black focus:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] outline-none transition-all text-sm font-medium bg-white text-black"
               required
             >
               <option value="">Select</option>
@@ -239,47 +236,42 @@ export default function SyllabusForm({
                   {s}
                 </option>
               ))}
-            </select>
+            </Select>
           </div>
         </div>
 
         {/* Course Code & Name Row */}
         <div className="grid grid-cols-3 gap-4">
           <div className="col-span-1">
-            <label className="block text-sm font-bold text-black mb-1">
+            <label className="mb-1 block text-sm font-bold text-foreground">
               Code
             </label>
-            <input
+            <Input
               type="text"
               name="courseCode"
               value={formData.courseCode}
               onChange={handleChange}
               placeholder="CSE101"
-              className="w-full px-4 py-2 rounded-lg border-2 border-black focus:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] outline-none transition-all text-sm font-medium uppercase text-black placeholder:text-gray-500"
+              className="uppercase"
               required
             />
           </div>
           <div className="col-span-2">
-            <label className="block text-sm font-bold text-black mb-1">
+            <label className="mb-1 block text-sm font-bold text-foreground">
               Course Name
             </label>
-            <input
+            <Input
               type="text"
               name="courseName"
               value={formData.courseName}
               onChange={handleChange}
               placeholder="Computer Networks"
-              className="w-full px-4 py-2 rounded-lg border-2 border-black focus:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] outline-none transition-all text-sm font-medium text-black placeholder:text-gray-500"
               required
             />
           </div>
         </div>
 
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full mt-6 bg-black hover:bg-gray-800 text-white font-bold py-3 rounded-lg transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,0.2)] disabled:opacity-70 disabled:cursor-not-allowed border-2 border-transparent hover:border-black"
-        >
+        <Button type="submit" loading={loading} className="mt-6 w-full" size="lg">
           {loading
             ? initialData
               ? "Updating..."
@@ -287,7 +279,7 @@ export default function SyllabusForm({
             : initialData
               ? "Update Syllabus"
               : "Upload Syllabus"}
-        </button>
+        </Button>
       </form>
     </div>
   );

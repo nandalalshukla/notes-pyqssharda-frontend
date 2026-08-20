@@ -1,8 +1,6 @@
 "use client";
 
 import React, { useState, useCallback, useEffect, useRef } from "react";
-import { Dialog, Transition } from "@headlessui/react";
-import { Fragment } from "react";
 import { useRouter } from "next/navigation";
 import { useSocialStore } from "@/stores/social/social.store";
 import useAuthStore from "@/stores/user/authStore";
@@ -10,7 +8,6 @@ import { Comment } from "@/lib/api/social/social.api";
 import {
   FiHeart,
   FiMoreVertical,
-  FiX,
   FiSend,
   FiEdit2,
   FiTrash2,
@@ -22,11 +19,11 @@ import {
 } from "react-icons/fi";
 import { FaHeart } from "react-icons/fa";
 import toast from "react-hot-toast";
-import Image from "next/image";
 import { useBodyScroll } from "@/hooks/useBodyScroll";
 import ConfirmationDialog from "@/components/shared/ConfirmationDialog";
 import VerifiedBadge from "./VerifiedBadge";
 import ReportModal from "./ReportModal";
+import { Modal, Avatar } from "@/components/ui";
 
 interface CommentsModalProps {
   postId: string;
@@ -307,11 +304,11 @@ export default function CommentsModal({
     return (
       <div className={`mt-4 space-y-4 ${depth > 0 ? "ml-8" : "ml-8"}`}>
         {repliesLoading ? (
-          <div className="text-xs text-gray-500 flex items-center gap-2">
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
             <FiLoader className="animate-spin" /> Loading replies
           </div>
         ) : commentReplies.length === 0 ? (
-          <div className="text-xs text-gray-500">No replies yet</div>
+          <div className="text-xs text-muted-foreground">No replies yet</div>
         ) : (
           commentReplies.map((reply) => {
             const isReplyAuthor =
@@ -324,37 +321,25 @@ export default function CommentsModal({
                 <button
                   type="button"
                   onClick={() => handleViewProfile(reply.author)}
-                  className="w-8 h-8 rounded-full bg-gradient-to-br from-green-400 to-blue-500 shrink-0 flex items-center justify-center overflow-hidden border border-gray-200 cursor-pointer"
+                  className="shrink-0 cursor-pointer"
                 >
-                  {reply.author.profilePic?.url ? (
-                    <Image
-                      src={reply.author.profilePic.url}
-                      alt={reply.author.username || "User"}
-                      width={32}
-                      height={32}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <span className="text-white font-bold text-xs">
-                      {(reply.author.username || "U")[0].toUpperCase()}
-                    </span>
-                  )}
+                  <Avatar src={reply.author.profilePic?.url} alt={reply.author.username || "User"} size="sm" />
                 </button>
                 <div className="flex-1">
-                  <div className="bg-white border border-gray-200 rounded-xl p-3">
-                    <div className="flex items-start justify-between mb-2">
-                      <div className="flex-1 min-w-0">
+                  <div className="rounded-xl border border-border bg-card p-3">
+                    <div className="mb-2 flex items-start justify-between">
+                      <div className="min-w-0 flex-1">
                         <button
                           type="button"
                           onClick={() => handleViewProfile(reply.author)}
-                          className="inline-flex max-w-full items-center gap-1 font-semibold text-xs text-gray-900 hover:underline underline-offset-2"
+                          className="inline-flex max-w-full items-center gap-1 text-xs font-semibold text-foreground underline-offset-2 hover:underline cursor-pointer"
                         >
                           <span className="truncate">
                             {reply.author.username || "Anonymous"}
                           </span>
                           <VerifiedBadge role={reply.author.role} size={11} />
                         </button>
-                        <p className="text-xs text-gray-500 mt-0.5">
+                        <p className="mt-0.5 text-xs text-muted-foreground">
                           {formatRelativeTime(reply.createdAt)}
                         </p>
                       </div>
@@ -368,15 +353,15 @@ export default function CommentsModal({
                                   : reply._id,
                               )
                             }
-                            className="opacity-0 group-hover/comment:opacity-100 transition-opacity p-1 hover:bg-gray-200 rounded"
+                            className="rounded p-1 opacity-0 transition-opacity group-hover/comment:opacity-100 hover:bg-secondary cursor-pointer"
                           >
                             <FiMoreVertical
                               size={14}
-                              className="text-gray-500"
+                              className="text-muted-foreground"
                             />
                           </button>
                           {showCommentMenu === reply._id && (
-                            <div className="absolute right-0 top-full mt-2 min-w-[120px] overflow-hidden rounded-lg border border-gray-200 bg-white shadow-lg z-20">
+                            <div className="absolute top-full right-0 z-20 mt-2 min-w-[120px] overflow-hidden rounded-lg border border-border bg-card shadow-soft-lg">
                               {isReplyAuthor && (
                                 <>
                                   <button
@@ -385,7 +370,7 @@ export default function CommentsModal({
                                       setEditText(reply.text);
                                       setShowCommentMenu(null);
                                     }}
-                                    className="flex w-full items-center gap-2 px-3 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50"
+                                    className="flex w-full items-center gap-2 px-3 py-2 text-xs font-semibold text-foreground hover:bg-secondary cursor-pointer"
                                   >
                                     <FiEdit2 size={14} />
                                     Edit
@@ -395,7 +380,7 @@ export default function CommentsModal({
                                       handleDeleteComment(reply._id);
                                       setShowCommentMenu(null);
                                     }}
-                                    className="flex w-full items-center gap-2 px-3 py-2 text-xs font-semibold text-red-600 hover:bg-red-50"
+                                    className="flex w-full items-center gap-2 px-3 py-2 text-xs font-semibold text-destructive hover:bg-destructive/10 cursor-pointer"
                                   >
                                     <FiTrash2 size={14} />
                                     Delete
@@ -413,7 +398,7 @@ export default function CommentsModal({
                                     );
                                     setShowCommentMenu(null);
                                   }}
-                                  className="flex w-full items-center gap-2 px-3 py-2 text-xs font-semibold text-amber-600 hover:bg-amber-50"
+                                  className="flex w-full items-center gap-2 px-3 py-2 text-xs font-semibold text-warning hover:bg-warning/10 cursor-pointer"
                                 >
                                   <FiFlag size={14} />
                                   Report
@@ -429,13 +414,13 @@ export default function CommentsModal({
                         <textarea
                           value={editText}
                           onChange={(e) => setEditText(e.target.value)}
-                          className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-sm"
+                          className="w-full resize-none rounded-lg border border-input bg-card px-3 py-2 text-sm focus:ring-2 focus:ring-ring focus:outline-none"
                           rows={2}
                         />
-                        <div className="flex gap-2 mt-3">
+                        <div className="mt-3 flex gap-2">
                           <button
                             onClick={() => handleUpdateComment(reply._id)}
-                            className="px-3 py-2 bg-blue-600 text-white rounded-lg text-xs font-semibold hover:bg-blue-700 transition-colors"
+                            className="rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground transition-colors hover:bg-primary-hover cursor-pointer"
                           >
                             Save
                           </button>
@@ -444,28 +429,28 @@ export default function CommentsModal({
                               setEditingCommentId(null);
                               setEditText("");
                             }}
-                            className="px-3 py-2 border border-gray-300 rounded-lg text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
+                            className="rounded-lg border border-border px-3 py-2 text-xs font-semibold text-foreground transition-colors hover:bg-secondary cursor-pointer"
                           >
                             Cancel
                           </button>
                         </div>
                       </div>
                     ) : (
-                      <p className="text-sm text-gray-900 leading-relaxed whitespace-pre-wrap break-words">
+                      <p className="text-sm leading-relaxed whitespace-pre-wrap break-words text-foreground">
                         {reply.text}
                       </p>
                     )}
                   </div>
                   {editingCommentId !== reply._id && (
-                    <div className="flex items-center gap-2 mt-2 flex-wrap">
+                    <div className="mt-2 flex flex-wrap items-center gap-2">
                       <button
                         onClick={() => handleLikeComment(reply._id)}
-                        className="flex items-center p-1 hover:text-red-600 group cursor-pointer"
+                        className="group flex items-center p-1 hover:text-destructive cursor-pointer"
                       >
                         {reply.likedByCurrentUser ? (
                           <FaHeart
                             size={20}
-                            className="text-red-600 group-hover:scale-110"
+                            className="text-destructive group-hover:scale-110"
                           />
                         ) : (
                           <FiHeart
@@ -474,14 +459,14 @@ export default function CommentsModal({
                           />
                         )}
                       </button>
-                      <span className="text-xs font-semibold text-gray-600">
+                      <span className="text-xs font-semibold text-muted-foreground">
                         {reply.likes || 0}{" "}
                         {(reply.likes || 0) === 1 ? "like" : "likes"}
                       </span>
 
                       <button
                         onClick={() => toggleReplyForm(reply._id)}
-                        className="flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-semibold text-gray-600 hover:bg-gray-100 transition-all"
+                        className="flex items-center gap-1.5 rounded-full px-2 py-1 text-xs font-semibold text-muted-foreground transition-all hover:bg-secondary cursor-pointer"
                       >
                         <FiCornerDownRight size={12} />
                         Reply
@@ -489,7 +474,7 @@ export default function CommentsModal({
 
                       <button
                         onClick={() => handleToggleReplies(reply._id)}
-                        className="flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-semibold text-gray-600 hover:bg-gray-100 transition-all"
+                        className="flex items-center gap-1.5 rounded-full px-2 py-1 text-xs font-semibold text-muted-foreground transition-all hover:bg-secondary cursor-pointer"
                       >
                         <FiMessageSquare size={12} />
                         {expandedReplies.has(reply._id)
@@ -505,41 +490,27 @@ export default function CommentsModal({
                       className="mt-3"
                     >
                       <div className="flex gap-3">
-                        <div className="w-7 h-7 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 shrink-0 flex items-center justify-center overflow-hidden border border-gray-200">
-                          {user.profilePic?.url ? (
-                            <Image
-                              src={user.profilePic.url}
-                              alt={user.name || user.username || "User"}
-                              width={28}
-                              height={28}
-                              className="w-full h-full object-cover"
-                            />
-                          ) : (
-                            <span className="text-white font-bold text-[10px]">
-                              {(user.username || "U")[0].toUpperCase()}
-                            </span>
-                          )}
-                        </div>
+                        <Avatar src={user.profilePic?.url} alt={user.name || user.username || "User"} size="xs" />
                         <div className="flex-1">
                           <textarea
                             value={replyText}
                             onChange={(e) => setReplyText(e.target.value)}
                             placeholder="Write a reply..."
-                            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-sm"
+                            className="w-full resize-none rounded-lg border border-input bg-card p-3 text-sm focus:ring-2 focus:ring-ring focus:outline-none"
                             rows={2}
                           />
-                          <div className="flex gap-2 mt-3">
+                          <div className="mt-3 flex gap-2">
                             <button
                               type="submit"
                               disabled={isSubmitting || !replyText.trim()}
-                              className="px-3 py-2 bg-blue-600 text-white rounded-lg text-xs font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50"
+                              className="rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground transition-colors hover:bg-primary-hover disabled:opacity-50 cursor-pointer"
                             >
                               Reply
                             </button>
                             <button
                               type="button"
                               onClick={() => setReplyingToId(null)}
-                              className="px-3 py-2 border border-gray-300 rounded-lg text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
+                              className="rounded-lg border border-border px-3 py-2 text-xs font-semibold text-foreground transition-colors hover:bg-secondary cursor-pointer"
                             >
                               Cancel
                             </button>
@@ -565,37 +536,29 @@ export default function CommentsModal({
     const isCommentAuthor = user?._id === authorId;
 
     return (
-      <div key={comment._id} className="flex gap-3 group/comment">
+      <div key={comment._id} className="group/comment flex gap-3">
         {/* Avatar */}
         <button
           type="button"
           onClick={() => handleViewProfile(comment.author)}
-          className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex-shrink-0 overflow-hidden flex items-center justify-center border border-gray-200 cursor-pointer"
+          className="shrink-0 cursor-pointer"
         >
-          {comment.author?.profilePic?.url ? (
-            <Image
-              src={comment.author.profilePic.url}
-              alt={comment.author.username || "User"}
-              width={32}
-              height={32}
-              className="w-full h-full object-cover"
-            />
-          ) : (
-            <span className="text-white font-bold text-xs">
-              {(comment.author?.username || "U")[0].toUpperCase()}
-            </span>
-          )}
+          <Avatar
+            src={comment.author?.profilePic?.url}
+            alt={comment.author?.username || "User"}
+            size="sm"
+          />
         </button>
 
         {/* Comment Content */}
-        <div className="flex-1 min-w-0">
-          <div className="bg-gray-100 rounded-xl px-3 py-2">
+        <div className="min-w-0 flex-1">
+          <div className="rounded-xl bg-muted px-3 py-2">
             <div className="flex items-start justify-between gap-2">
-              <div className="flex-1 min-w-0">
+              <div className="min-w-0 flex-1">
                 <button
                   type="button"
                   onClick={() => handleViewProfile(comment.author)}
-                  className="inline-flex max-w-full items-center gap-1 text-sm font-semibold text-gray-900 hover:underline underline-offset-2"
+                  className="inline-flex max-w-full items-center gap-1 text-sm font-semibold text-foreground underline-offset-2 hover:underline cursor-pointer"
                 >
                   <span className="truncate">
                     {comment.author?.username || "Anonymous"}
@@ -607,13 +570,13 @@ export default function CommentsModal({
                     <textarea
                       value={editText}
                       onChange={(e) => setEditText(e.target.value)}
-                      className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full resize-none rounded-lg border border-input bg-card px-3 py-2 text-sm focus:ring-2 focus:ring-ring focus:outline-none"
                       rows={2}
                     />
                     <div className="mt-2 flex gap-2">
                       <button
                         onClick={() => handleUpdateComment(comment._id)}
-                        className="rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-blue-700 transition-colors"
+                        className="rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground transition-colors hover:bg-primary-hover cursor-pointer"
                       >
                         Save
                       </button>
@@ -622,14 +585,14 @@ export default function CommentsModal({
                           setEditingCommentId(null);
                           setEditText("");
                         }}
-                        className="rounded-lg border border-gray-300 px-3 py-1.5 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
+                        className="rounded-lg border border-border px-3 py-1.5 text-xs font-semibold text-foreground transition-colors hover:bg-secondary cursor-pointer"
                       >
                         Cancel
                       </button>
                     </div>
                   </div>
                 ) : (
-                  <p className="text-sm text-gray-800 mt-0.5 break-words">
+                  <p className="mt-0.5 text-sm break-words text-foreground">
                     {comment.text}
                   </p>
                 )}
@@ -642,12 +605,12 @@ export default function CommentsModal({
                         showCommentMenu === comment._id ? null : comment._id,
                       )
                     }
-                    className="opacity-0 group-hover/comment:opacity-100 transition-opacity p-1 hover:bg-gray-200 rounded"
+                    className="rounded p-1 opacity-0 transition-opacity group-hover/comment:opacity-100 hover:bg-secondary-hover cursor-pointer"
                   >
-                    <FiMoreVertical size={14} className="text-gray-500" />
+                    <FiMoreVertical size={14} className="text-muted-foreground" />
                   </button>
                   {showCommentMenu === comment._id && (
-                    <div className="absolute right-0 top-full mt-2 min-w-[120px] overflow-hidden rounded-lg border border-gray-200 bg-white shadow-lg z-20">
+                    <div className="absolute top-full right-0 z-20 mt-2 min-w-[120px] overflow-hidden rounded-lg border border-border bg-card shadow-soft-lg">
                       {isCommentAuthor && (
                         <>
                           <button
@@ -656,7 +619,7 @@ export default function CommentsModal({
                               setEditText(comment.text);
                               setShowCommentMenu(null);
                             }}
-                            className="flex w-full items-center gap-2 px-3 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50"
+                            className="flex w-full items-center gap-2 px-3 py-2 text-xs font-semibold text-foreground hover:bg-secondary cursor-pointer"
                           >
                             <FiEdit2 size={14} />
                             Edit
@@ -666,7 +629,7 @@ export default function CommentsModal({
                               handleDeleteComment(comment._id);
                               setShowCommentMenu(null);
                             }}
-                            className="flex w-full items-center gap-2 px-3 py-2 text-xs font-semibold text-red-600 hover:bg-red-50"
+                            className="flex w-full items-center gap-2 px-3 py-2 text-xs font-semibold text-destructive hover:bg-destructive/10 cursor-pointer"
                           >
                             <FiTrash2 size={14} />
                             Delete
@@ -684,7 +647,7 @@ export default function CommentsModal({
                             );
                             setShowCommentMenu(null);
                           }}
-                          className="flex w-full items-center gap-2 px-3 py-2 text-xs font-semibold text-amber-600 hover:bg-amber-50"
+                          className="flex w-full items-center gap-2 px-3 py-2 text-xs font-semibold text-warning hover:bg-warning/10 cursor-pointer"
                         >
                           <FiFlag size={14} />
                           Report
@@ -698,34 +661,34 @@ export default function CommentsModal({
           </div>
 
           {/* Comment Actions */}
-          <div className="flex items-center gap-3 mt-2 text-xs text-gray-500 px-3 flex-wrap">
+          <div className="mt-2 flex flex-wrap items-center gap-3 px-3 text-xs text-muted-foreground">
             <button
               onClick={() => handleLikeComment(comment._id)}
-              className="flex items-center p-1 hover:text-red-600 group cursor-pointer"
+              className="group flex items-center p-1 hover:text-destructive cursor-pointer"
             >
               {comment.likedByCurrentUser ? (
                 <FaHeart
                   size={20}
-                  className="text-red-600 group-hover:scale-110"
+                  className="text-destructive group-hover:scale-110"
                 />
               ) : (
                 <FiHeart size={20} className="group-hover:scale-110" />
               )}
             </button>
-            <span className="text-xs font-semibold text-gray-600">
+            <span className="text-xs font-semibold text-muted-foreground">
               {comment.likes || 0}
             </span>
             <span>{formatRelativeTime(comment.createdAt)}</span>
             <button
               onClick={() => toggleReplyForm(comment._id)}
-              className="flex items-center gap-1.5 font-semibold text-gray-500 hover:text-gray-900 transition-colors"
+              className="flex items-center gap-1.5 font-semibold text-muted-foreground transition-colors hover:text-foreground cursor-pointer"
             >
               <FiCornerDownRight size={12} />
               Reply
             </button>
             <button
               onClick={() => handleToggleReplies(comment._id)}
-              className="flex items-center gap-1.5 font-semibold text-gray-500 hover:text-gray-900 transition-colors"
+              className="flex items-center gap-1.5 font-semibold text-muted-foreground transition-colors hover:text-foreground cursor-pointer"
             >
               <FiMessageSquare size={12} />
               {expandedReplies.has(comment._id) ? "Hide" : "View"} replies
@@ -738,41 +701,27 @@ export default function CommentsModal({
               className="mt-3"
             >
               <div className="flex gap-3">
-                <div className="w-7 h-7 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 shrink-0 flex items-center justify-center overflow-hidden border border-gray-200">
-                  {user.profilePic?.url ? (
-                    <Image
-                      src={user.profilePic.url}
-                      alt={user.name || user.username || "User"}
-                      width={28}
-                      height={28}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <span className="text-white font-bold text-[10px]">
-                      {(user.username || "U")[0].toUpperCase()}
-                    </span>
-                  )}
-                </div>
+                <Avatar src={user.profilePic?.url} alt={user.name || user.username || "User"} size="xs" />
                 <div className="flex-1">
                   <textarea
                     value={replyText}
                     onChange={(e) => setReplyText(e.target.value)}
                     placeholder="Write a reply..."
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-sm"
+                    className="w-full resize-none rounded-lg border border-input bg-card p-3 text-sm focus:ring-2 focus:ring-ring focus:outline-none"
                     rows={2}
                   />
-                  <div className="flex gap-2 mt-3">
+                  <div className="mt-3 flex gap-2">
                     <button
                       type="submit"
                       disabled={isSubmitting || !replyText.trim()}
-                      className="px-3 py-2 bg-blue-600 text-white rounded-lg text-xs font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50"
+                      className="rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground transition-colors hover:bg-primary-hover disabled:opacity-50 cursor-pointer"
                     >
                       Reply
                     </button>
                     <button
                       type="button"
                       onClick={() => setReplyingToId(null)}
-                      className="px-3 py-2 border border-gray-300 rounded-lg text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
+                      className="rounded-lg border border-border px-3 py-2 text-xs font-semibold text-foreground transition-colors hover:bg-secondary cursor-pointer"
                     >
                       Cancel
                     </button>
@@ -789,104 +738,59 @@ export default function CommentsModal({
   };
 
   return (
-    <Transition appear show={isOpen} as={Fragment}>
-      <Dialog as="div" className="relative z-50" onClose={onClose}>
-        <Transition.Child
-          as={Fragment}
-          enter="ease-out duration-300"
-          enterFrom="opacity-0"
-          enterTo="opacity-100"
-          leave="ease-in duration-200"
-          leaveFrom="opacity-100"
-          leaveTo="opacity-0"
-        >
-          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" />
-        </Transition.Child>
-
-        <div className="fixed inset-0 overflow-y-auto">
-          <div className="flex items-center justify-center min-h-full p-4">
-            <Transition.Child
-              as={Fragment}
-              enter="ease-out duration-300"
-              enterFrom="opacity-0 scale-95"
-              enterTo="opacity-100 scale-100"
-              leave="ease-in duration-200"
-              leaveFrom="opacity-100 scale-100"
-              leaveTo="opacity-0 scale-95"
+    <>
+      <Modal
+        isOpen={isOpen}
+        onClose={onClose}
+        title="Comments"
+        size="md"
+        footer={
+          <form onSubmit={handleAddComment} className="flex w-full gap-2">
+            <input
+              type="text"
+              value={newCommentText}
+              onChange={(e) => setNewCommentText(e.target.value)}
+              placeholder={user ? "Add a comment..." : "Login to comment"}
+              disabled={!user || isSubmitting}
+              className="flex-1 rounded-full bg-muted px-4 py-2.5 text-sm text-foreground outline-none transition-colors focus:bg-card focus:ring-2 focus:ring-ring disabled:opacity-50"
+            />
+            <button
+              type="submit"
+              disabled={!newCommentText.trim() || isSubmitting || !user}
+              className="rounded-full p-2.5 text-primary transition-colors hover:bg-secondary hover:text-primary-hover disabled:opacity-50 cursor-pointer"
             >
-              <Dialog.Panel className="w-full max-w-md bg-white rounded-2xl shadow-2xl flex flex-col max-h-[90vh]">
-                {/* Header */}
-                <div className="border-b border-gray-200 px-5 py-4 flex items-center justify-between sticky top-0 bg-white rounded-t-2xl">
-                  <Dialog.Title className="text-lg font-bold text-gray-900">
-                    Comments
-                  </Dialog.Title>
-                  <button
-                    onClick={onClose}
-                    className="p-1 hover:bg-gray-100 rounded-full transition-colors"
-                  >
-                    <FiX size={20} />
-                  </button>
-                </div>
-
-                {/* Comments List */}
-                <div
-                  ref={commentsListRef}
-                  className="flex-1 overflow-y-auto px-5 py-4 space-y-4"
-                >
-                  {isLoading && postComments.length === 0 ? (
-                    <div className="flex items-center justify-center h-40">
-                      <div className="flex flex-col items-center gap-3">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500" />
-                        <p className="text-sm text-gray-500">
-                          Loading comments...
-                        </p>
-                      </div>
-                    </div>
-                  ) : postComments.length === 0 ? (
-                    <div className="text-center py-8 text-gray-500">
-                      <p className="text-sm">No comments yet</p>
-                      <p className="text-xs mt-1">Be the first to comment!</p>
-                    </div>
-                  ) : (
-                    postComments.map((comment) => (
-                      <div key={comment._id} className="space-y-3">
-                        {renderComment(comment)}
-                      </div>
-                    ))
-                  )}
-                </div>
-
-                {/* Comment Input */}
-                <div className="border-t border-gray-200 px-5 py-3 bg-white rounded-b-2xl">
-                  <form onSubmit={handleAddComment} className="flex gap-2">
-                    <input
-                      type="text"
-                      value={newCommentText}
-                      onChange={(e) => setNewCommentText(e.target.value)}
-                      placeholder={
-                        user ? "Add a comment..." : "Login to comment"
-                      }
-                      disabled={!user || isSubmitting}
-                      className="flex-1 rounded-full bg-gray-100 px-4 py-2.5 text-sm text-gray-900 outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-colors disabled:opacity-50"
-                    />
-                    <button
-                      type="submit"
-                      disabled={!newCommentText.trim() || isSubmitting || !user}
-                      className="p-2.5 hover:bg-gray-100 rounded-full transition-colors disabled:opacity-50 text-blue-600 hover:text-blue-700"
-                    >
-                      {isSubmitting ? (
-                        <FiLoader size={20} className="animate-spin" />
-                      ) : (
-                        <FiSend size={20} />
-                      )}
-                    </button>
-                  </form>
-                </div>
-              </Dialog.Panel>
-            </Transition.Child>
-          </div>
+              {isSubmitting ? (
+                <FiLoader size={20} className="animate-spin" />
+              ) : (
+                <FiSend size={20} />
+              )}
+            </button>
+          </form>
+        }
+      >
+        <div ref={commentsListRef} className="space-y-4">
+          {isLoading && postComments.length === 0 ? (
+            <div className="flex h-40 items-center justify-center">
+              <div className="flex flex-col items-center gap-3">
+                <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-primary" />
+                <p className="text-sm text-muted-foreground">Loading comments...</p>
+              </div>
+            </div>
+          ) : postComments.length === 0 ? (
+            <div className="py-8 text-center text-muted-foreground">
+              <p className="text-sm">No comments yet</p>
+              <p className="mt-1 text-xs">Be the first to comment!</p>
+            </div>
+          ) : (
+            postComments.map((comment) => (
+              <div key={comment._id} className="space-y-3">
+                {renderComment(comment)}
+              </div>
+            ))
+          )}
         </div>
-      </Dialog>
+      </Modal>
+
       <ConfirmationDialog
         isOpen={Boolean(showDeleteConfirm)}
         title="Delete comment?"
@@ -909,6 +813,6 @@ export default function CommentsModal({
         targetId={reportModal.targetId}
         targetOwner={reportModal.targetOwner}
       />
-    </Transition>
+    </>
   );
 }

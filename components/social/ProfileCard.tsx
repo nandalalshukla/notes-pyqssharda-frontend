@@ -1,13 +1,14 @@
 "use client";
 
 import React, { useEffect, useRef, useCallback } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import useAuthStore from "@/stores/user/authStore";
 import { useSocialStore } from "@/stores/social/social.store";
 import { FiUserPlus, FiUserMinus, FiLoader } from "react-icons/fi";
 import toast from "react-hot-toast";
 import VerifiedBadge from "./VerifiedBadge";
+import { Avatar } from "@/components/ui";
+import { cn } from "@/lib/utils/cn";
 
 interface ProfileCardProps {
   userId: string;
@@ -113,8 +114,8 @@ const ProfileCard = ({ userId, onClose, onMouseEnter }: ProfileCardProps) => {
 
   if (error) {
     return (
-      <div className="fixed z-50 w-64 rounded-xl border border-gray-200 bg-white p-4 text-center shadow-xl">
-        <p className="text-sm text-gray-600">{error}</p>
+      <div className="fixed z-50 w-64 rounded-2xl border border-border bg-card p-4 text-center shadow-soft-lg">
+        <p className="text-sm text-muted-foreground">{error}</p>
       </div>
     );
   }
@@ -127,52 +128,39 @@ const ProfileCard = ({ userId, onClose, onMouseEnter }: ProfileCardProps) => {
         onMouseEnter?.();
       }}
       onMouseLeave={handleMouseLeave}
-      className="w-80 rounded-2xl border border-gray-200 bg-white shadow-lg hover:shadow-xl transition-shadow duration-300 animate-in fade-in zoom-in-95 duration-200 pointer-events-auto overflow-hidden"
+      className="animate-in fade-in zoom-in-95 pointer-events-auto w-80 overflow-hidden rounded-2xl border border-border bg-card shadow-soft-lg transition-shadow duration-300 hover:shadow-soft-lg"
     >
       {/* Loading State */}
       {isLoading ? (
         <div className="flex h-80 items-center justify-center">
           <div className="flex flex-col items-center gap-3">
-            <FiLoader className="h-6 w-6 animate-spin text-gray-400" />
-            <p className="text-xs text-gray-500">Loading profile...</p>
+            <FiLoader className="h-6 w-6 animate-spin text-muted-foreground" />
+            <p className="text-xs text-muted-foreground">Loading profile...</p>
           </div>
         </div>
       ) : profile ? (
         <>
-          {/* Professional Gradient Header - Vibrant */}
-          <div className="h-24 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500" />
+          {/* Gradient Header */}
+          <div className="h-24 bg-gradient-to-r from-primary via-accent-purple to-accent-sky" />
 
           {/* Profile Content */}
           <div className="relative px-5 pb-5">
             {/* Profile Picture - Overlapping */}
             <div className="mb-4 flex items-start justify-between gap-3">
-              <div className="relative -mt-10 flex-shrink-0">
-                <div className="flex h-24 w-24 items-center justify-center rounded-full border-4 border-white bg-gray-100 shadow-md hover:shadow-lg transition-shadow">
-                  {profile.profilePic?.url ? (
-                    <Image
-                      src={profile.profilePic.url}
-                      alt={profile.username}
-                      width={96}
-                      height={96}
-                      className="h-full w-full rounded-full object-cover"
-                    />
-                  ) : (
-                    <span className="flex h-full w-full items-center justify-center rounded-full bg-gray-950 text-xl font-bold text-white">
-                      {profile.username[0]?.toUpperCase()}
-                    </span>
-                  )}
-                </div>
+              <div className="relative -mt-10 shrink-0 rounded-full ring-4 ring-card">
+                <Avatar src={profile.profilePic?.url} alt={profile.username} size="xl" />
               </div>
 
               {/* Follow Button - Skip if own profile (client-side or API) */}
               {!isOwnProfileLocal && !displayedProfile?.isOwnProfile && (
                 <button
                   onClick={handleFollowToggle}
-                  className={`mt-2 flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition-all duration-200 ${
+                  className={cn(
+                    "mt-2 flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold transition-all duration-200 cursor-pointer",
                     storeFollowStatus
-                      ? "bg-gray-100 text-gray-900 hover:bg-gray-200 border border-gray-300"
-                      : "bg-blue-600 text-white hover:bg-blue-700 active:scale-95 shadow-sm hover:shadow-md"
-                  }`}
+                      ? "border border-border bg-secondary text-foreground hover:bg-secondary-hover"
+                      : "bg-primary text-primary-foreground shadow-soft-sm hover:bg-primary-hover hover:shadow-soft-md active:scale-95",
+                  )}
                 >
                   {storeFollowStatus ? (
                     <>
@@ -197,49 +185,46 @@ const ProfileCard = ({ userId, onClose, onMouseEnter }: ProfileCardProps) => {
                 onClick={() => onClose?.()}
               >
                 <div className="flex items-center gap-1">
-                  <h3 className="text-base font-bold text-gray-900 group-hover:text-blue-600 transition-colors">
+                  <h3 className="text-base font-bold text-foreground transition-colors group-hover:text-primary">
                     {profile.name}
                   </h3>
                   <VerifiedBadge role={profile.role} size={14} />
                 </div>
               </Link>
-              <p className="text-sm text-gray-500">@{profile.username}</p>
+              <p className="text-sm text-muted-foreground">@{profile.username}</p>
               {profile.bio && (
-                <p className="mt-2 text-sm text-gray-700 line-clamp-2">
-                  {profile.bio}
-                </p>
+                <p className="mt-2 line-clamp-2 text-sm text-foreground">{profile.bio}</p>
               )}
             </div>
 
             {/* Course/Role Info */}
             {profile.course && (
-              <div className="mb-4 rounded-lg bg-blue-50 px-3 py-2 border border-blue-100">
-                <p className="text-xs text-blue-900">
-                  <span className="font-semibold">Course:</span>{" "}
-                  {profile.course}
+              <div className="mb-4 rounded-xl border border-primary/20 bg-primary/10 px-3 py-2">
+                <p className="text-xs text-primary">
+                  <span className="font-semibold">Course:</span> {profile.course}
                 </p>
               </div>
             )}
 
             {/* Stats Grid with Dividers */}
-            <div className="mb-4 grid grid-cols-3 gap-0 rounded-lg bg-gray-50 border border-gray-100 overflow-hidden">
-              <div className="px-3 py-3 text-center border-r border-gray-200 last:border-r-0 hover:bg-gray-100 transition-colors">
-                <p className="text-sm font-bold text-gray-900">
+            <div className="mb-4 grid grid-cols-3 gap-0 overflow-hidden rounded-xl border border-border bg-muted">
+              <div className="border-r border-border px-3 py-3 text-center transition-colors last:border-r-0 hover:bg-secondary">
+                <p className="text-sm font-bold text-foreground">
                   {displayedProfile?.stats.postsCount}
                 </p>
-                <p className="text-xs text-gray-600 mt-1">Posts</p>
+                <p className="mt-1 text-xs text-muted-foreground">Posts</p>
               </div>
-              <div className="px-3 py-3 text-center border-r border-gray-200 last:border-r-0 hover:bg-gray-100 transition-colors">
-                <p className="text-sm font-bold text-gray-900">
+              <div className="border-r border-border px-3 py-3 text-center transition-colors last:border-r-0 hover:bg-secondary">
+                <p className="text-sm font-bold text-foreground">
                   {displayedProfile?.stats.followersCount}
                 </p>
-                <p className="text-xs text-gray-600 mt-1">Followers</p>
+                <p className="mt-1 text-xs text-muted-foreground">Followers</p>
               </div>
-              <div className="px-3 py-3 text-center hover:bg-gray-100 transition-colors">
-                <p className="text-sm font-bold text-gray-900">
+              <div className="px-3 py-3 text-center transition-colors hover:bg-secondary">
+                <p className="text-sm font-bold text-foreground">
                   {displayedProfile?.stats.followingCount}
                 </p>
-                <p className="text-xs text-gray-600 mt-1">Following</p>
+                <p className="mt-1 text-xs text-muted-foreground">Following</p>
               </div>
             </div>
 
@@ -247,7 +232,7 @@ const ProfileCard = ({ userId, onClose, onMouseEnter }: ProfileCardProps) => {
             <Link
               href={`/profile/${profile._id}`}
               onClick={() => onClose?.()}
-              className="block w-full rounded-lg bg-gradient-to-r from-blue-600 to-blue-700 py-2.5 text-center text-sm font-semibold text-white transition-all duration-200 hover:from-blue-700 hover:to-blue-800 hover:shadow-md active:scale-95"
+              className="block w-full rounded-xl bg-primary py-2.5 text-center text-sm font-semibold text-primary-foreground shadow-soft-sm transition-all duration-200 hover:bg-primary-hover hover:shadow-soft-md active:scale-95"
             >
               View Full Profile
             </Link>

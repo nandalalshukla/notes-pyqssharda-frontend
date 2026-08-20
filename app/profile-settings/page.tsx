@@ -7,6 +7,13 @@ import EditProfileForm from "./EditProfileForm";
 import AccountDangerZone from "./AccountDangerZone";
 import { FiArrowLeft, FiLoader } from "react-icons/fi";
 import { useRouter } from "next/navigation";
+import { Button, Tabs } from "@/components/ui";
+
+const tabs = [
+  { value: "general" as const, label: "General" },
+  { value: "security" as const, label: "Security" },
+  { value: "danger" as const, label: "Account" },
+];
 
 export default function ProfileSettingsPage() {
   const router = useRouter();
@@ -17,15 +24,15 @@ export default function ProfileSettingsPage() {
 
   if (isLoading && !user) {
     return (
-      <div className="min-h-screen bg-white pt-20 pb-20">
-        <div className="max-w-4xl mx-auto px-4">
-          <div className="flex items-center justify-center h-96">
+      <div className="min-h-screen bg-background pt-20 pb-20">
+        <div className="mx-auto max-w-4xl px-4">
+          <div className="flex h-96 items-center justify-center">
             <div className="text-center">
               <FiLoader
                 size={48}
-                className="animate-spin mx-auto text-slate-400 mb-4"
+                className="mx-auto mb-4 animate-spin text-muted-foreground"
               />
-              <p className="text-slate-600 font-medium">
+              <p className="font-medium text-muted-foreground">
                 Loading your settings...
               </p>
             </div>
@@ -37,64 +44,41 @@ export default function ProfileSettingsPage() {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center pt-20 pb-20">
-        <div className="text-center max-w-md">
-          <h1 className="text-3xl font-bold text-slate-900 mb-3">
+      <div className="flex min-h-screen items-center justify-center bg-background pt-20 pb-20">
+        <div className="max-w-md text-center">
+          <h1 className="mb-3 text-3xl font-bold text-foreground">
             Sign In Required
           </h1>
-          <p className="text-slate-600 mb-8">
+          <p className="mb-8 text-muted-foreground">
             You need to be logged in to access profile settings
           </p>
-          <button
-            onClick={() => router.push("/auth/login")}
-            className="px-8 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
-          >
-            Go to Login
-          </button>
+          <Button onClick={() => router.push("/auth/login")}>Go to Login</Button>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-white pt-20 pb-20">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-background pt-20 pb-20">
+      <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-10 flex items-center gap-4">
           <button
             onClick={() => router.back()}
-            className="p-2 hover:bg-slate-100 rounded-lg transition-colors text-slate-600 hover:text-slate-900"
+            className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground cursor-pointer"
           >
             <FiArrowLeft size={24} />
           </button>
           <div>
-            <h1 className="text-4xl font-bold text-slate-900">Settings</h1>
-            <p className="text-slate-500 mt-1 font-medium">
+            <h1 className="text-4xl font-bold text-foreground">Settings</h1>
+            <p className="mt-1 font-medium text-muted-foreground">
               Manage your profile and account
             </p>
           </div>
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-1 mb-8 border-b border-slate-200">
-          {[
-            { id: "general", label: "General" },
-            { id: "security", label: "Security" },
-            { id: "danger", label: "Account" },
-          ].map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id as any)}
-              className={`px-6 py-4 font-medium transition-all border-b-2 ${
-                activeTab === tab.id
-                  ? "border-blue-600 text-blue-600 bg-blue-50/50"
-                  : "border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-50/50"
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
+        <Tabs items={tabs} value={activeTab} onChange={setActiveTab} className="mb-8" />
 
         {/* Content */}
         <div className="space-y-8">
@@ -106,19 +90,16 @@ export default function ProfileSettingsPage() {
           )}
 
           {activeTab === "security" && (
-            <div className="bg-slate-50 rounded-xl p-8 border border-slate-200">
-              <h2 className="text-2xl font-bold text-slate-900 mb-4">
-                Password & Security
+            <div className="rounded-2xl border border-border bg-muted p-8">
+              <h2 className="mb-4 text-2xl font-bold text-foreground">
+                Password &amp; Security
               </h2>
-              <p className="text-slate-600 mb-6">
+              <p className="mb-6 text-muted-foreground">
                 Additional security options coming soon
               </p>
-              <button
-                disabled
-                className="px-6 py-3 bg-slate-200 text-slate-500 font-medium rounded-lg cursor-not-allowed"
-              >
+              <Button disabled variant="secondary">
                 Change Password (Coming Soon)
-              </button>
+              </Button>
             </div>
           )}
 

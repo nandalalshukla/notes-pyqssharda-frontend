@@ -10,6 +10,8 @@ import {
   FiMessageCircle,
   FiUserPlus,
 } from "react-icons/fi";
+import { ThemeToggle } from "@/components/ui";
+import { cn } from "@/lib/utils/cn";
 
 const navLinks = [
   { href: "/", label: "Social", icon: FiMessageCircle },
@@ -26,7 +28,7 @@ const GuestMobileNav = () => {
   };
 
   return (
-    <div className="w-full px-4 py-2 text-gray-950 sm:px-5 sm:py-2">
+    <div className="w-full px-3 py-2 text-foreground sm:px-5">
       <div className="flex items-center gap-2">
         {/* Logo */}
         <Link
@@ -39,12 +41,12 @@ const GuestMobileNav = () => {
             alt="Sharda Social"
             width={64}
             height={64}
-            className="h-12 w-12 object-contain drop-shadow-md sm:h-14 sm:w-14"
+            className="h-11 w-11 object-contain drop-shadow-md sm:h-14 sm:w-14"
             priority
           />
         </Link>
 
-        <div className="flex flex-1 items-center justify-center gap-1.5 rounded-full border border-gray-200 bg-white/80 px-2 py-1 shadow-sm backdrop-blur-md sm:gap-2">
+        <div className="flex flex-1 items-center justify-center gap-1 rounded-full border border-border bg-card/80 px-1 py-1 shadow-soft-sm backdrop-blur-md">
           {navLinks.map((link) => {
             const active =
               link.href === "/"
@@ -58,11 +60,12 @@ const GuestMobileNav = () => {
                 href={link.href}
                 title={link.label}
                 aria-label={link.label}
-                className={`inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border text-sm transition-all duration-200 sm:h-9 sm:w-9 sm:text-base ${
+                className={cn(
+                  "inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm transition-all duration-200",
                   active
-                    ? "border-sky-200 bg-sky-50 text-sky-700 shadow-sm"
-                    : "border-transparent bg-transparent text-gray-700 hover:border-gray-200 hover:bg-white hover:text-gray-950"
-                }`}
+                    ? "bg-primary text-primary-foreground shadow-soft-sm"
+                    : "text-muted-foreground hover:bg-secondary hover:text-foreground",
+                )}
               >
                 <Icon aria-hidden="true" />
                 <span className="sr-only">{link.label}</span>
@@ -71,12 +74,13 @@ const GuestMobileNav = () => {
           })}
         </div>
 
-        <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
+        <div className="flex shrink-0 items-center gap-1.5">
+          <ThemeToggle />
           <Link
             href="/auth/login"
             aria-label="Login"
             title="Login"
-            className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-700 shadow-sm transition-all hover:border-gray-300 hover:bg-gray-50 hover:text-gray-950"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-border bg-card text-foreground transition-all hover:bg-secondary"
           >
             <FiLogIn className="text-base" />
             <span className="sr-only">Login</span>
@@ -85,7 +89,7 @@ const GuestMobileNav = () => {
             href="/auth/register"
             aria-label="Register"
             title="Register"
-            className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-gray-950 text-white shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md hover:shadow-gray-950/20"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-soft-sm transition-all hover:bg-primary-hover"
           >
             <FiUserPlus className="text-base" />
             <span className="sr-only">Register</span>

@@ -4,17 +4,15 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 import { toast } from "react-hot-toast";
 import useAuthStore from "@/stores/user/authStore";
-import RejectionModal from "@/components/modals/RejectionModal";
-import { ReportActionModal } from "@/components/modals/ReportActionModal";
-import ReportTargetModal from "@/components/modals/ReportTargetModal";
 import { DashboardLayout } from "@/components/dashboards/DashboardLayout";
 import { StatsGrid } from "@/components/dashboards/StatCard";
-import { DataTable, DataTableColumn } from "@/components/dashboards/DataTable";
-import { SectionCard, Toolbar } from "@/components/dashboards/SectionCard";
-import { UserProfileLink } from "@/components/shared/UserProfileLink";
+import OverviewPanel from "@/components/dashboards/moderator/OverviewPanel";
+import SubmissionsPanel from "@/components/dashboards/moderator/SubmissionsPanel";
+import ReportsPanel from "@/components/dashboards/moderator/ReportsPanel";
 import {
-  getSubmissionActionKey,
   useModSubmissionsStore,
+  type PendingSubmission,
+  type SubmissionType,
 } from "@/stores/mod/submissions.store";
 import { useModReportsStore } from "@/stores/mod/reports.store";
 import {
@@ -25,21 +23,6 @@ import {
   FileText,
   TrendingUp,
 } from "lucide-react";
-import type {
-  PendingSubmission,
-  SubmissionType,
-} from "@/stores/mod/submissions.store";
-import type {
-  ReportListItem,
-  ReportAction,
-} from "@/lib/api/mod/mod.api";
-
-interface RejectionModalState {
-  isOpen: boolean;
-  itemId: string;
-  itemType: SubmissionType;
-  itemTitle: string;
-}
 
 interface SubmissionWithType extends PendingSubmission {
   submissionType: SubmissionType;
@@ -48,19 +31,6 @@ interface SubmissionWithType extends PendingSubmission {
 export default function ModeratorDashboard() {
   const { user } = useAuthStore();
   const [activeNav, setActiveNav] = useState("overview");
-  const [rejectionModal, setRejectionModal] = useState<RejectionModalState>({
-    isOpen: false,
-    itemId: "",
-    itemType: "note",
-    itemTitle: "",
-  });
-  const [submissionSearch, setSubmissionSearch] = useState("");
-  const [reportSearch, setReportSearch] = useState("");
-  const [selectedReport, setSelectedReport] = useState<ReportListItem | null>(
-    null,
-  );
-  const [selectedReportAction, setSelectedReportAction] =
-    useState<ReportAction | null>(null);
 
   // Store state
   const {
@@ -75,9 +45,7 @@ export default function ModeratorDashboard() {
     useShallow((state) => ({
       submissionEntities: state.entities,
       submissionIds: state.ids,
-      submissionLoading: Object.values(state.isLoading).some(
-        (loading) => loading,
-      ),
+      submissionLoading: Object.values(state.isLoading).some((loading) => loading),
       submissionPendingActions: state.pendingActions,
       fetchAllPending: state.fetchAllPending,
       approveSubmission: state.approveSubmission,
@@ -124,28 +92,6 @@ export default function ModeratorDashboard() {
   const reports = useMemo(
     () => reportIds.map((id) => reportEntities[id]).filter(Boolean),
     [reportIds, reportEntities],
-  );
-
-  // Filtered data
-  const filteredSubmissions = useMemo(
-    () =>
-      submissions.filter(
-        (s) =>
-          s.title?.toLowerCase().includes(submissionSearch.toLowerCase()) ||
-          s.submissionType.includes(submissionSearch.toLowerCase()),
-      ),
-    [submissions, submissionSearch],
-  );
-
-  const filteredReports = useMemo(
-    () =>
-      reports.filter(
-        (r) =>
-          r.reason?.toLowerCase().includes(reportSearch.toLowerCase()) ||
-          r.targetEntity?.content?.toLowerCase().includes(reportSearch.toLowerCase()) ||
-          r.targetType?.includes(reportSearch.toLowerCase()),
-      ),
-    [reports, reportSearch],
   );
 
   // Stats
@@ -201,179 +147,6 @@ export default function ModeratorDashboard() {
     }
   }, [reportsError]);
 
-  // Handlers
-  const handleApproveSubmission = async (id: string, type: SubmissionType) => {
-    try {
-      await approveSubmission(id, type);
-      toast.success("Submission approved");
-    } catch {
-      toast.error("Failed to approve submission");
-    }
-  };
-
-  const handleRejectSubmission = (id: string, title: string, type: SubmissionType) => {
-    setRejectionModal({
-      isOpen: true,
-      itemId: id,
-      itemType: type,
-      itemTitle: title,
-    });
-  };
-
-  const handleConfirmReject = async (reason: string) => {
-    try {
-      await rejectSubmission(
-        rejectionModal.itemId,
-        rejectionModal.itemType,
-        reason,
-      );
-      toast.success("Submission rejected");
-      setRejectionModal({ ...rejectionModal, isOpen: false });
-    } catch {
-      toast.error("Failed to reject submission");
-    }
-  };
-
-  const handleReportAction = async (reportId: string, action: ReportAction) => {
-    try {
-      await applyReportAction(reportId, action);
-      toast.success("Report action completed");
-      setSelectedReport(null);
-      setSelectedReportAction(null);
-    } catch {
-      toast.error("Failed to apply report action");
-    }
-  };
-
-  const openReportAction = (action: ReportAction) => {
-    setSelectedReportAction(action);
-  };
-
-  // Table columns for submissions
-  const submissionColumns: DataTableColumn<SubmissionWithType>[] = [
-    {
-      id: "title",
-      header: "Content",
-      accessor: (row) => (
-        <div>
-          <p className="font-medium text-slate-900 line-clamp-1">{row.title}</p>
-          <p className="text-xs text-slate-500 capitalize">{row.submissionType}</p>
-        </div>
-      ),
-      sortable: true,
-    },
-    {
-      id: "createdAt",
-      header: "Submitted",
-      accessor: (row) => (
-        <span className="text-sm text-slate-600">
-          {row.createdAt ? new Date(row.createdAt).toLocaleDateString() : "-"}
-        </span>
-      ),
-      sortable: true,
-    },
-    {
-      id: "actions",
-      header: "Actions",
-      accessor: (row) => (
-        <div className="flex gap-2">
-          <button
-            onClick={() => handleApproveSubmission(row._id, row.submissionType)}
-            disabled={Boolean(
-              submissionPendingActions[
-                getSubmissionActionKey(row.submissionType, row._id)
-              ],
-            )}
-            className="px-3 py-1 text-xs rounded bg-emerald-100 text-emerald-700 hover:bg-emerald-200 disabled:opacity-50 flex items-center gap-1"
-          >
-            <CheckCircle size={14} /> Approve
-          </button>
-          <button
-            onClick={() => handleRejectSubmission(row._id, row.title, row.submissionType)}
-            className="px-3 py-1 text-xs rounded bg-red-100 text-red-700 hover:bg-red-200"
-          >
-            Reject
-          </button>
-        </div>
-      ),
-    },
-  ];
-
-  // Table columns for reports
-  const reportColumns: DataTableColumn<ReportListItem>[] = [
-    {
-      id: "target",
-      header: "Target",
-      accessor: (row) => (
-        <button
-          type="button"
-          onClick={() => setSelectedReport(row)}
-          className="text-left hover:text-blue-700"
-        >
-          <p className="font-medium text-slate-900 line-clamp-1">
-            {row.targetType === "user"
-              ? row.targetEntity?.username || "Unknown User"
-              : row.targetEntity?.content || "Unknown"}
-          </p>
-          <p className="text-xs capitalize text-blue-600">View {row.targetType}</p>
-        </button>
-      ),
-    },
-    {
-      id: "reason",
-      header: "Reason",
-      accessor: (row) => (
-        <span className="text-sm text-slate-600 line-clamp-1">{row.reason}</span>
-      ),
-    },
-    {
-      id: "reporter",
-      header: "Reported By",
-      accessor: (row) =>
-        row.reporter ? (
-          <UserProfileLink
-            userId={row.reporter._id}
-            username={row.reporter.username || "Unknown"}
-            profilePic={row.reporter.profilePic}
-            showAvatar={false}
-            linkClassName="text-blue-600 hover:text-blue-700 hover:underline font-medium text-sm"
-          />
-        ) : (
-          <span className="text-sm text-slate-500">Unknown</span>
-        ),
-    },
-    {
-      id: "status",
-      header: "Status",
-      accessor: (row) => (
-        <span
-          className={`inline-block px-2 py-1 rounded text-xs font-semibold ${
-            row.status === "pending"
-              ? "bg-amber-100 text-amber-700"
-              : row.status === "resolved" || row.status === "reviewed"
-                ? "bg-emerald-100 text-emerald-700"
-                : "bg-red-100 text-red-700"
-          }`}
-        >
-          {row.status?.charAt(0).toUpperCase() + row.status?.slice(1)}
-        </span>
-      ),
-    },
-    {
-      id: "actions",
-      header: "Actions",
-      accessor: (row) => (
-        <button
-          type="button"
-          onClick={() => setSelectedReport(row)}
-          className="rounded bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700 hover:bg-blue-200"
-        >
-          Review
-        </button>
-      ),
-    },
-  ];
-
   // Navigation items
   const navItems = [
     {
@@ -407,137 +180,28 @@ export default function ModeratorDashboard() {
       {/* Stats Grid - Always visible */}
       <StatsGrid stats={stats} columns={4} />
 
-      {/* Overview Section */}
       {activeNav === "overview" && (
-        <div className="mt-8 space-y-6">
-          <SectionCard title="Quick Stats" description="Moderation health snapshot">
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              <div className="p-4 border rounded-lg">
-                <p className="text-sm text-slate-600">Approval Rate</p>
-                <p className="text-2xl font-bold">
-                  {submissions.length > 0
-                    ? Math.round((submissions.filter(s => s.status === "approved").length / submissions.length) * 100)
-                    : 0}
-                  %
-                </p>
-              </div>
-              <div className="p-4 border rounded-lg">
-                <p className="text-sm text-slate-600">Pending Items</p>
-                <p className="text-2xl font-bold">{submissions.length + reports.filter(r => r.status === "pending").length}</p>
-              </div>
-              <div className="p-4 border rounded-lg">
-                <p className="text-sm text-slate-600">Avg Response</p>
-                <p className="text-2xl font-bold">—</p>
-              </div>
-            </div>
-          </SectionCard>
-        </div>
+        <OverviewPanel submissions={submissions} reports={reports} />
       )}
 
-      {/* Submissions Section */}
       {activeNav === "submissions" && (
-        <div className="mt-8 space-y-6">
-          <Toolbar
-            title="Pending Submissions"
-            description={`Review ${filteredSubmissions.length} submissions`}
-          >
-            <input
-              type="text"
-              placeholder="Search by title or type..."
-              value={submissionSearch}
-              onChange={(e) => setSubmissionSearch(e.target.value)}
-              className="flex-1 px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-            />
-          </Toolbar>
-          <SectionCard title="Content Queue" icon={<Clock size={20} />}>
-            <DataTable
-              columns={submissionColumns}
-              data={filteredSubmissions}
-              isLoading={submissionLoading}
-              searchable={false}
-              paginated
-              pageSize={15}
-              emptyMessage="No pending submissions"
-            />
-          </SectionCard>
-        </div>
+        <SubmissionsPanel
+          submissions={submissions}
+          isLoading={submissionLoading}
+          pendingActions={submissionPendingActions}
+          approveSubmission={approveSubmission}
+          rejectSubmission={rejectSubmission}
+        />
       )}
 
-      {/* Reports Section */}
       {activeNav === "reports" && (
-        <div className="mt-8 space-y-6">
-          <Toolbar
-            title="User Reports"
-            description={`Process ${filteredReports.length} reports`}
-          >
-            <input
-              type="text"
-              placeholder="Search by target or reason..."
-              value={reportSearch}
-              onChange={(e) => setReportSearch(e.target.value)}
-              className="flex-1 px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-            />
-          </Toolbar>
-          <SectionCard title="Report Queue" icon={<AlertCircle size={20} />}>
-            <DataTable
-              columns={reportColumns}
-              data={filteredReports}
-              isLoading={reportsLoading}
-              searchable={false}
-              paginated
-              pageSize={15}
-              emptyMessage="No reports found"
-            />
-          </SectionCard>
-        </div>
+        <ReportsPanel
+          reports={reports}
+          isLoading={reportsLoading}
+          pendingActions={reportPendingActions}
+          applyReportAction={applyReportAction}
+        />
       )}
-
-      {/* Rejection Modal */}
-      <RejectionModal
-        isOpen={rejectionModal.isOpen}
-        itemTitle={rejectionModal.itemTitle}
-        itemType={rejectionModal.itemType}
-        onClose={() => setRejectionModal({ ...rejectionModal, isOpen: false })}
-        onSubmit={handleConfirmReject}
-      />
-
-      <ReportTargetModal
-        report={selectedReport}
-        isOpen={Boolean(selectedReport)}
-        pendingAction={
-          selectedReport ? reportPendingActions[selectedReport._id] : undefined
-        }
-        onAction={openReportAction}
-        onClose={() => setSelectedReport(null)}
-      />
-
-      <ReportActionModal
-        isOpen={Boolean(selectedReport && selectedReportAction)}
-        action={selectedReportAction}
-        targetType={selectedReport?.targetType || null}
-        targetInfo={
-          selectedReport
-            ? {
-                title:
-                  selectedReport.targetType === "user"
-                    ? selectedReport.targetEntity?.username
-                    : selectedReport.targetEntity?.content,
-                author: selectedReport.targetOwner?.username,
-                reason: selectedReport.reason,
-              }
-            : undefined
-        }
-        isLoading={Boolean(
-          selectedReport && reportPendingActions[selectedReport._id],
-        )}
-        onConfirm={async () => {
-          if (selectedReport && selectedReportAction) {
-            await handleReportAction(selectedReport._id, selectedReportAction);
-          }
-        }}
-        onCancel={() => setSelectedReportAction(null)}
-      />
     </DashboardLayout>
   );
 }
-

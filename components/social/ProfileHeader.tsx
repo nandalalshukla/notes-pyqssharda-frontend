@@ -11,6 +11,7 @@ import {
   FiBook,
 } from "react-icons/fi";
 import VerifiedBadge from "./VerifiedBadge";
+import { Button } from "@/components/ui";
 
 interface ProfileHeaderProps {
   profile: UserProfile;
@@ -24,22 +25,22 @@ export default function ProfileHeader({
   isFollowLoading,
 }: ProfileHeaderProps) {
   return (
-    <div className="bg-white border-b border-slate-200">
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-8">
+    <div className="border-b border-border bg-card">
+      <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6 lg:px-8">
+        <div className="flex flex-col items-start gap-8 sm:flex-row sm:items-center">
           {/* Profile Picture */}
           <div className="shrink-0">
-            <div className="w-32 h-32 rounded-xl shadow-md overflow-hidden bg-gradient-to-br from-blue-50 to-slate-100 border border-slate-200 flex items-center justify-center">
+            <div className="flex h-32 w-32 items-center justify-center overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-primary/10 to-accent-purple/10 shadow-soft-md">
               {profile.profilePic?.url ? (
                 <Image
                   src={profile.profilePic.url}
                   alt={profile.username}
                   width={128}
                   height={128}
-                  className="w-full h-full object-cover"
+                  className="h-full w-full object-cover"
                 />
               ) : (
-                <span className="text-5xl font-bold text-blue-600">
+                <span className="text-5xl font-bold text-primary">
                   {(profile.username || "U")[0].toUpperCase()}
                 </span>
               )}
@@ -47,96 +48,82 @@ export default function ProfileHeader({
           </div>
 
           {/* Profile Info */}
-          <div className="flex-1 min-w-0">
-            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
+          <div className="min-w-0 flex-1">
+            <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
               <div>
-                <div className="flex items-center gap-2 mb-1">
-                  <h1 className="text-4xl font-bold text-slate-900">
-                    {profile.name}
-                  </h1>
+                <div className="mb-1 flex items-center gap-2">
+                  <h1 className="text-4xl font-bold text-foreground">{profile.name}</h1>
                   <VerifiedBadge role={profile.role} size={18} />
                 </div>
-                <p className="text-lg text-slate-500">@{profile.username}</p>
+                <p className="text-lg text-muted-foreground">@{profile.username}</p>
               </div>
 
               {!profile.isOwnProfile && (
-                <button
+                <Button
                   onClick={onFollowToggle}
-                  disabled={isFollowLoading}
-                  className={`px-6 py-2.5 rounded-lg font-semibold transition-all duration-200 flex items-center gap-2 whitespace-nowrap shadow-sm ${
-                    profile.isFollowedByCurrentUser
-                      ? "bg-slate-100 text-slate-900 hover:bg-slate-200 border border-slate-200"
-                      : "bg-blue-600 text-white hover:bg-blue-700"
-                  } disabled:opacity-50 disabled:cursor-not-allowed`}
-                >
-                  {profile.isFollowedByCurrentUser ? (
-                    <>
+                  loading={isFollowLoading}
+                  variant={profile.isFollowedByCurrentUser ? "outline" : "primary"}
+                  icon={
+                    profile.isFollowedByCurrentUser ? (
                       <FiUserCheck size={18} />
-                      Following
-                    </>
-                  ) : (
-                    <>
+                    ) : (
                       <FiUserPlus size={18} />
-                      Follow
-                    </>
-                  )}
-                </button>
+                    )
+                  }
+                  className="whitespace-nowrap"
+                >
+                  {profile.isFollowedByCurrentUser ? "Following" : "Follow"}
+                </Button>
               )}
             </div>
 
             {/* Bio */}
             {profile.bio && (
-              <p className="text-slate-700 leading-relaxed mb-6 max-w-2xl">
-                {profile.bio}
-              </p>
+              <p className="mb-6 max-w-2xl leading-relaxed text-foreground">{profile.bio}</p>
             )}
 
             {/* Stats */}
-            <div className="flex gap-8 mb-8 py-6 border-y border-slate-200">
+            <div className="mb-8 flex gap-8 border-y border-border py-6">
               <div>
-                <p className="text-3xl font-bold text-slate-900">
+                <p className="text-3xl font-bold text-foreground">
                   {profile.stats.postsCount}
                 </p>
-                <p className="text-sm text-slate-500 mt-1">Posts</p>
+                <p className="mt-1 text-sm text-muted-foreground">Posts</p>
               </div>
               <div>
-                <p className="text-3xl font-bold text-slate-900">
+                <p className="text-3xl font-bold text-foreground">
                   {profile.stats.followersCount}
                 </p>
-                <p className="text-sm text-slate-500 mt-1">Followers</p>
+                <p className="mt-1 text-sm text-muted-foreground">Followers</p>
               </div>
               <div>
-                <p className="text-3xl font-bold text-slate-900">
+                <p className="text-3xl font-bold text-foreground">
                   {profile.stats.followingCount}
                 </p>
-                <p className="text-sm text-slate-500 mt-1">Following</p>
+                <p className="mt-1 text-sm text-muted-foreground">Following</p>
               </div>
             </div>
 
             {/* Details Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               {profile.course && (
-                <div className="flex items-center gap-3 text-slate-700">
-                  <div className="flex-shrink-0 w-5 h-5 rounded-lg bg-blue-100 flex items-center justify-center">
-                    <FiBook size={16} className="text-blue-600" />
+                <div className="flex items-center gap-3 text-foreground">
+                  <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-lg bg-primary/15">
+                    <FiBook size={16} className="text-primary" />
                   </div>
                   <span className="text-sm font-medium">{profile.course}</span>
                 </div>
               )}
               {profile.email && (
-                <div className="flex items-center gap-3 text-slate-700">
-                  <FiMail size={18} className="flex-shrink-0 text-slate-400" />
-                  <span className="text-sm font-medium break-all">
-                    {profile.email}
-                  </span>
+                <div className="flex items-center gap-3 text-foreground">
+                  <FiMail size={18} className="shrink-0 text-muted-foreground" />
+                  <span className="text-sm font-medium break-all">{profile.email}</span>
                 </div>
               )}
               {profile.contactNo && (
-                <div className="flex items-center gap-3 text-slate-700">
-                  <FiPhone size={18} className="flex-shrink-0 text-slate-400" />
-                  <span className="text-sm font-medium">
-                    {profile.contactNo}
-                  </span>
+                <div className="flex items-center gap-3 text-foreground">
+                  <FiPhone size={18} className="shrink-0 text-muted-foreground" />
+                  <span className="text-sm font-medium">{profile.contactNo}</span>
                 </div>
               )}
             </div>

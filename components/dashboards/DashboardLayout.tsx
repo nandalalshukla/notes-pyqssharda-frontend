@@ -2,6 +2,7 @@
 
 import React, { ReactNode, useState } from "react";
 import { ChevronLeft, ChevronRight, Menu, X } from "lucide-react";
+import { cn } from "@/lib/utils/cn";
 
 interface NavItem {
   id: string;
@@ -39,57 +40,46 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   };
 
   return (
-    <div className="flex min-h-dvh bg-slate-50 overflow-hidden">
+    <div className="flex min-h-dvh overflow-hidden bg-background">
       {/* Sidebar */}
       <aside
-        className={`
-          fixed inset-y-0 left-0 z-40 md:sticky md:top-0 md:h-dvh
-          bg-white border-r border-slate-100 shadow-sm
-          transition-all duration-300 ease-in-out
-          ${sidebarOpen ? "w-64" : "w-20"}
-          ${collapsedMobile ? "translate-x-0" : "-translate-x-full md:translate-x-0"}
-        `}
+        className={cn(
+          "fixed inset-y-0 left-0 z-40 border-r border-border bg-card shadow-soft-sm transition-all duration-300 ease-in-out md:sticky md:top-0 md:h-dvh",
+          sidebarOpen ? "w-64" : "w-20",
+          collapsedMobile ? "translate-x-0" : "-translate-x-full md:translate-x-0",
+        )}
       >
         {/* Sidebar Header */}
-        <div className="flex items-center justify-between h-16 px-4 border-b border-slate-100 bg-linear-to-r from-blue-50 to-white">
+        <div className="flex h-16 items-center justify-between border-b border-border bg-gradient-to-r from-primary/10 to-transparent px-4">
           {sidebarOpen && (
             <div>
-              <h2 className="text-lg font-bold text-slate-900">Dashboard</h2>
-              <p className="text-xs text-slate-500 font-medium truncate">
-                {userRole}
-              </p>
+              <h2 className="text-lg font-bold text-foreground">Dashboard</h2>
+              <p className="truncate text-xs font-medium text-muted-foreground">{userRole}</p>
             </div>
           )}
           <button
             onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="p-2 hover:bg-slate-100 rounded-lg transition-colors hidden md:block text-slate-600 shrink-0"
+            className="hidden shrink-0 rounded-lg p-2 text-muted-foreground transition-colors hover:bg-secondary md:block cursor-pointer"
             title={sidebarOpen ? "Collapse" : "Expand"}
           >
-            {sidebarOpen ? (
-              <ChevronLeft size={18} />
-            ) : (
-              <ChevronRight size={18} />
-            )}
+            {sidebarOpen ? <ChevronLeft size={18} /> : <ChevronRight size={18} />}
           </button>
         </div>
 
         {/* Navigation Items */}
-        <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-1">
+        <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4">
           {navItems.map((item) => {
             const isActive = item.id === activeNavId;
             return (
               <button
                 key={item.id}
                 onClick={() => handleNavClick(item.id)}
-                className={`
-                  w-full flex items-center gap-3 px-3 py-2.5 rounded-lg
-                  transition-all duration-200 relative font-medium text-sm
-                  ${
-                    isActive
-                      ? "bg-blue-600 text-white shadow-sm"
-                      : "text-slate-700 hover:bg-slate-100"
-                  }
-                `}
+                className={cn(
+                  "relative flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200 cursor-pointer",
+                  isActive
+                    ? "bg-primary text-primary-foreground shadow-soft-sm"
+                    : "text-foreground hover:bg-secondary",
+                )}
               >
                 <div className="shrink-0">{item.icon}</div>
                 {sidebarOpen && (
@@ -97,14 +87,12 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                     <span className="flex-1 text-left">{item.label}</span>
                     {item.badge !== undefined && (
                       <span
-                        className={`
-                          px-2 py-0.5 rounded-full text-xs font-bold shrink-0
-                          ${
-                            isActive
-                              ? "bg-blue-400 text-white"
-                              : "bg-red-100 text-red-700"
-                          }
-                        `}
+                        className={cn(
+                          "shrink-0 rounded-full px-2 py-0.5 text-xs font-bold",
+                          isActive
+                            ? "bg-primary-foreground/20 text-primary-foreground"
+                            : "bg-destructive/15 text-destructive",
+                        )}
                       >
                         {typeof item.badge === "number"
                           ? item.badge > 9
@@ -117,15 +105,12 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                 )}
                 {!sidebarOpen && item.badge !== undefined && (
                   <div
-                    className={`
-                      absolute -top-2 -right-2 w-5 h-5 rounded-full
-                      flex items-center justify-center text-xs font-bold
-                      ${
-                        isActive
-                          ? "bg-blue-400 text-white"
-                          : "bg-red-500 text-white"
-                      }
-                    `}
+                    className={cn(
+                      "absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full text-xs font-bold",
+                      isActive
+                        ? "bg-primary-foreground/20 text-primary-foreground"
+                        : "bg-destructive text-destructive-foreground",
+                    )}
                   >
                     {typeof item.badge === "number"
                       ? item.badge > 9
@@ -140,28 +125,25 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
         </nav>
       </aside>
 
-      {/* Mobile Menu Button */}
       {/* Main Content */}
-      <main className="flex min-w-0 flex-1 flex-col overflow-hidden bg-slate-50">
+      <main className="flex min-w-0 flex-1 flex-col overflow-hidden bg-background">
         {/* Header */}
-        <div className="bg-white border-b border-slate-100 sticky top-0 z-20 shadow-sm">
-          <div className="px-4 sm:px-6 md:px-8 py-4 sm:py-5 lg:py-6">
+        <div className="sticky top-0 z-20 border-b border-border bg-card shadow-soft-sm">
+          <div className="px-4 py-4 sm:px-6 sm:py-5 md:px-8 lg:py-6">
             <div className="flex items-start gap-3">
               <button
                 onClick={() => setCollapsedMobile(!collapsedMobile)}
-                className="md:hidden mt-1 inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-700 shadow-sm transition-colors hover:bg-slate-50"
+                className="mt-1 inline-flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-card text-foreground shadow-soft-sm transition-colors hover:bg-secondary md:hidden cursor-pointer"
                 title="Toggle menu"
               >
                 {collapsedMobile ? <X size={20} /> : <Menu size={20} />}
               </button>
               <div className="min-w-0 flex-1">
-                <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-slate-900">
+                <h1 className="text-2xl font-bold text-foreground sm:text-3xl md:text-4xl">
                   {title}
                 </h1>
                 {subtitle && (
-                  <p className="mt-1.5 text-sm text-slate-600 sm:text-base">
-                    {subtitle}
-                  </p>
+                  <p className="mt-1.5 text-sm text-muted-foreground sm:text-base">{subtitle}</p>
                 )}
               </div>
             </div>
@@ -169,15 +151,13 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
         </div>
 
         {/* Content Area */}
-        <div className="min-w-0 flex-1 overflow-y-auto p-4 sm:p-6 md:p-8">
-          {children}
-        </div>
+        <div className="min-w-0 flex-1 overflow-y-auto p-4 sm:p-6 md:p-8">{children}</div>
       </main>
 
       {/* Mobile Overlay */}
       {collapsedMobile && (
         <div
-          className="fixed inset-0 bg-black/20 z-30 md:hidden"
+          className="fixed inset-0 z-30 bg-ink/20 md:hidden"
           onClick={() => setCollapsedMobile(false)}
         />
       )}
