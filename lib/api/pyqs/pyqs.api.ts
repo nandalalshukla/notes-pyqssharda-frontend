@@ -94,6 +94,28 @@ export const getPyqFilterOptions = async () => {
   return response.data.data;
 };
 
+/**
+ * One paper by id, for its page on this site.
+ *
+ * Server-rendered, so it runs on the Node side where the browser's
+ * `/api/proxy` rewrite doesn't exist — hence the absolute backend origin
+ * rather than the shared axios instance.
+ */
+export const getPyqById = async (pyqId: string): Promise<Pyq | null> => {
+  const origin =
+    process.env.BACKEND_ORIGIN ?? "http://localhost:5000";
+
+  const res = await fetch(`${origin}/api/v1/pyqs/paper/${pyqId}`, {
+    // Matches the endpoint's own Cache-Control; a paper's metadata changes
+    // rarely, so repeat views shouldn't hit the database.
+    next: { revalidate: 300 },
+  });
+
+  if (!res.ok) return null;
+  const body = (await res.json()) as { data?: { pyq?: Pyq } };
+  return body.data?.pyq ?? null;
+};
+
 export const getAllPyqs = async () => {
   const response = await api.get("/pyqs/all-pyqs");
   return response.data;

@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { Search, ChevronDown, Download, Loader2 } from "lucide-react";
+import Link from "next/link";
+import { Search, ChevronDown, Download, FileText, Loader2 } from "lucide-react";
 import { EmptyState, Skeleton } from "@/components/ui";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { cn } from "@/lib/utils/cn";
@@ -20,6 +21,12 @@ export interface LibraryItem {
    * their own, and it takes precedence wherever it's set.
    */
   program?: string;
+  /**
+   * An internal page for this item. When set, the card links here instead
+   * of straight to the file — so a reader lands on a page on this site
+   * rather than being handed off to a raw Cloudinary URL.
+   */
+  href?: string;
 }
 
 /** The filter state the page can be in, and what a server source is asked for. */
@@ -372,8 +379,13 @@ export function ResourceLibraryPage({
       active ? styles.activeChip : "border-border hover:bg-secondary",
     );
 
+  // Capped and scrollable. The programme list is ~50 entries now that the
+  // library covers every school, and an uncapped panel ran far past the
+  // bottom of the viewport with no way to reach the last options.
+  // `overscroll-contain` stops a scroll that reaches the end of the list
+  // from continuing on to scroll the page behind it.
   const dropdownPanelClass =
-    "absolute top-full left-0 z-50 mt-2 rounded-xl border border-border bg-card py-2 shadow-soft-lg";
+    "absolute top-full left-0 z-50 mt-2 max-h-72 overflow-y-auto overscroll-contain rounded-xl border border-border bg-card py-2 shadow-soft-lg";
 
   const dropdownOptionClass = cn(
     "cursor-pointer px-4 py-2 text-sm font-medium text-foreground",
@@ -641,7 +653,17 @@ function ResourceCard({
           )}
         </div>
 
-        {srcArray.length === 1 ? (
+        {item.href ? (
+          // An internal page exists for this item, so keep the reader on
+          // this site instead of handing them off to a raw file URL.
+          <Link
+            href={item.href}
+            className="flex w-full items-center justify-center gap-2 rounded-lg bg-ink py-3 font-black text-background transition-opacity hover:opacity-90 cursor-pointer"
+          >
+            <FileText className="h-5 w-5" />
+            {viewLabel}
+          </Link>
+        ) : srcArray.length === 1 ? (
           <a
             href={srcArray[0]}
             target="_blank"

@@ -10,15 +10,30 @@
 /**
  * The public origin, with no trailing slash.
  *
- * Set NEXT_PUBLIC_SITE_URL in production. The Vercel fallback keeps preview
- * deployments self-consistent rather than pointing their canonicals at the
- * production domain, which would ask Google to index a preview build.
+ * The apex `sharda.social` is canonical, not `www`. Both resolve, so one
+ * has to be chosen and stuck to — serving identical pages on two hostnames
+ * splits ranking signal between them. Every canonical, OG url, sitemap
+ * entry and schema @id here uses the apex; the www host should 301 to it
+ * at the hosting layer.
+ *
+ * The Vercel fallback keeps preview deployments self-consistent rather than
+ * pointing their canonicals at production, which would ask Google to index
+ * a preview build.
  */
+const PRODUCTION_URL = "https://sharda.social";
+
 export const SITE_URL = (
   process.env.NEXT_PUBLIC_SITE_URL ||
-  (process.env.NEXT_PUBLIC_VERCEL_URL
+  // Only a *preview* deployment should describe itself by its generated
+  // hostname. On Vercel, NEXT_PUBLIC_VERCEL_URL is the per-deployment URL
+  // even in production — using it unconditionally would quietly point every
+  // canonical, sitemap entry and OG tag at something like
+  // "sharda-social-abc123.vercel.app" instead of the real domain, and ask
+  // Google to index that instead.
+  (process.env.NEXT_PUBLIC_VERCEL_ENV === "preview" &&
+  process.env.NEXT_PUBLIC_VERCEL_URL
     ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`
-    : "https://notes-pyqssharda.vercel.app")
+    : PRODUCTION_URL)
 ).replace(/\/+$/, "");
 
 export const SITE_NAME = "Sharda Social";

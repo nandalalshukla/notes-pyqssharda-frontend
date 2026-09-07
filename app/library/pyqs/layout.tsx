@@ -1,6 +1,4 @@
 import type { Metadata } from "next";
-import { JsonLd } from "@/components/seo/JsonLd";
-import { breadcrumbSchema, collectionSchema } from "@/lib/seo/structuredData";
 
 export const metadata: Metadata = {
   title: "Sharda University Previous Year Question Papers (PYQs)",
@@ -17,32 +15,18 @@ export const metadata: Metadata = {
   },
 };
 
+/**
+ * Metadata for the PYQs section.
+ *
+ * No JSON-LD here: a layout wraps its children, so a CollectionPage and
+ * breadcrumb trail emitted at this level would also attach to each
+ * individual paper page and describe it as the section listing. The list
+ * page carries its own instead.
+ */
 export default function PYQsLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  return (
-    <>
-      {/* Tells a crawler this page is a collection of study material about
-          Sharda University, and gives it a breadcrumb trail to show in
-          results instead of a bare URL. */}
-      <JsonLd
-        data={[
-          collectionSchema({
-            name: "Sharda University Previous Year Question Papers",
-            description:
-              "A searchable collection of previous year question papers from Sharda University, Greater Noida, covering every school and academic year.",
-            path: "/library/pyqs",
-          }),
-          breadcrumbSchema([
-            { name: "Home", path: "/" },
-            { name: "Library", path: "/library" },
-            { name: "PYQs", path: "/library/pyqs" },
-          ]),
-        ]}
-      />
-      {children}
-    </>
-  );
+  return <>{children}</>;
 }

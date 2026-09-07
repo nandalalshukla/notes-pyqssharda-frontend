@@ -53,9 +53,11 @@ export const metadata: Metadata = {
   publisher: SITE_NAME,
   category: "education",
 
-  alternates: {
-    canonical: "/",
-  },
+  // No canonical here on purpose. `alternates` is inherited, so a root
+  // canonical of "/" silently declares every page that doesn't override it
+  // to be the homepage — which is how /about-us ended up pointing at "/"
+  // and would never have been indexed on its own. Each indexable route
+  // declares its own instead.
 
   openGraph: {
     type: "website",
