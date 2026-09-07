@@ -19,9 +19,14 @@ import {
   markAllNotificationsAsRead,
   markNotificationAsRead,
   deleteNotification as deleteNotificationApi,
+  updateLostFoundStatus as updateLostFoundStatusApi,
   NOTIFICATION_STREAM_URL,
   Post,
   PostType,
+  LostFoundCategory,
+  LostFoundDetails,
+  LostFoundKind,
+  LostFoundStatus,
   Comment,
   FollowStats,
   Notification,
@@ -47,6 +52,9 @@ interface PostsState {
   feedTotalPages: number;
   isLoadingFeed: boolean;
   currentFeedType: PostType;
+  // Only meaningful while `currentFeedType` is "lost_found" — which subset
+  // of the board is on screen ("all" = no status filter).
+  currentLostFoundStatus: LostFoundStatus | "all";
 }
 
 interface CommentsState {
@@ -90,11 +98,16 @@ interface SocialStore
   error: string | null;
 
   // Posts actions
-  fetchFeed: (page?: number, type?: PostType) => Promise<void>;
+  fetchFeed: (
+    page?: number,
+    type?: PostType,
+    lostFoundStatus?: LostFoundStatus | "all",
+  ) => Promise<void>;
   fetchUserPosts: (userId: string, page?: number) => Promise<void>;
   createNewPost: (data: FormData) => Promise<void>;
   updatePost: (postId: string, data: FormData) => Promise<void>;
   removePost: (postId: string) => Promise<void>;
+  setLostFoundStatus: (postId: string, status: LostFoundStatus) => Promise<void>;
 
   // Comments actions
   fetchPostComments: (postId: string) => Promise<void>;
@@ -156,6 +169,7 @@ const initialState: Omit<
     createNewPost: unknown;
     updatePost: unknown;
     removePost: unknown;
+    setLostFoundStatus: unknown;
     fetchPostComments: unknown;
     addComment: unknown;
     updateComment: unknown;
@@ -187,6 +201,7 @@ const initialState: Omit<
   feedTotalPages: 0,
   isLoadingFeed: false,
   currentFeedType: "general",
+  currentLostFoundStatus: "all",
 
   // Comments
   comments: new Map(),
@@ -286,6 +301,20 @@ const removeCommentEverywhere = (
   return { comments: nextComments, replies: nextReplies };
 };
 
+// Every type the composer can produce. Anything else on the wire (an
+// older document, a type this build doesn't know about) falls back to
+// "general" so the card still renders instead of blowing up on a missing
+// entry in the type-meta lookup.
+const KNOWN_POST_TYPES: PostType[] = [
+  "general",
+  "event",
+  "announcement",
+  "lost_found",
+];
+
+const normalizePostType = (type?: string | null): PostType =>
+  KNOWN_POST_TYPES.includes(type as PostType) ? (type as PostType) : "general";
+
 const normalizePost = (
   post: Post & {
     type?: string | null;
@@ -295,10 +324,9 @@ const normalizePost = (
   },
 ): Post => ({
   ...post,
-  type:
-    post.type === "event" || post.type === "announcement"
-      ? post.type
-      : "general",
+  type: normalizePostType(post.type),
+  isAnonymous: Boolean(post.isAnonymous),
+  lostFound: post.lostFound ?? null,
   files: post.files || post.media?.map((media) => media.url) || [],
   publicIds:
     post.publicIds || post.media?.map((media) => media.publicId || "") || [],
@@ -309,6 +337,44 @@ const createTempId = (prefix: string) =>
   `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 
 const getCurrentUser = () => useAuthStore.getState().user;
+
+/**
+ * Mirrors the backend's lost & found assembly (see the backend's
+ * lostFound.helpers.ts) closely enough for the card to render correctly
+ * for the fraction of a second before the real response lands.
+ */
+const buildOptimisticLostFound = (
+  data: FormData,
+  previous?: LostFoundDetails | null,
+): LostFoundDetails => {
+  const read = (key: string) =>
+    data.has(key) ? String(data.get(key)) : undefined;
+
+  const status =
+    (read("lostFoundStatus") as LostFoundStatus | undefined) ??
+    previous?.status ??
+    "open";
+
+  return {
+    kind:
+      (read("lostFoundKind") as LostFoundKind | undefined) ??
+      previous?.kind ??
+      "lost",
+    itemName: read("lostFoundItemName") ?? previous?.itemName ?? "",
+    category:
+      (read("lostFoundCategory") as LostFoundCategory | undefined) ??
+      previous?.category ??
+      "other",
+    location: read("lostFoundLocation") ?? previous?.location ?? "",
+    dateOccurred: read("lostFoundDate") || previous?.dateOccurred || null,
+    contactInfo: read("lostFoundContactInfo") ?? previous?.contactInfo ?? "",
+    status,
+    resolvedAt:
+      status === "resolved"
+        ? (previous?.resolvedAt ?? new Date().toISOString())
+        : null,
+  };
+};
 
 const buildOptimisticPost = (
   data: FormData,
@@ -342,10 +408,25 @@ const buildOptimisticPost = (
   const newFiles = previewUrls || [];
   const newPublicIds = newFiles.map(() => "");
 
+  const type = data.has("type")
+    ? normalizePostType(String(data.get("type")))
+    : previousPost?.type || "general";
+  const isAnonymous = data.has("isAnonymous")
+    ? String(data.get("isAnonymous")) === "true"
+    : (previousPost?.isAnonymous ?? false);
+
   return {
     _id: previousPost?._id || createTempId("post"),
-    type: (data.get("type") as PostType) || previousPost?.type || "general",
+    type,
     content,
+    isAnonymous,
+    lostFound:
+      type === "lost_found"
+        ? buildOptimisticLostFound(data, previousPost?.lostFound)
+        : null,
+    // The optimistic copy always shows the real author, even for an
+    // anonymous post — the person looking at it right now IS the author,
+    // and that's exactly what the server sends back a moment later.
     author: {
       _id: user?._id || "",
       username: user?.username || "You",
@@ -489,10 +570,20 @@ export const useSocialStore = create<SocialStore>((set, get) => ({
    * ───────────────────────────────────────────────────────────────────────────────
    */
 
-  fetchFeed: async (page = 1, type = "general") => {
-    set({ isLoadingFeed: true, error: null, currentFeedType: type });
+  fetchFeed: async (page = 1, type = "general", lostFoundStatus = "all") => {
+    set({
+      isLoadingFeed: true,
+      error: null,
+      currentFeedType: type,
+      currentLostFoundStatus: lostFoundStatus,
+    });
     try {
-      const res = await getFeed(page, 10, type);
+      const res = await getFeed(
+        page,
+        10,
+        type,
+        lostFoundStatus === "all" ? undefined : lostFoundStatus,
+      );
       const posts = (res.data?.data || []).map(normalizePost);
       set((state) => ({
         feed: page > 1 ? [...state.feed, ...posts] : posts,
@@ -501,6 +592,7 @@ export const useSocialStore = create<SocialStore>((set, get) => ({
         feedTotalPages: res.data?.totalPages || 0,
         isLoadingFeed: false,
         currentFeedType: type,
+        currentLostFoundStatus: lostFoundStatus,
       }));
     } catch (error: unknown) {
       set({
@@ -673,6 +765,65 @@ export const useSocialStore = create<SocialStore>((set, get) => ({
         isLoading: false,
       });
       previewUrls.forEach((url) => URL.revokeObjectURL(url));
+      throw error;
+    }
+  },
+
+  setLostFoundStatus: async (postId: string, status: LostFoundStatus) => {
+    const previousFeed = get().feed;
+    const previousUserPosts = get().userPosts;
+
+    // Applied optimistically: the whole point of this control is that a
+    // single tap visibly closes the item out, and the request carries no
+    // data the client doesn't already have.
+    const applyStatus = (post: Post): Post =>
+      post.lostFound
+        ? {
+            ...post,
+            lostFound: {
+              ...post.lostFound,
+              status,
+              resolvedAt:
+                status === "resolved" ? new Date().toISOString() : null,
+            },
+          }
+        : post;
+
+    set((state) => ({
+      feed: state.feed.map((post) =>
+        post._id === postId ? applyStatus(post) : post,
+      ),
+      userPosts: updatePostEverywhere(state.userPosts, postId, applyStatus),
+    }));
+
+    try {
+      const res = await updateLostFoundStatusApi(postId, status);
+      const serverLostFound = res.data?.lostFound;
+
+      // Reconcile with the server's own timestamps rather than keeping the
+      // locally-guessed `resolvedAt`.
+      if (serverLostFound) {
+        const applyServerState = (post: Post): Post => ({
+          ...post,
+          lostFound: serverLostFound,
+        });
+        set((state) => ({
+          feed: state.feed.map((post) =>
+            post._id === postId ? applyServerState(post) : post,
+          ),
+          userPosts: updatePostEverywhere(
+            state.userPosts,
+            postId,
+            applyServerState,
+          ),
+        }));
+      }
+    } catch (error: unknown) {
+      set({
+        feed: previousFeed,
+        userPosts: previousUserPosts,
+        error: getErrorMessage(error) || "Failed to update status",
+      });
       throw error;
     }
   },

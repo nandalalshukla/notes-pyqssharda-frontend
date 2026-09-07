@@ -9,6 +9,7 @@ import {
   FiUserCheck,
   FiUserPlus,
   FiBook,
+  FiEyeOff,
 } from "react-icons/fi";
 import VerifiedBadge from "./VerifiedBadge";
 import { Button } from "@/components/ui";
@@ -19,11 +20,49 @@ interface ProfileHeaderProps {
   isFollowLoading: boolean;
 }
 
+/**
+ * A contact row. Hidden fields never arrive from the server at all for
+ * other viewers — the only person who sees one marked "Only you" is its
+ * owner, for whom the server always sends the real value.
+ */
+function DetailRow({
+  Icon,
+  value,
+  isHiddenFromOthers,
+  breakAll,
+}: {
+  Icon: React.ComponentType<{ size?: number; className?: string }>;
+  value: string;
+  isHiddenFromOthers?: boolean;
+  breakAll?: boolean;
+}) {
+  return (
+    <div className="flex items-center gap-3 text-foreground">
+      <Icon size={18} className="shrink-0 text-muted-foreground" />
+      <span
+        className={`text-sm font-medium ${breakAll ? "break-all" : ""}`}
+      >
+        {value}
+      </span>
+      {isHiddenFromOthers && (
+        <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-xs font-semibold text-muted-foreground">
+          <FiEyeOff size={11} />
+          Only you
+        </span>
+      )}
+    </div>
+  );
+}
+
 export default function ProfileHeader({
   profile,
   onFollowToggle,
   isFollowLoading,
 }: ProfileHeaderProps) {
+  // Only ever populated on your own profile (the server withholds other
+  // people's settings), so these badges can't appear on someone else's.
+  const privacy = profile.privacy;
+
   return (
     <div className="border-b border-border bg-card">
       <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6 lg:px-8">
@@ -107,24 +146,26 @@ export default function ProfileHeader({
             {/* Details Grid */}
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               {profile.course && (
-                <div className="flex items-center gap-3 text-foreground">
-                  <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-lg bg-primary/15">
-                    <FiBook size={16} className="text-primary" />
-                  </div>
-                  <span className="text-sm font-medium">{profile.course}</span>
-                </div>
+                <DetailRow
+                  Icon={FiBook}
+                  value={profile.course}
+                  isHiddenFromOthers={privacy?.showCourse === false}
+                />
               )}
               {profile.email && (
-                <div className="flex items-center gap-3 text-foreground">
-                  <FiMail size={18} className="shrink-0 text-muted-foreground" />
-                  <span className="text-sm font-medium break-all">{profile.email}</span>
-                </div>
+                <DetailRow
+                  Icon={FiMail}
+                  value={profile.email}
+                  breakAll
+                  isHiddenFromOthers={privacy?.showEmail === false}
+                />
               )}
               {profile.contactNo && (
-                <div className="flex items-center gap-3 text-foreground">
-                  <FiPhone size={18} className="shrink-0 text-muted-foreground" />
-                  <span className="text-sm font-medium">{profile.contactNo}</span>
-                </div>
+                <DetailRow
+                  Icon={FiPhone}
+                  value={profile.contactNo}
+                  isHiddenFromOthers={privacy?.showContactNo === false}
+                />
               )}
             </div>
           </div>

@@ -32,6 +32,9 @@ export const useProfile = () => {
       course?: string;
       contactNo?: string;
       profilePic?: File;
+      showEmail?: boolean;
+      showContactNo?: boolean;
+      showCourse?: boolean;
     }) => {
       return updateProfileStore(data);
     },

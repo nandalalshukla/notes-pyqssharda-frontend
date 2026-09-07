@@ -5,7 +5,7 @@ import dynamic from "next/dynamic";
 import { useSocialStore } from "@/stores/social/social.store";
 import useAuthStore from "@/stores/user/authStore";
 import { useRouter } from "next/navigation";
-import { Post, PostType } from "@/lib/api/social/social.api";
+import { Post } from "@/lib/api/social/social.api";
 import {
   FiHeart,
   FiMessageCircle,
@@ -15,10 +15,10 @@ import {
   FiTrash2,
   FiUserPlus,
   FiUserMinus,
-  FiBell,
-  FiCalendar,
-  FiMessageSquare,
   FiFlag,
+  FiEyeOff,
+  FiCheckCircle,
+  FiRotateCcw,
 } from "react-icons/fi";
 import { FaHeart } from "react-icons/fa";
 import toast from "react-hot-toast";
@@ -27,7 +27,9 @@ import Image from "next/image";
 import { Menu, Transition } from "@headlessui/react";
 import { Fragment } from "react";
 import VerifiedBadge from "./VerifiedBadge";
-import { Avatar, Badge, type BadgeVariant } from "@/components/ui";
+import LostFoundDetails from "./LostFoundDetails";
+import { resolvePostTypeMeta } from "./postMeta";
+import { Avatar, Badge } from "@/components/ui";
 
 // Interaction-only modals: only needed after a click, so keep them out of
 // PostCard's (list-rendered) initial bundle.
@@ -45,31 +47,6 @@ interface PostCardProps {
   style?: React.CSSProperties;
 }
 
-const postTypeMeta: Record<
-  PostType,
-  {
-    label: string;
-    Icon: React.ComponentType<{ size?: number; className?: string }>;
-    badgeVariant: BadgeVariant;
-  }
-> = {
-  general: {
-    label: "General",
-    Icon: FiMessageSquare,
-    badgeVariant: "default",
-  },
-  announcement: {
-    label: "Announcement",
-    Icon: FiBell,
-    badgeVariant: "coral",
-  },
-  event: {
-    label: "Event",
-    Icon: FiCalendar,
-    badgeVariant: "mint",
-  },
-};
-
 export default function PostCard({
   post,
   className = "",
@@ -79,6 +56,7 @@ export default function PostCard({
   const user = useAuthStore((s) => s.user);
   const togglePostLike = useSocialStore((s) => s.togglePostLike);
   const removePost = useSocialStore((s) => s.removePost);
+  const setLostFoundStatus = useSocialStore((s) => s.setLostFoundStatus);
   const toggleUserFollow = useSocialStore((s) => s.toggleUserFollow);
   const followStats = useSocialStore((s) => s.followStats);
   const feed = useSocialStore((s) => s.feed);
@@ -90,6 +68,7 @@ export default function PostCard({
   const [isLiking, setIsLiking] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isFollowLoading, setIsFollowLoading] = useState(false);
+  const [isUpdatingLostFound, setIsUpdatingLostFound] = useState(false);
   const [showLikesModal, setShowLikesModal] = useState(false);
   const [showProfileHover, setShowProfileHover] = useState(false);
   const [hoverCloseTimer, setHoverCloseTimer] = useState<NodeJS.Timeout | null>(
@@ -166,12 +145,26 @@ export default function PostCard({
     "";
   const authorRole =
     (currentPost.author as { role?: string } | undefined)?.role ?? undefined;
-  const postType =
-    currentPost.type === "event" || currentPost.type === "announcement"
-      ? currentPost.type
-      : "general";
-  const typeMeta = postTypeMeta[postType];
+  const typeMeta = resolvePostTypeMeta(currentPost.type);
   const TypeIcon = typeMeta.Icon;
+
+  // An anonymous post that the *viewer* wrote still arrives with the real
+  // author attached (that's how edit/delete stay available to them), so
+  // "should this card hide the identity" is `isAnonymous && !isAuthor` —
+  // not `isAnonymous` on its own.
+  const isAnonymousPost = Boolean(currentPost.isAnonymous);
+  const hideAuthorIdentity = isAnonymousPost && !isAuthor;
+  // Every affordance that would take a reader to the author — the profile
+  // link, the hover card, follow, "Report User" — has to be off when the
+  // identity is hidden, and there's no id to hang them off anyway.
+  const canOpenAuthorProfile = Boolean(authorId) && !hideAuthorIdentity;
+  const authorDisplayName = hideAuthorIdentity
+    ? "Anonymous"
+    : (currentPost.author as { username?: string })?.username;
+
+  const lostFound = currentPost.lostFound ?? null;
+  const isLostFoundPost = currentPost.type === "lost_found" && !!lostFound;
+  const isLostFoundResolved = lostFound?.status === "resolved";
 
   const handleLike = useCallback(async () => {
     if (!user) {
@@ -246,10 +239,10 @@ export default function PostCard({
   }, [post._id]);
 
   const handleViewProfile = useCallback(() => {
-    if (authorId) {
+    if (canOpenAuthorProfile && authorId) {
       router.push(`/profile/${authorId}`);
     }
-  }, [authorId, router]);
+  }, [authorId, canOpenAuthorProfile, router]);
 
   const openReportModal = useCallback(
     (targetType: "post" | "comment" | "user", targetId: string) => {
@@ -259,13 +252,18 @@ export default function PostCard({
         return;
       }
 
-      if (!authorId) return;
+      // An anonymous post has no author id on the client — but it must
+      // still be reportable, so only a *user* report needs one. The
+      // backend resolves the real owner from the target itself, and
+      // `targetOwner` is used here purely for the "you can't report your
+      // own content" check inside the modal.
+      if (targetType === "user" && !authorId) return;
 
       setReportModal({
         isOpen: true,
         targetType,
         targetId,
-        targetOwner: targetType === "user" ? targetId : authorId,
+        targetOwner: targetType === "user" ? targetId : (authorId ?? ""),
       });
     },
     [authorId, router, user],
@@ -275,8 +273,9 @@ export default function PostCard({
     if (hoverCloseTimer) {
       clearTimeout(hoverCloseTimer);
     }
+    if (!canOpenAuthorProfile) return;
     setShowProfileHover(true);
-  }, [hoverCloseTimer]);
+  }, [canOpenAuthorProfile, hoverCloseTimer]);
 
   const scheduleProfileHoverClose = useCallback(() => {
     if (hoverCloseTimer) {
@@ -314,6 +313,26 @@ export default function PostCard({
     }
   }, [user, isAuthor, isFollowing, toggleUserFollow, authorId, router]);
 
+  const handleToggleLostFoundStatus = useCallback(async () => {
+    if (!lostFound || isUpdatingLostFound) return;
+
+    const nextStatus = lostFound.status === "resolved" ? "open" : "resolved";
+    setIsUpdatingLostFound(true);
+    try {
+      await setLostFoundStatus(post._id, nextStatus);
+      toast.success(
+        nextStatus === "resolved"
+          ? "Marked as resolved"
+          : "Back on the lost & found board",
+      );
+    } catch (error) {
+      console.error("Failed to update lost & found status", error);
+      toast.error("Failed to update status");
+    } finally {
+      setIsUpdatingLostFound(false);
+    }
+  }, [lostFound, isUpdatingLostFound, post._id, setLostFoundStatus]);
+
   const formatDate = (date: string) => {
     const now = new Date();
     const postDate = new Date(date);
@@ -348,16 +367,20 @@ export default function PostCard({
               onClick={handleViewProfile}
               onMouseEnter={openProfileHover}
               onMouseLeave={scheduleProfileHoverClose}
-              className="cursor-pointer flex-shrink-0"
+              className={`flex-shrink-0 ${
+                canOpenAuthorProfile ? "cursor-pointer" : ""
+              }`}
             >
-              <Avatar
-                src={authorImage}
-                alt={
-                  (currentPost.author as { username?: string })?.username ||
-                  "User"
-                }
-                size="md"
-              />
+              {hideAuthorIdentity ? (
+                // Not an <Avatar>: rendering the masked author through the
+                // same component that takes a `src` invites a future edit
+                // to pass the real picture straight back in.
+                <span className="flex h-10 w-10 items-center justify-center rounded-full bg-muted text-muted-foreground">
+                  <FiEyeOff size={18} />
+                </span>
+              ) : (
+                <Avatar src={authorImage} alt={authorDisplayName || "User"} size="md" />
+              )}
             </span>
             <div className="min-w-0 flex-1">
               <span
@@ -366,19 +389,33 @@ export default function PostCard({
                 onMouseLeave={scheduleProfileHoverClose}
               >
                 <p
-                  className="cursor-pointer truncate text-sm font-semibold text-foreground underline-offset-2 decoration-2 transition-opacity hover:underline"
+                  className={`truncate text-sm font-semibold text-foreground underline-offset-2 decoration-2 transition-opacity ${
+                    canOpenAuthorProfile ? "cursor-pointer hover:underline" : ""
+                  }`}
                   onClick={handleViewProfile}
                 >
                   <span className="inline-flex items-center gap-1">
-                    {(currentPost.author as { username?: string })?.username}
-                    <VerifiedBadge role={authorRole} size={12} />
+                    {authorDisplayName}
+                    {!hideAuthorIdentity && (
+                      <VerifiedBadge role={authorRole} size={12} />
+                    )}
                   </span>
                 </p>
-                <p className="text-xs text-muted-foreground">
+                <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
                   {formatDate(currentPost.createdAt)}
+                  {/* Only the author needs telling — for everyone else the
+                      byline already reads "Anonymous", and repeating it
+                      here would just say the same thing twice. */}
+                  {isAnonymousPost && isAuthor && (
+                    <span className="inline-flex items-center gap-1">
+                      <span aria-hidden="true">·</span>
+                      <FiEyeOff size={11} />
+                      Posted anonymously
+                    </span>
+                  )}
                 </p>
 
-                {showProfileHover && authorId && (
+                {showProfileHover && canOpenAuthorProfile && authorId && (
                   <ProfileCardHover
                     userId={authorId}
                     className="absolute left-0 top-full mt-2 z-[999]"
@@ -410,7 +447,32 @@ export default function PostCard({
             >
               <Menu.Items className="absolute right-0 z-20 mt-2 w-44 origin-top-right rounded-xl border border-border bg-card shadow-soft-lg focus:outline-none">
                 <div className="py-1">
-                  {!isAuthor && (
+                  {isAuthor && isLostFoundPost && (
+                    <Menu.Item>
+                      {({ active }) => (
+                        <button
+                          onClick={handleToggleLostFoundStatus}
+                          disabled={isUpdatingLostFound}
+                          className={`flex w-full items-center gap-2 px-4 py-2.5 text-sm font-medium transition-colors cursor-pointer ${
+                            active ? "bg-success/10 text-success" : "text-foreground"
+                          } ${isUpdatingLostFound ? "opacity-50" : ""}`}
+                        >
+                          {isLostFoundResolved ? (
+                            <>
+                              <FiRotateCcw size={16} />
+                              Reopen
+                            </>
+                          ) : (
+                            <>
+                              <FiCheckCircle size={16} />
+                              Mark as Resolved
+                            </>
+                          )}
+                        </button>
+                      )}
+                    </Menu.Item>
+                  )}
+                  {!isAuthor && !hideAuthorIdentity && (
                     <Menu.Item>
                       {({ active }) => (
                         <button
@@ -454,7 +516,7 @@ export default function PostCard({
                           </button>
                         )}
                       </Menu.Item>
-                      {authorId && (
+                      {authorId && !hideAuthorIdentity && (
                         <Menu.Item>
                           {({ active }) => (
                             <button
@@ -513,12 +575,51 @@ export default function PostCard({
           </Menu>
         </div>
 
+        {/* Lost & Found summary — the structured "what / where / when"
+            block, above the free-text body a reader only gets to once the
+            item itself has caught their eye. */}
+        {isLostFoundPost && lostFound && (
+          <LostFoundDetails details={lostFound} />
+        )}
+
         {/* Content Section */}
         <div className="px-5 py-4">
           <p className="whitespace-pre-wrap break-words text-base leading-relaxed text-foreground">
             {post.content}
           </p>
         </div>
+
+        {/* The author's own one-tap resolve control. Kept out on the card
+            (as well as in the overflow menu) because closing an item out is
+            the action this post type exists to end on. */}
+        {isAuthor && isLostFoundPost && (
+          <div className="px-5 pb-4">
+            <button
+              type="button"
+              onClick={handleToggleLostFoundStatus}
+              disabled={isUpdatingLostFound}
+              className={`flex w-full items-center justify-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-semibold transition-colors cursor-pointer disabled:opacity-60 ${
+                isLostFoundResolved
+                  ? "border-border bg-card text-muted-foreground hover:bg-secondary"
+                  : "border-success/30 bg-success/10 text-success hover:bg-success/15"
+              }`}
+            >
+              {isLostFoundResolved ? (
+                <>
+                  <FiRotateCcw size={16} />
+                  Reopen this post
+                </>
+              ) : (
+                <>
+                  <FiCheckCircle size={16} />
+                  {lostFound?.kind === "found"
+                    ? "Returned to its owner"
+                    : "I got it back"}
+                </>
+              )}
+            </button>
+          </div>
+        )}
 
         {/* Media Gallery */}
         {post.files && post.files.length > 0 && (

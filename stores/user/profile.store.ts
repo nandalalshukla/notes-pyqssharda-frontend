@@ -23,6 +23,9 @@ interface ProfileState {
     course?: string;
     contactNo?: string;
     profilePic?: File;
+    showEmail?: boolean;
+    showContactNo?: boolean;
+    showCourse?: boolean;
   }) => Promise<void>;
 
   removeProfilePic: () => Promise<void>;
@@ -51,8 +54,13 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
       const response = await updateProfileAPI(data);
       const updatedUser = response.data.user;
       set({ user: updatedUser, isLoading: false });
-      // Sync with auth store
-      useAuthStore.setState({ user: updatedUser });
+      // Sync with auth store via setUser, not setState: these endpoints
+      // return the user keyed as `id` rather than `_id`, and setUser runs
+      // the normalizer that maps it back. Writing state directly left
+      // `user._id` undefined until the next reload, which silently broke
+      // every ownership check in the app (a post's own author stopped
+      // seeing its edit and delete controls).
+      useAuthStore.getState().setUser(updatedUser);
       toast.success(response.message || "Profile updated successfully");
     } catch (error: unknown) {
       const errorMessage = getErrorMessage(error) || "Failed to update profile";
@@ -68,8 +76,13 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
       const response = await removeProfilePicAPI();
       const updatedUser = response.data.user;
       set({ user: updatedUser, isLoading: false });
-      // Sync with auth store
-      useAuthStore.setState({ user: updatedUser });
+      // Sync with auth store via setUser, not setState: these endpoints
+      // return the user keyed as `id` rather than `_id`, and setUser runs
+      // the normalizer that maps it back. Writing state directly left
+      // `user._id` undefined until the next reload, which silently broke
+      // every ownership check in the app (a post's own author stopped
+      // seeing its edit and delete controls).
+      useAuthStore.getState().setUser(updatedUser);
       toast.success(response.message || "Profile picture removed");
     } catch (error: unknown) {
       const errorMessage =

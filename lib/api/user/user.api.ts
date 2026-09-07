@@ -1,5 +1,23 @@
 import api from "../axios";
 
+/**
+ * Which of the user's contact details are visible to other students.
+ * Enforced server-side — these flags exist here so the settings screen can
+ * show the user their current choices, never so the client can decide what
+ * to render for someone else.
+ */
+export interface PrivacySettings {
+  showEmail: boolean;
+  showContactNo: boolean;
+  showCourse: boolean;
+}
+
+export const defaultPrivacySettings: PrivacySettings = {
+  showEmail: true,
+  showContactNo: true,
+  showCourse: true,
+};
+
 export interface User {
   _id: string;
   name: string;
@@ -15,6 +33,7 @@ export interface User {
   modMotivation?: string;
   bio?: string;
   course?: string;
+  privacy?: PrivacySettings;
   profilePic?: {
     url: string;
     publicId: string;
@@ -32,6 +51,9 @@ export const updateProfile = async (data: {
   course?: string;
   contactNo?: string;
   profilePic?: File;
+  showEmail?: boolean;
+  showContactNo?: boolean;
+  showCourse?: boolean;
 }) => {
   const formData = new FormData();
   if (data.name) formData.append("name", data.name);
@@ -39,6 +61,14 @@ export const updateProfile = async (data: {
   if (data.course) formData.append("course", data.course);
   if (data.contactNo) formData.append("contactNo", data.contactNo);
   if (data.profilePic) formData.append("profilePic", data.profilePic);
+  // Checked against `undefined` rather than truthiness: these are booleans,
+  // and `false` — "hide this" — is the whole point of sending them.
+  if (data.showEmail !== undefined)
+    formData.append("showEmail", String(data.showEmail));
+  if (data.showContactNo !== undefined)
+    formData.append("showContactNo", String(data.showContactNo));
+  if (data.showCourse !== undefined)
+    formData.append("showCourse", String(data.showCourse));
 
   const response = await api.put("/auth/profile", formData, {
     headers: { "Content-Type": "multipart/form-data" },

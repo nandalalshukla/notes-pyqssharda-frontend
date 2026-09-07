@@ -9,41 +9,25 @@ import { FeedLoadingState, PostCardSkeleton } from "./LoadingSkeletons";
 
 // Only rendered after clicking "New Post" — keep it out of the initial bundle.
 const CreatePostModal = dynamic(() => import("./CreatePostModal"));
-import {
-  FiPlus,
-  FiStar,
-  FiFileText,
-  FiMessageSquare,
-  FiBell,
-  FiCalendar,
-} from "react-icons/fi";
-import { PostType } from "@/lib/api/social/social.api";
+import { FiPlus, FiStar, FiFileText } from "react-icons/fi";
+import { LostFoundStatus, PostType } from "@/lib/api/social/social.api";
+import { postTypeOptions, resolvePostTypeMeta } from "./postMeta";
 import { Button, EmptyState, Tabs } from "@/components/ui";
 
-const feedSections: {
-  value: PostType;
-  label: string;
-  empty: string;
-  icon: React.ComponentType<{ size?: number; className?: string }>;
-}[] = [
-  {
-    value: "general",
-    label: "General",
-    empty: "No posts yet",
-    icon: FiMessageSquare,
-  },
-  {
-    value: "announcement",
-    label: "Announcements",
-    empty: "No announcements yet",
-    icon: FiBell,
-  },
-  {
-    value: "event",
-    label: "Events",
-    empty: "No events yet",
-    icon: FiCalendar,
-  },
+const feedSections = postTypeOptions.map((meta) => ({
+  value: meta.value,
+  label: meta.tabLabel,
+  empty: meta.emptyTitle,
+  icon: meta.Icon,
+}));
+
+/** The lost & found board's secondary filter — hidden on every other section. */
+type LostFoundFilter = LostFoundStatus | "all";
+
+const lostFoundFilters: { value: LostFoundFilter; label: string }[] = [
+  { value: "all", label: "All" },
+  { value: "open", label: "Still open" },
+  { value: "resolved", label: "Resolved" },
 ];
 
 export default function Feed() {
@@ -58,10 +42,20 @@ export default function Feed() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [activeSection, setActiveSection] = useState<PostType>("general");
+  const [lostFoundFilter, setLostFoundFilter] = useState<LostFoundFilter>("all");
 
   const previousAuthState = useRef<boolean | null>(null);
   const previousSection = useRef<PostType>("general");
+  const previousLostFoundFilter = useRef<LostFoundFilter>("all");
   const loadMoreSentinelRef = useRef<HTMLDivElement>(null);
+
+  const isLostFoundSection = activeSection === "lost_found";
+  // The filter only applies to the lost & found board; leaving a stale
+  // "resolved" selection applied to a section switch would silently return
+  // nothing, so anywhere else it resolves back to "all".
+  const effectiveLostFoundFilter: LostFoundFilter = isLostFoundSection
+    ? lostFoundFilter
+    : "all";
 
   const hasMore = feedTotalPages > currentPage;
   const isLoadingMore = isLoadingFeed && currentPage > 1;
@@ -69,8 +63,16 @@ export default function Feed() {
   useEffect(() => {
     if (!authInitialized) return;
 
-    if (previousSection.current !== activeSection) {
+    // Changing section or the lost & found filter is a new list, not more
+    // of the current one — reset to page 1 first and let the reset's own
+    // render do the fetching, so an in-flight page 3 can't append rows
+    // from the section the user just left.
+    if (
+      previousSection.current !== activeSection ||
+      previousLostFoundFilter.current !== effectiveLostFoundFilter
+    ) {
       previousSection.current = activeSection;
+      previousLostFoundFilter.current = effectiveLostFoundFilter;
       if (currentPage !== 1) {
         setCurrentPage(1);
         return;
@@ -79,7 +81,7 @@ export default function Feed() {
 
     if (previousAuthState.current === null) {
       previousAuthState.current = isAuthenticated;
-      fetchFeed(currentPage, activeSection);
+      fetchFeed(currentPage, activeSection, effectiveLostFoundFilter);
       return;
     }
 
@@ -91,8 +93,15 @@ export default function Feed() {
       }
     }
 
-    fetchFeed(currentPage, activeSection);
-  }, [authInitialized, isAuthenticated, activeSection, currentPage, fetchFeed]);
+    fetchFeed(currentPage, activeSection, effectiveLostFoundFilter);
+  }, [
+    authInitialized,
+    isAuthenticated,
+    activeSection,
+    effectiveLostFoundFilter,
+    currentPage,
+    fetchFeed,
+  ]);
 
   // Auto-load the next page as the bottom of the feed approaches the
   // viewport, instead of requiring a manual "Load More" click — the
@@ -139,6 +148,35 @@ export default function Feed() {
             </Button>
           )}
         </div>
+
+        {/* Lost & found board sub-filter. Rendered as a second row rather
+            than merged into the section pills so the two stay clearly
+            different choices: which board, then which slice of it. */}
+        {isLostFoundSection && (
+          <div className="mx-auto flex max-w-3xl flex-wrap items-center gap-2 px-4 pb-4 sm:px-6 lg:px-8">
+            <span className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+              Show
+            </span>
+            {lostFoundFilters.map((filter) => {
+              const selected = lostFoundFilter === filter.value;
+              return (
+                <button
+                  key={filter.value}
+                  type="button"
+                  aria-pressed={selected}
+                  onClick={() => setLostFoundFilter(filter.value)}
+                  className={`cursor-pointer rounded-full border px-3 py-1 text-xs font-semibold transition-colors ${
+                    selected
+                      ? "border-primary bg-primary/10 text-primary"
+                      : "border-border bg-card text-muted-foreground hover:bg-secondary hover:text-foreground"
+                  }`}
+                >
+                  {filter.label}
+                </button>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {/* Main Content */}
@@ -219,14 +257,21 @@ export default function Feed() {
           <EmptyState
             icon={<FiFileText size={32} />}
             title={
-              feedSections.find((section) => section.value === activeSection)
-                ?.empty || "No posts yet"
+              isLostFoundSection && lostFoundFilter !== "all"
+                ? lostFoundFilter === "open"
+                  ? "Nothing open right now"
+                  : "Nothing resolved yet"
+                : resolvePostTypeMeta(activeSection).emptyTitle
             }
-            description="Be the first to share something with the community!"
+            description={
+              isLostFoundSection
+                ? "Lost something on campus, or found something that isn't yours? Post it here."
+                : "Be the first to share something with the community!"
+            }
             action={
               isAuthenticated && (
                 <Button onClick={() => setShowCreateModal(true)} icon={<FiPlus size={18} />}>
-                  Create First Post
+                  {isLostFoundSection ? "Post an Item" : "Create First Post"}
                 </Button>
               )
             }

@@ -5,22 +5,24 @@ import { useProfile } from "@/hooks/useProfile";
 import ProfilePictureSection from "./ProfilePictureSection";
 import EditProfileForm from "./EditProfileForm";
 import AccountDangerZone from "./AccountDangerZone";
+import PrivacySettingsForm from "./PrivacySettingsForm";
 import { FiArrowLeft, FiLoader } from "react-icons/fi";
 import { useRouter } from "next/navigation";
 import { Button, Tabs } from "@/components/ui";
 
 const tabs = [
   { value: "general" as const, label: "General" },
+  { value: "privacy" as const, label: "Privacy" },
   { value: "security" as const, label: "Security" },
   { value: "danger" as const, label: "Account" },
 ];
 
+type SettingsTab = (typeof tabs)[number]["value"];
+
 export default function ProfileSettingsPage() {
   const router = useRouter();
   const { user, isLoading } = useProfile();
-  const [activeTab, setActiveTab] = useState<"general" | "security" | "danger">(
-    "general",
-  );
+  const [activeTab, setActiveTab] = useState<SettingsTab>("general");
 
   if (isLoading && !user) {
     return (
@@ -88,6 +90,8 @@ export default function ProfileSettingsPage() {
               <EditProfileForm />
             </>
           )}
+
+          {activeTab === "privacy" && <PrivacySettingsForm />}
 
           {activeTab === "security" && (
             <div className="rounded-2xl border border-border bg-muted p-8">

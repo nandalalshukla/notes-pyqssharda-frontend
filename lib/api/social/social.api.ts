@@ -10,23 +10,72 @@ import { ApiResponse, PaginatedResponse, PaginationInfo } from "../types";
 export interface User {
   _id: string;
   username: string;
-  email?: string;
+  // `null` when the user has switched "show my email" off in their
+  // privacy settings — the backend omits the value entirely rather than
+  // relying on the client to hide it.
+  email?: string | null;
   profilePic?: {
     url: string;
     publicId?: string;
-  };
+  } | null;
   avatar?: string;
   role?: string;
   isFollowedByCurrentUser?: boolean;
 }
 
-export type PostType = "general" | "event" | "announcement";
+/**
+ * A post's author as the feed serves it.
+ *
+ * `_id` is `null` on the stand-in the backend substitutes for the author
+ * of an anonymous post (its ANONYMOUS_AUTHOR): the id is the one field
+ * that would deanonymize the post however the rest is masked, so it is
+ * withheld rather than blanked. Anything that links to a profile, follows,
+ * or reports the author has to check for that null — which is exactly why
+ * this is a distinct type from `User` rather than a loosening of it.
+ */
+export interface PostAuthor extends Omit<User, "_id"> {
+  _id: string | null;
+}
+
+export type PostType = "general" | "event" | "announcement" | "lost_found";
+
+export type LostFoundKind = "lost" | "found";
+
+export type LostFoundStatus = "open" | "resolved";
+
+export type LostFoundCategory =
+  | "electronics"
+  | "documents"
+  | "stationery"
+  | "clothing"
+  | "accessories"
+  | "keys"
+  | "wallet"
+  | "id_card"
+  | "other";
+
+/** Structured details carried only by `type: "lost_found"` posts. */
+export interface LostFoundDetails {
+  kind: LostFoundKind;
+  itemName: string;
+  category: LostFoundCategory;
+  location: string;
+  dateOccurred: string | null;
+  contactInfo: string;
+  status: LostFoundStatus;
+  resolvedAt: string | null;
+}
 
 export interface Post {
   _id: string;
   type: PostType;
   content: string;
-  author: User;
+  author: PostAuthor;
+  // True when the post was published anonymously. The author still sees
+  // their own real profile in `author` (so edit/delete stay available);
+  // everyone else gets the masked stand-in.
+  isAnonymous?: boolean;
+  lostFound?: LostFoundDetails | null;
   files?: string[];
   publicIds?: string[];
   likes: number;
@@ -103,18 +152,31 @@ export interface FollowStats {
   isFollowedByCurrentUser?: boolean;
 }
 
+/**
+ * Which of a user's contact details they've chosen to make public. Only
+ * ever returned to the owner of the profile — to anyone else the hidden
+ * fields simply arrive as `null`, with no indication of the setting.
+ */
+export interface PrivacySettings {
+  showEmail: boolean;
+  showContactNo: boolean;
+  showCourse: boolean;
+}
+
 export interface UserProfile {
   _id: string;
   name: string;
   username: string;
-  email: string;
+  // These three are `null` when the profile's owner has hidden them.
+  email: string | null;
   bio: string;
   profilePic?: {
     url: string;
     publicId?: string;
   };
-  course?: string;
-  contactNo?: string;
+  course?: string | null;
+  contactNo?: string | null;
+  privacy?: PrivacySettings;
   role: string;
   stats: {
     postsCount: number;
@@ -136,11 +198,14 @@ export const getFeed = async (
   page: number = 1,
   limit: number = 10,
   type: PostType = "general",
+  // Only honoured by the backend for the lost & found board; ignored on
+  // every other feed type.
+  lostFoundStatus?: LostFoundStatus,
 ) => {
   const response = await api.get<ApiResponse<PaginatedResponse<Post>>>(
     "/social/feed",
     {
-      params: { page, limit, type },
+      params: { page, limit, type, ...(lostFoundStatus && { lostFoundStatus }) },
     },
   );
   return response.data;
@@ -181,6 +246,21 @@ export const getPost = async (postId: string) => {
   const response = await api.get<ApiResponse<{ post: Post }>>(
     `/social/posts/${postId}`,
   );
+  return response.data;
+};
+
+/**
+ * Marks the author's own lost & found post resolved (or reopens it).
+ * A plain JSON PATCH — deliberately not routed through `editPost`, which
+ * is multipart and rate-limited as an upload.
+ */
+export const updateLostFoundStatus = async (
+  postId: string,
+  status: LostFoundStatus,
+) => {
+  const response = await api.patch<
+    ApiResponse<{ postId: string; lostFound: LostFoundDetails }>
+  >(`/social/posts/${postId}/lost-found/status`, { status });
   return response.data;
 };
 
