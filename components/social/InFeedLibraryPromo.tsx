@@ -2,16 +2,23 @@
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { FiChevronLeft, FiChevronRight, FiArrowRight } from "react-icons/fi";
-import { postTypeMeta } from "./postMeta";
+import {
+  FiChevronLeft,
+  FiChevronRight,
+  FiArrowRight,
+  FiFileText,
+  FiBookOpen,
+  FiClipboard,
+} from "react-icons/fi";
 import { cn } from "@/lib/utils/cn";
 
 /**
- * A promo card for the library, shown between feed posts.
+ * A bold promo card for the library, shown once in the feed.
  *
- * Styled to sit in the feed the way a sponsored post does — same card
- * shape, same spacing — but labelled so it never reads as something a
- * student wrote. It rotates through the three library sections on a timer.
+ * Styled to stand apart from the posts around it rather than blend in: a
+ * solid accent fill, a hard ink border and oversized type, so it reads
+ * instantly as "this is the library", not as one more student post. It
+ * rotates through the three sections on a timer.
  *
  * Note this is NOT what carries the homepage's internal links for search:
  * it only renders once the feed has loaded client-side, so it is absent
@@ -22,30 +29,35 @@ import { cn } from "@/lib/utils/cn";
 const SLIDES = [
   {
     href: "/library/pyqs",
-    eyebrow: "Previous Year Questions",
-    title: "Thousands of Sharda past papers",
-    body: "End-term question papers from every school, filed by programme, semester and year.",
+    Icon: FiFileText,
+    kicker: "Previous Year Questions",
+    title: "5,000+ past papers",
+    body: "Every school, every semester, back five years.",
     cta: "Browse PYQs",
-    gradient: "from-accent-coral/25 to-accent-coral/5",
-    chip: "bg-accent-coral text-accent-coral-foreground",
+    // A solid accent fill paired with its own foreground token, so contrast
+    // holds in both light and dark themes without a second set of overrides.
+    surface: "bg-accent-coral text-accent-coral-foreground",
+    dot: "bg-accent-coral",
   },
   {
     href: "/library/notes",
-    eyebrow: "Semester Notes",
-    title: "Notes from students who've sat the paper",
-    body: "Unit-wise study notes organised by course code, so you can find the topic you're stuck on.",
+    Icon: FiBookOpen,
+    kicker: "Semester Notes",
+    title: "Notes that actually helped",
+    body: "Unit-wise, written by students who sat the paper.",
     cta: "Browse Notes",
-    gradient: "from-accent-mint/25 to-accent-mint/5",
-    chip: "bg-accent-mint text-accent-mint-foreground",
+    surface: "bg-accent-mint text-accent-mint-foreground",
+    dot: "bg-accent-mint",
   },
   {
     href: "/library/syllabus",
-    eyebrow: "Syllabus",
-    title: "Know exactly what's examinable",
-    body: "The official unit breakdown for your course, before you start revising.",
+    Icon: FiClipboard,
+    kicker: "Syllabus",
+    title: "Know what's examinable",
+    body: "The official unit breakdown, before you start revising.",
     cta: "Browse Syllabus",
-    gradient: "from-accent-purple/25 to-accent-purple/5",
-    chip: "bg-accent-purple text-accent-purple-foreground",
+    surface: "bg-accent-purple text-accent-purple-foreground",
+    dot: "bg-accent-purple",
   },
 ];
 
@@ -66,7 +78,7 @@ export default function InFeedLibraryPromo({
 
   useEffect(() => {
     // Respect a reader who has asked the OS to reduce motion: for them the
-    // carousel simply doesn't auto-advance, and the arrows still work.
+    // carousel simply doesn't auto-advance, and the controls still work.
     const reduced =
       typeof window !== "undefined" &&
       window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
@@ -82,106 +94,117 @@ export default function InFeedLibraryPromo({
     };
   }, [paused]);
 
-  const LibraryIcon = postTypeMeta.general.Icon;
-
   return (
     <section
       aria-label="From the Sharda online library"
       className={cn(
-        "relative overflow-hidden rounded-2xl border border-border bg-card shadow-soft-sm",
+        // The hard 2px ink border is what makes this read as a distinct
+        // object in the feed rather than one more soft-edged card.
+        "relative overflow-hidden rounded-2xl border-2 border-ink bg-card shadow-soft-lg",
         className,
       )}
-      // Pause while the reader is actually engaging with it, so a slide
-      // can't change out from under a click.
+      // Pause while the reader is actually engaging, so a slide can't
+      // change out from under a click.
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
       onFocusCapture={() => setPaused(true)}
       onBlurCapture={() => setPaused(false)}
     >
-      {/* Labelled like a sponsored post: a promo that reads as a student's
-          post would be a dark pattern, and it's the one thing that makes
-          this acceptable in a social feed. */}
-      <div className="flex items-center justify-between border-b border-border px-5 py-2.5">
-        <span className="flex items-center gap-2 text-xs font-bold tracking-wide text-muted-foreground uppercase">
-          <LibraryIcon size={13} />
-          From the library
-        </span>
-        <div className="flex items-center gap-1">
-          <button
-            type="button"
-            onClick={() => go(index - 1)}
-            aria-label="Previous"
-            className="cursor-pointer rounded-full p-1.5 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
-          >
-            <FiChevronLeft size={16} />
-          </button>
-          <button
-            type="button"
-            onClick={() => go(index + 1)}
-            aria-label="Next"
-            className="cursor-pointer rounded-full p-1.5 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
-          >
-            <FiChevronRight size={16} />
-          </button>
-        </div>
-      </div>
-
-      {/* All three slides stay mounted and the track translates, rather
-          than swapping the active slide in and out. Keeps the other two
-          links real and focusable, and lets the browser animate a single
-          transform instead of remounting on every tick. */}
+      {/* Sliding track. All three slides stay mounted and the track
+          translates — keeps the other two links real and focusable, and
+          animates one transform instead of remounting on each tick. */}
       <div className="overflow-hidden">
         <div
           className="flex transition-transform duration-500 ease-out"
           style={{ transform: `translateX(-${index * 100}%)` }}
         >
-          {SLIDES.map((s) => (
-            <div key={s.href} className="w-full shrink-0">
+          {SLIDES.map(({ href, Icon, kicker, title, body, cta, surface }) => (
+            <div key={href} className="w-full shrink-0">
               <Link
-                href={s.href}
+                href={href}
                 className={cn(
-                  "block bg-gradient-to-br p-6 transition-opacity hover:opacity-95",
-                  s.gradient,
+                  "group flex items-center gap-5 p-6 sm:gap-6 sm:p-8",
+                  surface,
                 )}
               >
-                <span
-                  className={cn(
-                    "mb-3 inline-block rounded-full px-3 py-1 text-xs font-black tracking-wider uppercase",
-                    s.chip,
-                  )}
-                >
-                  {s.eyebrow}
+                {/* Icon tile outlined in the current text colour, so it
+                    stays legible whichever accent is showing. */}
+                <span className="hidden h-16 w-16 shrink-0 items-center justify-center rounded-2xl border-2 border-current sm:flex">
+                  <Icon size={30} />
                 </span>
-                <h3 className="mb-2 text-xl leading-snug font-black text-foreground">
-                  {s.title}
-                </h3>
-                <p className="mb-4 max-w-lg text-sm leading-relaxed text-muted-foreground">
-                  {s.body}
-                </p>
-                <span className="inline-flex items-center gap-1.5 font-bold text-primary">
-                  {s.cta}
+
+                <span className="min-w-0 flex-1">
+                  <span className="mb-1.5 block text-[11px] font-black tracking-[0.14em] uppercase opacity-70">
+                    {kicker}
+                  </span>
+                  <span className="block text-2xl leading-tight font-black sm:text-3xl">
+                    {title}
+                  </span>
+                  <span className="mt-1.5 block text-sm font-medium opacity-80">
+                    {body}
+                  </span>
+                </span>
+
+                {/* Ink on accent is the strongest contrast pair the palette
+                    offers, which is what keeps the CTA unmissable. */}
+                <span className="hidden shrink-0 items-center gap-2 rounded-xl bg-ink px-5 py-3 text-sm font-black text-background transition-transform group-hover:translate-x-0.5 md:inline-flex">
+                  {cta}
                   <FiArrowRight size={16} />
                 </span>
+                <FiArrowRight
+                  size={22}
+                  className="shrink-0 transition-transform group-hover:translate-x-0.5 md:hidden"
+                />
               </Link>
             </div>
           ))}
         </div>
       </div>
 
-      <div className="flex justify-center gap-1.5 pb-4">
-        {SLIDES.map((s, i) => (
-          <button
-            key={s.href}
-            type="button"
-            onClick={() => go(i)}
-            aria-label={`Show ${s.eyebrow}`}
-            aria-current={i === index}
-            className={cn(
-              "h-1.5 cursor-pointer rounded-full transition-all",
-              i === index ? "w-6 bg-primary" : "w-1.5 bg-border hover:bg-muted-foreground",
-            )}
-          />
-        ))}
+      {/* Controls sit on a neutral strip so they never fight the accent. */}
+      <div className="flex items-center justify-between border-t-2 border-ink bg-card px-5 py-2.5">
+        <span className="text-[11px] font-black tracking-[0.14em] text-muted-foreground uppercase">
+          Sharda Online Library
+        </span>
+
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1.5">
+            {SLIDES.map((s, i) => (
+              <button
+                key={s.href}
+                type="button"
+                onClick={() => go(i)}
+                aria-label={`Show ${s.kicker}`}
+                aria-current={i === index}
+                className={cn(
+                  "h-2 cursor-pointer rounded-full transition-all",
+                  i === index
+                    ? cn("w-7", s.dot)
+                    : "w-2 bg-border hover:bg-muted-foreground",
+                )}
+              />
+            ))}
+          </div>
+
+          <div className="flex items-center gap-0.5">
+            <button
+              type="button"
+              onClick={() => go(index - 1)}
+              aria-label="Previous"
+              className="cursor-pointer rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+            >
+              <FiChevronLeft size={16} />
+            </button>
+            <button
+              type="button"
+              onClick={() => go(index + 1)}
+              aria-label="Next"
+              className="cursor-pointer rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+            >
+              <FiChevronRight size={16} />
+            </button>
+          </div>
+        </div>
       </div>
     </section>
   );

@@ -34,13 +34,12 @@ const lostFoundFilters: { value: LostFoundFilter; label: string }[] = [
 /**
  * Where the library promo appears among the posts.
  *
- * The first one comes after the third post rather than at the top: a
- * landing page that opens with a promo reads as an advert, not a feed.
- * After that it repeats far enough apart that two are never on screen
- * together.
+ * Exactly once, after the third post. Not at the very top — a feed that
+ * opens with a promo reads as an advert rather than a feed — and not
+ * repeated, because a promo a reader has already scrolled past stops being
+ * a prompt and starts being clutter.
  */
-const PROMO_FIRST_AFTER = 3;
-const PROMO_EVERY = 8;
+const PROMO_AFTER_POST = 3;
 
 export default function Feed() {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
@@ -242,13 +241,13 @@ export default function Feed() {
                     }}
                   />
 
-                  {/* After the third post, then every eighth. Far enough
-                      down that the feed reads as a feed first, and spaced
-                      so a scroll never shows two promos at once. */}
-                  {(index + 1 - PROMO_FIRST_AFTER) % PROMO_EVERY === 0 &&
-                    index + 1 >= PROMO_FIRST_AFTER && (
-                      <InFeedLibraryPromo className="animate-fade-in" />
-                    )}
+                  {/* Once, after the third post — or after the last one
+                      when a filtered feed is shorter than that, so a
+                      two-post Lost & Found tab still shows it. */}
+                  {index ===
+                    Math.min(PROMO_AFTER_POST - 1, feed.length - 1) && (
+                    <InFeedLibraryPromo className="animate-fade-in" />
+                  )}
                 </React.Fragment>
               ))}
             </div>
