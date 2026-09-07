@@ -10,6 +10,9 @@ import {
 } from "react-icons/fa";
 import { MdEmail, MdLibraryBooks, MdRocketLaunch } from "react-icons/md";
 import { BiSupport } from "react-icons/bi";
+import { JsonLd } from "@/components/seo/JsonLd";
+import { faqSchema } from "@/lib/seo/structuredData";
+import { HOME_FAQS } from "@/lib/seo/faqs";
 
 export default function AboutUsPage() {
   return (
@@ -197,6 +200,42 @@ export default function AboutUsPage() {
           </div>
         </div>
       </div>
+
+      {/* FAQ.
+          Moved here from the homepage, which is now feed-first. The
+          FAQPage structured data travels with the visible copy on purpose:
+          Google requires the marked-up answer to be on the page a reader
+          actually sees, so the schema can't stay behind on a page that no
+          longer shows it. */}
+      <JsonLd data={faqSchema(HOME_FAQS)} />
+
+      <section
+        aria-labelledby="faq-heading"
+        className="mx-auto mt-8 max-w-3xl px-4 sm:px-6 lg:px-8"
+      >
+        <h2
+          id="faq-heading"
+          className="mb-8 text-center text-3xl font-black text-foreground md:text-4xl"
+        >
+          Frequently asked questions
+        </h2>
+
+        <dl className="space-y-4">
+          {HOME_FAQS.map((faq) => (
+            <div
+              key={faq.question}
+              className="rounded-2xl border border-border bg-card p-6 shadow-soft-sm"
+            >
+              <dt className="mb-2 text-lg font-black text-foreground">
+                {faq.question}
+              </dt>
+              <dd className="leading-relaxed text-muted-foreground">
+                {faq.answer}
+              </dd>
+            </div>
+          ))}
+        </dl>
+      </section>
     </div>
   );
 }

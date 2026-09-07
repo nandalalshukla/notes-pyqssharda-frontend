@@ -5,6 +5,7 @@ import dynamic from "next/dynamic";
 import { useSocialStore } from "@/stores/social/social.store";
 import useAuthStore from "@/stores/user/authStore";
 import PostCard from "./PostCard";
+import InFeedLibraryPromo from "./InFeedLibraryPromo";
 import { FeedLoadingState, PostCardSkeleton } from "./LoadingSkeletons";
 
 // Only rendered after clicking "New Post" — keep it out of the initial bundle.
@@ -29,6 +30,17 @@ const lostFoundFilters: { value: LostFoundFilter; label: string }[] = [
   { value: "open", label: "Still open" },
   { value: "resolved", label: "Resolved" },
 ];
+
+/**
+ * Where the library promo appears among the posts.
+ *
+ * The first one comes after the third post rather than at the top: a
+ * landing page that opens with a promo reads as an advert, not a feed.
+ * After that it repeats far enough apart that two are never on screen
+ * together.
+ */
+const PROMO_FIRST_AFTER = 3;
+const PROMO_EVERY = 8;
 
 export default function Feed() {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
@@ -213,21 +225,31 @@ export default function Feed() {
           <FeedLoadingState />
         ) : feed.length > 0 ? (
           <>
-            {/* Posts Grid */}
+            {/* Posts Grid, with a library promo slotted in the way a
+                social feed slots in an ad. */}
             <div className="space-y-5">
               {feed.map((post, index) => (
-                <PostCard
-                  key={post._id}
-                  post={post}
-                  className="animate-fade-in"
-                  style={{
-                    // Capped so a batch of newly-appended posts staggers in
-                    // quickly (instead of the delay growing unbounded with
-                    // the feed's total length — post #50 waiting 2.5s to
-                    // fade in reads as broken, not smooth).
-                    animationDelay: `${Math.min(index, 9) * 0.04}s`,
-                  }}
-                />
+                <React.Fragment key={post._id}>
+                  <PostCard
+                    post={post}
+                    className="animate-fade-in"
+                    style={{
+                      // Capped so a batch of newly-appended posts staggers in
+                      // quickly (instead of the delay growing unbounded with
+                      // the feed's total length — post #50 waiting 2.5s to
+                      // fade in reads as broken, not smooth).
+                      animationDelay: `${Math.min(index, 9) * 0.04}s`,
+                    }}
+                  />
+
+                  {/* After the third post, then every eighth. Far enough
+                      down that the feed reads as a feed first, and spaced
+                      so a scroll never shows two promos at once. */}
+                  {(index + 1 - PROMO_FIRST_AFTER) % PROMO_EVERY === 0 &&
+                    index + 1 >= PROMO_FIRST_AFTER && (
+                      <InFeedLibraryPromo className="animate-fade-in" />
+                    )}
+                </React.Fragment>
               ))}
             </div>
 
