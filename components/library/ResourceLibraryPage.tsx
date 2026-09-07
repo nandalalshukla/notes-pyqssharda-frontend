@@ -12,6 +12,13 @@ export interface LibraryItem {
   semester: number;
   year: string;
   src: string | string[];
+  /**
+   * The degree this paper belongs to. Optional because the hand-curated
+   * static lists this page was built on were all one programme, and pass
+   * `programLabel` for the whole page instead. Database-backed items carry
+   * their own, and it takes precedence wherever it's set.
+   */
+  program?: string;
 }
 
 export type LibraryAccent = "mint" | "coral" | "purple";
@@ -118,9 +125,12 @@ export function ResourceLibraryPage({
         !searchQuery ||
         item.subject.toLowerCase().includes(searchLower) ||
         item.code.toLowerCase().includes(searchLower);
+      // Prefer the item's own programme; fall back to the page-level label
+      // for the static lists, whose items are all one programme.
+      const itemProgram = item.program ?? programLabel;
       const matchesProgram =
         !selectedProgram ||
-        programLabel.toLowerCase() === selectedProgram.toLowerCase();
+        itemProgram.toLowerCase() === selectedProgram.toLowerCase();
       const matchesCode =
         !courseCode || item.code.toLowerCase().includes(codeLower);
       const matchesYear = !selectedYear || item.year === selectedYear;
@@ -374,7 +384,7 @@ function ResourceCard({
     <div className="lift-on-hover flex h-full flex-col rounded-xl border border-border bg-card p-6 shadow-soft-sm hover:shadow-soft-md">
       <div className="mb-4 flex items-start justify-between">
         <span className={cn("rounded-full px-3 py-1 text-xs font-bold tracking-wider uppercase", styles.badge)}>
-          {programLabel}
+          {item.program ?? programLabel}
         </span>
         <span className="text-xs font-bold text-muted-foreground">Sem {item.semester}</span>
       </div>

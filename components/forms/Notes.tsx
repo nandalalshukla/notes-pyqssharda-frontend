@@ -6,6 +6,7 @@ import { X } from "lucide-react";
 import { Note } from "@/lib/api/notes/notes.api";
 import { useNotesStore } from "@/stores/notes/notes.store";
 import { Button, Input, Select } from "@/components/ui";
+import { PROGRAM_OPTIONS } from "@/lib/constants/programs";
 
 interface NotesFormProps {
   onClose?: () => void;
@@ -41,20 +42,7 @@ export default function NotesForm({
     }
   }, [initialData]);
 
-  const programs = [
-    "Computer Science",
-    "Law",
-    "Business",
-    "Agriculture",
-    "Medical",
-    "Biotech",
-    "Civil",
-    "Mechanical",
-    "Electrical",
-    "Architecture",
-    "Design",
-    "Pharmacy",
-  ];
+  const programs = PROGRAM_OPTIONS;
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,

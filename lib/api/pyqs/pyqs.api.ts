@@ -16,6 +16,11 @@ export interface Pyq {
   courseName: string;
   semester: number;
   year: string;
+  // The school that set the paper — one level above `program`. Null on
+  // papers uploaded through the site's own form, which doesn't ask for it.
+  school?: string | null;
+  // Provenance for papers imported from the university's DSpace repository.
+  source?: { system: string; handle: string; bitstream: string } | null;
   status: "pending" | "approved" | "rejected";
   approvedBy?: string;
   approvedAt?: string;
@@ -33,6 +38,56 @@ export interface PyqSearchParams {
   semester?: string;
   year?: string;
 }
+
+export interface PyqBrowseParams {
+  page?: number;
+  limit?: number;
+  program?: string;
+  school?: string;
+  semester?: string;
+  year?: string;
+  courseCode?: string;
+  query?: string;
+}
+
+export interface PyqPagination {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+  hasMore: boolean;
+}
+
+export interface PyqFilterOptions {
+  programs: string[];
+  schools: string[];
+  years: string[];
+  semesters: number[];
+}
+
+/**
+ * Paginated, server-filtered browse.
+ *
+ * Distinct from `getAllPyqs`, which returns a flat top-N for the "latest
+ * uploads" strip. Once the collection grew to thousands of imported
+ * papers, filtering client-side would have meant downloading all of them
+ * to show twenty-four.
+ */
+export const browsePyqs = async (params: PyqBrowseParams = {}) => {
+  const response = await api.get<{
+    success: boolean;
+    data: { pyqs: Pyq[]; pagination: PyqPagination };
+  }>("/pyqs/browse-pyqs", { params });
+  return response.data.data;
+};
+
+/** Filter values that actually match something, for the dropdowns. */
+export const getPyqFilterOptions = async () => {
+  const response = await api.get<{ success: boolean; data: PyqFilterOptions }>(
+    "/pyqs/pyq-filters",
+  );
+  return response.data.data;
+};
 
 export const getAllPyqs = async () => {
   const response = await api.get("/pyqs/all-pyqs");

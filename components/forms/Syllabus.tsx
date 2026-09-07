@@ -6,6 +6,7 @@ import { X } from "lucide-react";
 import { Syllabus } from "@/lib/api/syllabus/syllabus.api";
 import { useSyllabusStore } from "@/stores/syllabus/syllabus.store";
 import { Button, Input, Select } from "@/components/ui";
+import { PROGRAM_OPTIONS } from "@/lib/constants/programs";
 
 interface SyllabusFormProps {
   onClose?: () => void;
@@ -41,20 +42,7 @@ export default function SyllabusForm({
     }
   }, [initialData]);
 
-  const programs = [
-    "Computer Science",
-    "Law",
-    "Business",
-    "Agriculture",
-    "Medical",
-    "Biotech",
-    "Civil",
-    "Mechanical",
-    "Electrical",
-    "Architecture",
-    "Design",
-    "Pharmacy",
-  ];
+  const programs = PROGRAM_OPTIONS;
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,

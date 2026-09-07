@@ -6,6 +6,7 @@ import { X } from "lucide-react";
 import { Pyq } from "@/lib/api/pyqs/pyqs.api";
 import { usePYQsStore } from "@/stores/pyqs/pyqs.store";
 import { Button, Input, Select } from "@/components/ui";
+import { PROGRAM_OPTIONS } from "@/lib/constants/programs";
 
 interface PyqsFormProps {
   onClose?: () => void;
@@ -43,20 +44,7 @@ export default function PyqsForm({
     }
   }, [initialData]);
 
-  const programs = [
-    "Computer Science",
-    "Law",
-    "Business",
-    "Agriculture",
-    "Medical",
-    "Biotech",
-    "Civil",
-    "Mechanical",
-    "Electrical",
-    "Architecture",
-    "Design",
-    "Pharmacy",
-  ];
+  const programs = PROGRAM_OPTIONS;
 
   const years = [
     "2024-25",

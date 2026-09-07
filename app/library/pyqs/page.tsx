@@ -1,28 +1,20 @@
 "use client";
 
-import PYQ2_DATA_2024_25 from "@/DATA/PYQs/BtechCS/2ndSem";
-import { PYQ4_DATA_2024_25 } from "@/DATA/PYQs/BtechCS/4thSem";
-import { PYQ6_DATA_2024_25 } from "@/DATA/PYQs/BtechCS/6thSem";
-import { ResourceLibraryPage, type LibraryItem } from "@/components/library/ResourceLibraryPage";
+import PyqLibraryBrowser from "@/components/library/PyqLibraryBrowser";
 
-const allPyqs: LibraryItem[] = [
-  ...PYQ2_DATA_2024_25,
-  ...PYQ4_DATA_2024_25,
-  ...PYQ6_DATA_2024_25,
-];
-
+/**
+ * Previous-year question papers, read from the database.
+ *
+ * This page used to import hand-maintained arrays from `DATA/PYQs/` —
+ * a few dozen B.Tech CS papers checked into the repo. Those files have
+ * been deleted: the collection now lives in MongoDB with the PDFs on
+ * Cloudinary, thousands of papers across every school, imported from the
+ * university's own repository by
+ * `notesandpyqssharda-backend/scripts/pyq-import`.
+ *
+ * Filtering and paging happen server-side (`/pyqs/browse-pyqs`) because
+ * the collection is far too large to ship to the browser and filter there.
+ */
 export default function PyqsPage() {
-  return (
-    <ResourceLibraryPage
-      accent="coral"
-      heading={{ prefix: "Previous Year ", highlight: "Questions" }}
-      description="Access past exam papers to boost your preparation."
-      items={allPyqs}
-      programOptions={["B.Tech CS"]}
-      programLabel="B.Tech CS"
-      noun={{ singular: "PYQ", plural: "PYQs" }}
-      viewLabel="View PYQ"
-      codePlaceholder="e.g. CSE251"
-    />
-  );
+  return <PyqLibraryBrowser />;
 }
