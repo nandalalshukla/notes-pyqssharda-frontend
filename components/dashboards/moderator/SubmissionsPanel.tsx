@@ -11,6 +11,7 @@ import {
   type PendingSubmission,
   type SubmissionType,
 } from "@/stores/mod/submissions.store";
+import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 
 const RejectionModal = dynamic(() => import("@/components/modals/RejectionModal"));
 
@@ -45,6 +46,11 @@ export default function SubmissionsPanel({
   rejectSubmission,
 }: SubmissionsPanelProps) {
   const [search, setSearch] = useState("");
+  // The table below re-filters and re-renders every row on each
+  // change; with a few thousand rows loaded that is enough work per
+  // keystroke to make typing feel sticky. The input stays bound to
+  // `search` so it still updates instantly.
+  const debouncedSearch = useDebouncedValue(search, 250);
   const [rejectionModal, setRejectionModal] = useState<RejectionModalState>({
     isOpen: false,
     itemId: "",
@@ -56,10 +62,10 @@ export default function SubmissionsPanel({
     () =>
       submissions.filter(
         (s) =>
-          s.title?.toLowerCase().includes(search.toLowerCase()) ||
-          s.submissionType.includes(search.toLowerCase()),
+          s.title?.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+          s.submissionType.includes(debouncedSearch.toLowerCase()),
       ),
-    [submissions, search],
+    [submissions, debouncedSearch],
   );
 
   const handleApprove = async (id: string, type: SubmissionType) => {

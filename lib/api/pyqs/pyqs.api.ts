@@ -73,11 +73,16 @@ export interface PyqFilterOptions {
  * papers, filtering client-side would have meant downloading all of them
  * to show twenty-four.
  */
-export const browsePyqs = async (params: PyqBrowseParams = {}) => {
+export const browsePyqs = async (
+  params: PyqBrowseParams = {},
+  // Passed through so a superseded search can be cancelled rather than
+  // landing late and overwriting newer results.
+  signal?: AbortSignal,
+) => {
   const response = await api.get<{
     success: boolean;
     data: { pyqs: Pyq[]; pagination: PyqPagination };
-  }>("/pyqs/browse-pyqs", { params });
+  }>("/pyqs/browse-pyqs", { params, signal });
   return response.data.data;
 };
 

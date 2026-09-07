@@ -5,6 +5,7 @@ import { Users } from "lucide-react";
 import { SectionCard, Toolbar } from "@/components/dashboards/SectionCard";
 import { DataTable, DataTableColumn, Badge, Button, Input } from "@/components/ui";
 import type { AdminUser } from "@/stores/admin/users.store";
+import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 
 interface UsersPanelProps {
   users: AdminUser[];
@@ -22,15 +23,20 @@ export default function UsersPanel({
   onDelete,
 }: UsersPanelProps) {
   const [search, setSearch] = useState("");
+  // The table below re-filters and re-renders every row on each
+  // change; with a few thousand rows loaded that is enough work per
+  // keystroke to make typing feel sticky. The input stays bound to
+  // `search` so it still updates instantly.
+  const debouncedSearch = useDebouncedValue(search, 250);
 
   const filteredUsers = useMemo(
     () =>
       users.filter(
         (u) =>
-          u.name.toLowerCase().includes(search.toLowerCase()) ||
-          u.email.toLowerCase().includes(search.toLowerCase()),
+          u.name.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+          u.email.toLowerCase().includes(debouncedSearch.toLowerCase()),
       ),
-    [users, search],
+    [users, debouncedSearch],
   );
 
   const columns: DataTableColumn<AdminUser>[] = [

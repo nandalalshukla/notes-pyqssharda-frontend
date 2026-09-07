@@ -9,6 +9,7 @@ import { SectionCard, Toolbar } from "@/components/dashboards/SectionCard";
 import { Avatar, Badge, Button, EmptyState, Input, Skeleton } from "@/components/ui";
 import { resolvePostTypeMeta } from "@/components/social/postMeta";
 import type { PendingPost } from "@/lib/api/mod/mod.api";
+import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 
 const RejectionModal = dynamic(
   () => import("@/components/modals/RejectionModal"),
@@ -57,6 +58,11 @@ export default function PendingPostsPanel({
   rejectPost,
 }: PendingPostsPanelProps) {
   const [search, setSearch] = useState("");
+  // The table below re-filters and re-renders every row on each
+  // change; with a few thousand rows loaded that is enough work per
+  // keystroke to make typing feel sticky. The input stays bound to
+  // `search` so it still updates instantly.
+  const debouncedSearch = useDebouncedValue(search, 250);
   const [rejectionModal, setRejectionModal] = useState<RejectionModalState>({
     isOpen: false,
     postId: "",
@@ -64,7 +70,7 @@ export default function PendingPostsPanel({
   });
 
   const filteredPosts = useMemo(() => {
-    const needle = search.trim().toLowerCase();
+    const needle = debouncedSearch.trim().toLowerCase();
     if (!needle) return posts;
 
     return posts.filter(
@@ -73,7 +79,7 @@ export default function PendingPostsPanel({
         post.author?.username?.toLowerCase().includes(needle) ||
         post.type?.toLowerCase().includes(needle),
     );
-  }, [posts, search]);
+  }, [posts, debouncedSearch]);
 
   const handleApprove = async (postId: string) => {
     try {

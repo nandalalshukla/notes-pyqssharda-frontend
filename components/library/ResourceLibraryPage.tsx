@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
-import { Search, ChevronDown, Download } from "lucide-react";
-import { EmptyState } from "@/components/ui";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { Search, ChevronDown, Download, Loader2 } from "lucide-react";
+import { EmptyState, Skeleton } from "@/components/ui";
+import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { cn } from "@/lib/utils/cn";
 
 export interface LibraryItem {
@@ -19,6 +20,42 @@ export interface LibraryItem {
    * their own, and it takes precedence wherever it's set.
    */
   program?: string;
+}
+
+/** The filter state the page can be in, and what a server source is asked for. */
+export interface LibraryQuery {
+  query: string;
+  program: string | null;
+  courseCode: string;
+  year: string | null;
+  semester: string | null;
+  page: number;
+}
+
+export interface LibraryPage {
+  items: LibraryItem[];
+  total: number;
+  hasMore: boolean;
+}
+
+export interface LibraryFilterOptions {
+  programs: string[];
+  years: string[];
+  semesters: string[];
+}
+
+/**
+ * Lets this page be backed by an API instead of an in-memory array.
+ *
+ * Notes and Syllabus pass a few dozen hand-curated items and filter them in
+ * the browser. PYQs holds thousands of rows imported from the university
+ * repository, which can't be shipped to the client — so it supplies this
+ * instead and the same component renders it. Sharing the component rather
+ * than copying its markup is what keeps the three pages actually identical.
+ */
+export interface LibraryDataSource {
+  fetchPage: (q: LibraryQuery, signal: AbortSignal) => Promise<LibraryPage>;
+  fetchFilterOptions: () => Promise<LibraryFilterOptions>;
 }
 
 export type LibraryAccent = "mint" | "coral" | "purple";
@@ -75,8 +112,11 @@ export interface ResourceLibraryPageProps {
   accent: LibraryAccent;
   heading: { prefix?: string; highlight: string; suffix?: string };
   description: string;
-  items: LibraryItem[];
-  programOptions: string[];
+  /** Client-side mode: everything to show, filtered in the browser. */
+  items?: LibraryItem[];
+  /** Server-side mode: the page fetches, filters and pages via the API. */
+  dataSource?: LibraryDataSource;
+  programOptions?: string[];
   programLabel: string;
   noun: { singular: string; plural: string };
   viewLabel: string;
@@ -88,6 +128,7 @@ export function ResourceLibraryPage({
   heading,
   description,
   items,
+  dataSource,
   programOptions,
   programLabel,
   noun,
@@ -95,18 +136,31 @@ export function ResourceLibraryPage({
   codePlaceholder,
 }: ResourceLibraryPageProps) {
   const styles = accentConfig[accent];
+  const staticItems = useMemo(() => items ?? [], [items]);
+
+  // In client mode the dropdowns are derived from the items on hand; in
+  // server mode they come from the API, which knows the whole collection.
+  const [serverOptions, setServerOptions] = useState<LibraryFilterOptions | null>(null);
 
   const semesterOptions = useMemo(
     () =>
-      [...new Set(items.map((item) => item.semester.toString()))].sort(
+      serverOptions?.semesters ??
+      [...new Set(staticItems.map((item) => item.semester.toString()))].sort(
         (a, b) => Number(a) - Number(b),
       ),
-    [items],
+    [serverOptions, staticItems],
   );
 
   const yearOptions = useMemo(
-    () => [...new Set(items.map((item) => item.year))].sort().reverse(),
-    [items],
+    () =>
+      serverOptions?.years ??
+      [...new Set(staticItems.map((item) => item.year))].sort().reverse(),
+    [serverOptions, staticItems],
+  );
+
+  const resolvedProgramOptions = useMemo(
+    () => serverOptions?.programs ?? programOptions ?? [],
+    [serverOptions, programOptions],
   );
 
   const [searchQuery, setSearchQuery] = useState("");
@@ -116,8 +170,137 @@ export function ResourceLibraryPage({
   const [selectedSemester, setSelectedSemester] = useState<string | null>(null);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
 
-  const filteredItems = useMemo(() => {
-    return items.filter((item) => {
+  /**
+   * ═══════════════════════════════════════════════════════════════════════
+   * SERVER MODE
+   * ═══════════════════════════════════════════════════════════════════════
+   */
+  const [serverItems, setServerItems] = useState<LibraryItem[]>([]);
+  const [serverTotal, setServerTotal] = useState(0);
+  const [serverHasMore, setServerHasMore] = useState(false);
+  const [page, setPage] = useState(1);
+  const [isLoading, setIsLoading] = useState(Boolean(dataSource));
+  const [loadError, setLoadError] = useState<string | null>(null);
+
+  // Typing shouldn't fire a request per keystroke, but picking a dropdown
+  // should feel instant — so only the two text inputs are debounced.
+  //
+  // Each field gets its own timer: sharing one meant typing a subject name
+  // kept restarting the course-code timer and vice versa, so whichever
+  // field you weren't touching was held back by the one you were.
+  const debouncedQuery = useDebouncedValue(searchQuery, 300);
+  const debouncedCode = useDebouncedValue(courseCode, 300);
+
+  const activeQuery = useMemo<LibraryQuery>(
+    () => ({
+      query: debouncedQuery.trim(),
+      program: selectedProgram,
+      courseCode: debouncedCode.trim(),
+      year: selectedYear,
+      semester: selectedSemester,
+      page,
+    }),
+    [debouncedQuery, debouncedCode, selectedProgram, selectedYear, selectedSemester, page],
+  );
+
+  const cacheKey = JSON.stringify(activeQuery);
+
+  /**
+   * Results already fetched this session, keyed by the exact query.
+   *
+   * Browsing a library is a lot of going back and forth between the same
+   * few filter combinations, and re-fetching a page the user just looked at
+   * is both slow and pointless. A ref rather than state: writing to it must
+   * never itself trigger a render.
+   */
+  const cache = useRef(new Map<string, LibraryPage>());
+  const inFlight = useRef<AbortController | null>(null);
+
+  // Any change to the filters starts a new result set, so go back to page 1.
+  // Skipped when `page` itself is what changed, which is what "load more" does.
+  const filterSignature = JSON.stringify({
+    q: debouncedQuery.trim(),
+    c: debouncedCode.trim(),
+    p: selectedProgram,
+    y: selectedYear,
+    s: selectedSemester,
+  });
+  const previousSignature = useRef(filterSignature);
+  useEffect(() => {
+    if (previousSignature.current !== filterSignature) {
+      previousSignature.current = filterSignature;
+      setPage(1);
+    }
+  }, [filterSignature]);
+
+  useEffect(() => {
+    if (!dataSource) return;
+    let cancelled = false;
+
+    const cached = cache.current.get(cacheKey);
+    if (cached) {
+      // Served from memory: no request, no spinner.
+      setServerItems((prev) => (activeQuery.page > 1 ? [...prev, ...cached.items] : cached.items));
+      setServerTotal(cached.total);
+      setServerHasMore(cached.hasMore);
+      setIsLoading(false);
+      return;
+    }
+
+    // Supersede whatever was still in the air — the user has moved on, and
+    // a late response would otherwise overwrite the newer results.
+    inFlight.current?.abort();
+    const controller = new AbortController();
+    inFlight.current = controller;
+
+    setIsLoading(true);
+    setLoadError(null);
+
+    dataSource
+      .fetchPage(activeQuery, controller.signal)
+      .then((result) => {
+        if (cancelled || controller.signal.aborted) return;
+        cache.current.set(cacheKey, result);
+        setServerItems((prev) =>
+          activeQuery.page > 1 ? [...prev, ...result.items] : result.items,
+        );
+        setServerTotal(result.total);
+        setServerHasMore(result.hasMore);
+      })
+      .catch((err: unknown) => {
+        if (cancelled || controller.signal.aborted) return;
+        if ((err as Error)?.name === "AbortError") return;
+        setLoadError("Couldn't load results. Please try again.");
+      })
+      .finally(() => {
+        if (!cancelled && !controller.signal.aborted) setIsLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [dataSource, cacheKey, activeQuery]);
+
+  // Filter options are the same for every visitor and change only when new
+  // papers are imported, so they're fetched once per mount.
+  useEffect(() => {
+    if (!dataSource) return;
+    let cancelled = false;
+    dataSource
+      .fetchFilterOptions()
+      .then((opts) => {
+        if (!cancelled) setServerOptions(opts);
+      })
+      .catch(() => {
+        // Non-fatal — the list still works, the dropdowns just stay empty.
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [dataSource]);
+
+  const clientFilteredItems = useMemo(() => {
+    return staticItems.filter((item) => {
       const searchLower = searchQuery.toLowerCase();
       const codeLower = courseCode.toLowerCase();
 
@@ -145,7 +328,9 @@ export function ResourceLibraryPage({
         matchesSemester
       );
     });
-  }, [items, searchQuery, selectedProgram, programLabel, courseCode, selectedYear, selectedSemester]);
+  }, [staticItems, searchQuery, selectedProgram, programLabel, courseCode, selectedYear, selectedSemester]);
+
+  const filteredItems = dataSource ? serverItems : clientFilteredItems;
 
   const itemsBySemester = useMemo(() => {
     const grouped: Record<string, LibraryItem[]> = {};
@@ -163,7 +348,10 @@ export function ResourceLibraryPage({
     setCourseCode("");
     setSelectedYear(null);
     setSelectedSemester(null);
+    setPage(1);
   };
+
+  const resultCount = dataSource ? serverTotal : filteredItems.length;
 
   const toggleDropdown = (name: string) =>
     setActiveDropdown((prev) => (prev === name ? null : name));
@@ -233,7 +421,7 @@ export function ResourceLibraryPage({
                 </button>
                 {activeDropdown === "program" && (
                   <div className={cn(dropdownPanelClass, "w-48")}>
-                    {programOptions.map((opt) => (
+                    {resolvedProgramOptions.map((opt) => (
                       <div
                         key={opt}
                         onClick={() => handleSelect("program", opt)}
@@ -326,8 +514,38 @@ export function ResourceLibraryPage({
           </div>
         </div>
 
+        {/* How many matched, and whether a request is in flight. Shown for
+            the server-backed page because "5,704 papers" is information the
+            client-side pages get for free from array length. */}
+        <div className="mb-8 flex items-center justify-center gap-3 text-sm font-bold text-muted-foreground">
+          {isLoading && dataSource ? (
+            <>
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Searching...
+            </>
+          ) : (
+            <span>
+              {resultCount.toLocaleString()}{" "}
+              {resultCount === 1 ? noun.singular.toLowerCase() : noun.plural.toLowerCase()}
+              {hasActiveFilter ? " matched" : " available"}
+            </span>
+          )}
+        </div>
+
+        {loadError && (
+          <div className="mb-8 rounded-xl border border-destructive/20 bg-destructive/5 p-4 text-center text-sm font-bold text-destructive">
+            {loadError}
+          </div>
+        )}
+
         {/* Results Section */}
-        {Object.keys(itemsBySemester).length > 0 ? (
+        {isLoading && dataSource && serverItems.length === 0 ? (
+          <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <Skeleton key={i} className="h-64 w-full rounded-xl" />
+            ))}
+          </div>
+        ) : Object.keys(itemsBySemester).length > 0 ? (
           <div className="space-y-12">
             {Object.entries(itemsBySemester)
               .sort(([a], [b]) => a.localeCompare(b, undefined, { numeric: true }))
@@ -354,6 +572,19 @@ export function ResourceLibraryPage({
                   </div>
                 </div>
               ))}
+
+            {dataSource && serverHasMore && (
+              <div className="flex justify-center pt-4">
+                <button
+                  type="button"
+                  onClick={() => setPage((p) => p + 1)}
+                  disabled={isLoading}
+                  className="cursor-pointer rounded-lg bg-ink px-8 py-3 font-black text-background transition-opacity hover:opacity-90 disabled:opacity-60"
+                >
+                  {isLoading ? "Loading..." : `Load more ${noun.plural.toLowerCase()}`}
+                </button>
+              </div>
+            )}
           </div>
         ) : (
           <EmptyState
