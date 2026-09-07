@@ -69,6 +69,42 @@ export interface ReportListFilters {
   sortOrder?: "asc" | "desc";
 }
 
+/**
+ * A member-submitted event or announcement waiting on review.
+ *
+ * The author is always the real one, even for a post published
+ * anonymously — reviewers need to know who they're approving, and
+ * `isAnonymous` only says whether the byline will be hidden from other
+ * students once it goes live.
+ */
+export interface PendingPost {
+  _id: string;
+  type: "event" | "announcement";
+  content: string;
+  author?: {
+    _id: string;
+    username?: string;
+    avatar?: string;
+    profilePic?: { url?: string } | null;
+    role?: string;
+  } | null;
+  isAnonymous?: boolean;
+  files?: string[];
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface PendingPostsResponse {
+  posts: PendingPost[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+    hasMore: boolean;
+  };
+}
+
 // --- Fetch Pending Items ---
 export const getPendingNotes = async (options?: RequestOptions) =>
   apiRequest.get("/mod/notes/pending", {
@@ -94,6 +130,31 @@ export const getPendingSyllabus = async (options?: RequestOptions) =>
     signal: options?.signal,
   });
 
+export const getPendingPosts = async (options?: RequestOptions) => {
+  const response = await apiRequest.get<{
+    success?: boolean;
+    data?: PendingPostsResponse;
+  }>("/mod/posts/pending", {
+    requestKey: options?.requestKey ?? "mod:posts:pending",
+    cancelPrevious: options?.cancelPrevious ?? true,
+    dedupe: options?.dedupe ?? true,
+    signal: options?.signal,
+  });
+
+  return (
+    response.data || {
+      posts: [],
+      pagination: {
+        page: 1,
+        limit: 20,
+        total: 0,
+        totalPages: 0,
+        hasMore: false,
+      },
+    }
+  );
+};
+
 // --- Approval / Rejection ---
 export const approveNote = async (noteId: string) =>
   apiRequest.patch(`/mod/notes/${noteId}/approve`);
@@ -115,6 +176,12 @@ export const rejectSyllabus = async (
   rejectionReason?: string,
 ) =>
   apiRequest.patch(`/mod/syllabus/${syllabusId}/reject`, { rejectionReason });
+
+export const approvePost = async (postId: string) =>
+  apiRequest.patch(`/mod/posts/${postId}/approve`);
+
+export const rejectPost = async (postId: string, rejectionReason?: string) =>
+  apiRequest.patch(`/mod/posts/${postId}/reject`, { rejectionReason });
 
 export const getReports = async (
   filters?: ReportListFilters,

@@ -39,6 +39,34 @@ export interface PostAuthor extends Omit<User, "_id"> {
 
 export type PostType = "general" | "event" | "announcement" | "lost_found";
 
+/**
+ * Whether a post is publicly visible yet.
+ *
+ * Events and announcements written by a general member start "pending" and
+ * only reach the feed once a moderator or admin approves them; every other
+ * post is created "approved". Anything not approved is served only to its
+ * own author (and to reviewers), so a non-"approved" value here always
+ * means "you are looking at your own post".
+ */
+export type PostModerationStatus = "approved" | "pending" | "rejected";
+
+/** Post types a general member cannot publish without review. */
+export const MODERATED_POST_TYPES: PostType[] = ["event", "announcement"];
+
+/** Roles that publish those types directly, and review everyone else's. */
+export const POST_REVIEWER_ROLES = ["mod", "admin"];
+
+export const isPostReviewer = (role?: string | null) =>
+  POST_REVIEWER_ROLES.includes(role ?? "");
+
+/**
+ * Mirrors the server's rule (backend utils/postModeration.ts) so the
+ * composer can warn an author *before* they submit. The server decides for
+ * real — this is only ever used to set expectations in the UI.
+ */
+export const postWillNeedApproval = (type: PostType, role?: string | null) =>
+  MODERATED_POST_TYPES.includes(type) && !isPostReviewer(role);
+
 export type LostFoundKind = "lost" | "found";
 
 export type LostFoundStatus = "open" | "resolved";
@@ -75,6 +103,9 @@ export interface Post {
   // their own real profile in `author` (so edit/delete stay available);
   // everyone else gets the masked stand-in.
   isAnonymous?: boolean;
+  moderationStatus?: PostModerationStatus;
+  // Why a moderator turned the post down. Only ever sent to the author.
+  rejectionReason?: string | null;
   lostFound?: LostFoundDetails | null;
   files?: string[];
   publicIds?: string[];
@@ -116,7 +147,14 @@ export interface CreateReportPayload {
   message?: string;
 }
 
-export type NotificationType = "like" | "comment" | "reply" | "follow" | "share";
+export type NotificationType =
+  | "like"
+  | "comment"
+  | "reply"
+  | "follow"
+  | "share"
+  | "post_approved"
+  | "post_rejected";
 
 export interface Notification {
   _id: string;

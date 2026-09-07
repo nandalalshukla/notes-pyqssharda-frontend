@@ -11,6 +11,14 @@ interface AuthState {
   lastLoginTime: number | null;
 
   login: (data: { email: string; password: string }) => Promise<void>;
+  /**
+   * Signs the user in from the response to a successful email
+   * verification. The server has already issued the session cookies by
+   * that point (see the backend's verifyEmail controller), so there is
+   * nothing left to request — this just moves the client into the same
+   * authenticated state a login would produce.
+   */
+  completeEmailVerification: (user: User) => void;
   logout: () => Promise<void>;
   logoutAll: () => Promise<void>;
   fetchMe: () => Promise<void>;
@@ -59,6 +67,15 @@ const useAuthStore = create<AuthState>()(
           lastLoginTime: Date.now(),
         });
       },
+
+      completeEmailVerification: (user) =>
+        set({
+          user: normalizeUser(user),
+          isAuthenticated: true,
+          authLoading: false,
+          authInitialized: true,
+          lastLoginTime: Date.now(),
+        }),
 
       logout: async () => {
         // Clear local state regardless of API response

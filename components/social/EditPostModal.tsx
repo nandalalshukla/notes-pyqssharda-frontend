@@ -3,7 +3,12 @@
 import React, { useState, useCallback } from "react";
 import { useSocialStore } from "@/stores/social/social.store";
 import { useBodyScroll } from "@/hooks/useBodyScroll";
-import { Post, PostType } from "@/lib/api/social/social.api";
+import {
+  Post,
+  PostType,
+  postWillNeedApproval,
+} from "@/lib/api/social/social.api";
+import useAuthStore from "@/stores/user/authStore";
 import toast from "react-hot-toast";
 import { Modal, Button } from "@/components/ui";
 import PostComposerForm, {
@@ -41,6 +46,7 @@ const draftFromPost = (post: Post): LostFoundDraft => {
 
 export default function EditPostModal({ post, onClose }: EditPostModalProps) {
   const { updatePost, isLoading } = useSocialStore();
+  const user = useAuthStore((s) => s.user);
 
   // Prevent body scroll when modal is open
   useBodyScroll(true);
@@ -61,6 +67,9 @@ export default function EditPostModal({ post, onClose }: EditPostModalProps) {
   );
 
   const isLostFound = postType === "lost_found";
+  // An edit is a re-submission: saving an already-approved announcement
+  // sends it back to the queue, so the notice belongs here too.
+  const needsApproval = postWillNeedApproval(postType, user?.role);
 
   const patchLostFound = useCallback((patch: Partial<LostFoundDraft>) => {
     setLostFound((prev) => ({ ...prev, ...patch }));
@@ -147,7 +156,11 @@ export default function EditPostModal({ post, onClose }: EditPostModalProps) {
       try {
         await updatePost(post._id, formData);
         onClose();
-        toast.success("Post updated successfully");
+        toast.success(
+          needsApproval
+            ? "Updated and sent for review"
+            : "Post updated successfully",
+        );
       } catch {
         toast.error("Failed to update post");
       }
@@ -157,6 +170,7 @@ export default function EditPostModal({ post, onClose }: EditPostModalProps) {
       postType,
       isAnonymous,
       isLostFound,
+      needsApproval,
       lostFound,
       existingMedia,
       newFiles,
@@ -184,7 +198,7 @@ export default function EditPostModal({ post, onClose }: EditPostModalProps) {
             loading={isLoading}
             disabled={isLostFound && !lostFound.itemName.trim()}
           >
-            Update Post
+            {needsApproval ? "Save & Resubmit" : "Update Post"}
           </Button>
         </>
       }
@@ -203,6 +217,7 @@ export default function EditPostModal({ post, onClose }: EditPostModalProps) {
         onLostFoundChange={patchLostFound}
         isAnonymous={isAnonymous}
         onIsAnonymousChange={setIsAnonymous}
+        needsApproval={needsApproval}
         existingMedia={existingMedia}
         onRemoveExistingMedia={removeExistingFile}
         newFiles={newFiles}

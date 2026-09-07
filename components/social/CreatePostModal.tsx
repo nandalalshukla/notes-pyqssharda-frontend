@@ -6,7 +6,7 @@ import useAuthStore from "@/stores/user/authStore";
 import { useBodyScroll } from "@/hooks/useBodyScroll";
 import { getErrorMessage } from "@/lib/utils/errorHandler";
 import toast from "react-hot-toast";
-import { PostType } from "@/lib/api/social/social.api";
+import { PostType, postWillNeedApproval } from "@/lib/api/social/social.api";
 import { Modal, Button, Avatar } from "@/components/ui";
 import PostComposerForm, {
   LostFoundDraft,
@@ -38,6 +38,9 @@ export default function CreatePostModal({
   const [previews, setPreviews] = useState<string[]>([]);
 
   const isLostFound = postType === "lost_found";
+  // Mirrors the server's rule so the composer can warn before submit; the
+  // server is still what actually decides.
+  const needsApproval = postWillNeedApproval(postType, user?.role);
 
   const patchLostFound = useCallback((patch: Partial<LostFoundDraft>) => {
     setLostFound((prev) => ({ ...prev, ...patch }));
@@ -118,11 +121,13 @@ export default function CreatePostModal({
         resetForm();
         onClose();
         toast.success(
-          isAnonymous
-            ? "Posted anonymously"
-            : isLostFound
-              ? "Posted to the lost & found board"
-              : "Post created successfully",
+          needsApproval
+            ? "Sent for review — you'll be notified once it's approved"
+            : isAnonymous
+              ? "Posted anonymously"
+              : isLostFound
+                ? "Posted to the lost & found board"
+                : "Post created successfully",
         );
       } catch (error: unknown) {
         toast.error(getErrorMessage(error) || "Failed to create post");
@@ -133,6 +138,7 @@ export default function CreatePostModal({
       postType,
       isAnonymous,
       isLostFound,
+      needsApproval,
       lostFound,
       files,
       createNewPost,
@@ -165,7 +171,7 @@ export default function CreatePostModal({
               !content.trim() || (isLostFound && !lostFound.itemName.trim())
             }
           >
-            Post
+            {needsApproval ? "Submit for Review" : "Post"}
           </Button>
         </>
       }
@@ -211,6 +217,7 @@ export default function CreatePostModal({
         onLostFoundChange={patchLostFound}
         isAnonymous={isAnonymous}
         onIsAnonymousChange={setIsAnonymous}
+        needsApproval={needsApproval}
         newFiles={files}
         newPreviews={previews}
         onRemoveNewFile={removeFile}

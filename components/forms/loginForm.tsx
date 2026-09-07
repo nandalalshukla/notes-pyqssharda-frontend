@@ -8,6 +8,15 @@ import { FiEye, FiEyeOff } from "react-icons/fi";
 import { Button, Input } from "@/components/ui";
 import { getErrorMessage } from "@/lib/utils/errorHandler";
 
+/**
+ * Login answers 403 for two different situations — an unverified email and
+ * a deactivated account — and only the first has somewhere useful to send
+ * the user. Deactivation is identified by its message, since the two share
+ * a status code.
+ */
+const isDeactivatedAccountError = (error: unknown) =>
+  getErrorMessage(error).toLowerCase().includes("deactivated");
+
 const LoginForm = () => {
   const router = useRouter();
   const login = useAuthStore((s) => s.login);
@@ -52,6 +61,20 @@ const LoginForm = () => {
       setFormData({ email: "", password: "" });
       router.push("/library/dashboard");
     } catch (error: unknown) {
+      // An unverified account is the one login failure that isn't a dead
+      // end: the server has already sent a fresh OTP by the time it
+      // refuses (see the backend's login controller), so send the user to
+      // the screen that can actually finish the job instead of leaving
+      // them on a form that will keep refusing them.
+      const status = (error as { response?: { status?: number } })?.response
+        ?.status;
+      if (status === 403 && !isDeactivatedAccountError(error)) {
+        sessionStorage.setItem("verifyEmail", email);
+        toast.error("Verify your email to continue — we've sent a new OTP");
+        router.push("/auth/verify-email");
+        return;
+      }
+
       // Preserve email on failed login, extract error message from response
       toast.error(getErrorMessage(error) || "Invalid credentials");
       // Keep email, clear only password for better UX

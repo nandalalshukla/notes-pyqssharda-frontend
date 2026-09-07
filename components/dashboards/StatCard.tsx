@@ -74,7 +74,11 @@ interface StatsGridProps {
 
 export const StatsGrid: React.FC<StatsGridProps> = ({ stats, columns = 4 }) => {
   const gridColumnsClass =
-    columns >= 4
+    // Checked before the >= 4 catch-all so a five-stat grid gets its own
+    // track count instead of wrapping the fifth card onto a row of its own.
+    columns === 5
+      ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5"
+      : columns >= 4
       ? "grid-cols-1 sm:grid-cols-2 xl:grid-cols-4"
       : columns === 3
         ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"

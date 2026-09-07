@@ -28,6 +28,7 @@ import { Menu, Transition } from "@headlessui/react";
 import { Fragment } from "react";
 import VerifiedBadge from "./VerifiedBadge";
 import LostFoundDetails from "./LostFoundDetails";
+import PostModerationBanner from "./PostModerationBanner";
 import { resolvePostTypeMeta } from "./postMeta";
 import { Avatar, Badge } from "@/components/ui";
 
@@ -165,6 +166,14 @@ export default function PostCard({
   const lostFound = currentPost.lostFound ?? null;
   const isLostFoundPost = currentPost.type === "lost_found" && !!lostFound;
   const isLostFoundResolved = lostFound?.status === "resolved";
+
+  // An unapproved post is only ever served to its own author, so a status
+  // other than "approved" here means this is the author's own card. It
+  // isn't published, so nothing can like, comment on or share it yet —
+  // the server rejects all three — and the card hides those controls
+  // rather than offering buttons that would only produce an error.
+  const moderationStatus = currentPost.moderationStatus ?? "approved";
+  const isAwaitingReview = moderationStatus !== "approved";
 
   const handleLike = useCallback(async () => {
     if (!user) {
@@ -575,6 +584,12 @@ export default function PostCard({
           </Menu>
         </div>
 
+        <PostModerationBanner
+          status={moderationStatus}
+          rejectionReason={currentPost.rejectionReason}
+          typeLabel={typeMeta.label}
+        />
+
         {/* Lost & Found summary — the structured "what / where / when"
             block, above the free-text body a reader only gets to once the
             item itself has caught their eye. */}
@@ -690,6 +705,10 @@ export default function PostCard({
           </div>
         )}
 
+        {/* Engagement row — hidden entirely while a post is unpublished:
+            likes, comments and a shareable link all presuppose that other
+            people can reach it. */}
+        {!isAwaitingReview && (
         <div className="flex items-center gap-6 border-t border-border px-5 py-3 text-sm font-semibold text-muted-foreground">
           {/* Like Section */}
           <div className="flex items-center gap-2">
@@ -751,6 +770,7 @@ export default function PostCard({
             />
           </button>
         </div>
+        )}
       </div>
 
       {/* Comments Modal */}

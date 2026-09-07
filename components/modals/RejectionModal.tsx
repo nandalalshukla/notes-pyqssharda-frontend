@@ -8,7 +8,9 @@ interface RejectionModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (reason: string) => void;
-  itemType: "note" | "pyq" | "syllabus";
+  // "post" covers the member-submitted events/announcements queue, which
+  // uses the same reason-required rejection flow as the resource uploads.
+  itemType: "note" | "pyq" | "syllabus" | "post";
   itemTitle: string;
   isSubmitting?: boolean;
 }

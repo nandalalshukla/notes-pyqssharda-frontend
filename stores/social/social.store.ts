@@ -27,6 +27,8 @@ import {
   LostFoundDetails,
   LostFoundKind,
   LostFoundStatus,
+  PostModerationStatus,
+  postWillNeedApproval,
   Comment,
   FollowStats,
   Notification,
@@ -326,6 +328,10 @@ const normalizePost = (
   ...post,
   type: normalizePostType(post.type),
   isAnonymous: Boolean(post.isAnonymous),
+  // Documents written before review existed carry no status; they were
+  // always visible, so "approved" is the honest default.
+  moderationStatus: post.moderationStatus ?? "approved",
+  rejectionReason: post.rejectionReason ?? null,
   lostFound: post.lostFound ?? null,
   files: post.files || post.media?.map((media) => media.url) || [],
   publicIds:
@@ -415,11 +421,24 @@ const buildOptimisticPost = (
     ? String(data.get("isAnonymous")) === "true"
     : (previousPost?.isAnonymous ?? false);
 
+  // Predicted, not authoritative: the server decides and the real value
+  // arrives with the response a moment later. Getting it right here is what
+  // stops a member's new announcement from flashing up as live before
+  // correcting itself to "in review".
+  const moderationStatus: PostModerationStatus = postWillNeedApproval(
+    type,
+    user?.role,
+  )
+    ? "pending"
+    : "approved";
+
   return {
     _id: previousPost?._id || createTempId("post"),
     type,
     content,
     isAnonymous,
+    moderationStatus,
+    rejectionReason: null,
     lostFound:
       type === "lost_found"
         ? buildOptimisticLostFound(data, previousPost?.lostFound)

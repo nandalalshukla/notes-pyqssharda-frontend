@@ -9,12 +9,14 @@ import { StatsGrid } from "@/components/dashboards/StatCard";
 import OverviewPanel from "@/components/dashboards/moderator/OverviewPanel";
 import SubmissionsPanel from "@/components/dashboards/moderator/SubmissionsPanel";
 import ReportsPanel from "@/components/dashboards/moderator/ReportsPanel";
+import PendingPostsPanel from "@/components/dashboards/moderator/PendingPostsPanel";
 import {
   useModSubmissionsStore,
   type PendingSubmission,
   type SubmissionType,
 } from "@/stores/mod/submissions.store";
 import { useModReportsStore } from "@/stores/mod/reports.store";
+import { useModPendingPostsStore } from "@/stores/mod/pendingPosts.store";
 import {
   Activity,
   CheckCircle,
@@ -22,6 +24,7 @@ import {
   AlertCircle,
   FileText,
   TrendingUp,
+  Megaphone,
 } from "lucide-react";
 
 interface SubmissionWithType extends PendingSubmission {
@@ -50,6 +53,28 @@ export default function ModeratorDashboard() {
       fetchAllPending: state.fetchAllPending,
       approveSubmission: state.approveSubmission,
       rejectSubmission: state.rejectSubmission,
+    })),
+  );
+
+  const {
+    pendingPostEntities,
+    pendingPostIds,
+    pendingPostsLoading,
+    pendingPostsError,
+    pendingPostActions,
+    fetchPendingPosts,
+    approvePendingPost,
+    rejectPendingPost,
+  } = useModPendingPostsStore(
+    useShallow((state) => ({
+      pendingPostEntities: state.entities,
+      pendingPostIds: state.ids,
+      pendingPostsLoading: state.isLoading,
+      pendingPostsError: state.error,
+      pendingPostActions: state.pendingActions,
+      fetchPendingPosts: state.fetchPendingPosts,
+      approvePendingPost: state.approvePendingPost,
+      rejectPendingPost: state.rejectPendingPost,
     })),
   );
 
@@ -94,6 +119,11 @@ export default function ModeratorDashboard() {
     [reportIds, reportEntities],
   );
 
+  const pendingPosts = useMemo(
+    () => pendingPostIds.map((id) => pendingPostEntities[id]).filter(Boolean),
+    [pendingPostIds, pendingPostEntities],
+  );
+
   // Stats
   const stats = [
     {
@@ -109,6 +139,13 @@ export default function ModeratorDashboard() {
       icon: <AlertCircle size={24} />,
       variant: "danger" as const,
       description: "Require action",
+    },
+    {
+      label: "Posts to Review",
+      value: pendingPosts.length,
+      icon: <Megaphone size={24} />,
+      variant: "warning" as const,
+      description: "Events & announcements",
     },
     {
       label: "Approved Today",
@@ -139,13 +176,20 @@ export default function ModeratorDashboard() {
   useEffect(() => {
     fetchAllPending();
     fetchReports();
-  }, [fetchAllPending, fetchReports]);
+    fetchPendingPosts();
+  }, [fetchAllPending, fetchReports, fetchPendingPosts]);
 
   useEffect(() => {
     if (reportsError) {
       toast.error(reportsError);
     }
   }, [reportsError]);
+
+  useEffect(() => {
+    if (pendingPostsError) {
+      toast.error(pendingPostsError);
+    }
+  }, [pendingPostsError]);
 
   // Navigation items
   const navItems = [
@@ -159,6 +203,12 @@ export default function ModeratorDashboard() {
       label: "Pending Submissions",
       icon: <FileText size={20} />,
       badge: submissions.length,
+    },
+    {
+      id: "posts",
+      label: "Pending Posts",
+      icon: <Megaphone size={20} />,
+      badge: pendingPosts.length,
     },
     {
       id: "reports",
@@ -178,7 +228,7 @@ export default function ModeratorDashboard() {
       userRole={`${user?.role} • ${user?.name}`}
     >
       {/* Stats Grid - Always visible */}
-      <StatsGrid stats={stats} columns={4} />
+      <StatsGrid stats={stats} columns={5} />
 
       {activeNav === "overview" && (
         <OverviewPanel submissions={submissions} reports={reports} />
@@ -191,6 +241,16 @@ export default function ModeratorDashboard() {
           pendingActions={submissionPendingActions}
           approveSubmission={approveSubmission}
           rejectSubmission={rejectSubmission}
+        />
+      )}
+
+      {activeNav === "posts" && (
+        <PendingPostsPanel
+          posts={pendingPosts}
+          isLoading={pendingPostsLoading}
+          pendingActions={pendingPostActions}
+          approvePost={approvePendingPost}
+          rejectPost={rejectPendingPost}
         />
       )}
 

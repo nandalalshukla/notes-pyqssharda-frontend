@@ -2,7 +2,14 @@
 
 import React from "react";
 import Image from "next/image";
-import { FiImage, FiFile, FiTrash2, FiVideo, FiEyeOff } from "react-icons/fi";
+import {
+  FiImage,
+  FiFile,
+  FiTrash2,
+  FiVideo,
+  FiEyeOff,
+  FiClock,
+} from "react-icons/fi";
 import {
   LostFoundCategory,
   LostFoundKind,
@@ -59,6 +66,13 @@ export interface PostComposerFormProps {
   onLostFoundChange: (patch: Partial<LostFoundDraft>) => void;
   isAnonymous: boolean;
   onIsAnonymousChange: (value: boolean) => void;
+  /**
+   * Whether the selected type will land this post in the moderation queue
+   * for the current author. Computed by the caller from the server's own
+   * rule (`postWillNeedApproval`) so the composer can say so up front
+   * rather than letting the submit response be a surprise.
+   */
+  needsApproval?: boolean;
   existingMedia?: ExistingMediaItem[];
   onRemoveExistingMedia?: (index: number) => void;
   newFiles: File[];
@@ -170,6 +184,7 @@ export default function PostComposerForm({
   onLostFoundChange,
   isAnonymous,
   onIsAnonymousChange,
+  needsApproval = false,
   existingMedia,
   onRemoveExistingMedia,
   newFiles,
@@ -210,6 +225,20 @@ export default function PostComposerForm({
           })}
         </div>
       </div>
+
+      {needsApproval && (
+        <div className="flex items-start gap-2.5 rounded-xl border border-warning/30 bg-warning/10 p-4">
+          <FiClock size={16} className="mt-0.5 shrink-0 text-warning" />
+          <p className="min-w-0 text-sm text-foreground">
+            <span className="font-semibold text-warning">
+              This one goes to review first.
+            </span>{" "}
+            Events and announcements reach the whole campus, so a moderator
+            approves them before they appear in the feed. You&apos;ll get a
+            notification either way.
+          </p>
+        </div>
+      )}
 
       {isLostFound && (
         <div className="space-y-5 rounded-2xl border border-accent-purple/30 bg-accent-purple/5 p-4">
