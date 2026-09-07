@@ -155,7 +155,7 @@ export default function CommentsModal({
   );
 
   const handleLikeComment = useCallback(
-    async (commentId: string) => {
+    (commentId: string) => {
       if (!user) {
         toast.error("Please login to like", {
           icon: <FiLogIn className="mr-2" />,
@@ -164,11 +164,10 @@ export default function CommentsModal({
         return;
       }
 
-      try {
-        await toggleCommentLike(commentId);
-      } catch (error: unknown) {
-        toast.error("Failed to react to comment");
-      }
+      // Not awaited: the store updates the count synchronously and defers
+      // the write, so rapid taps stay responsive instead of queueing behind
+      // a request. Failures are reported by the store.
+      toggleCommentLike(commentId);
     },
     [user, toggleCommentLike, router],
   );

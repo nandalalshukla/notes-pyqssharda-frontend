@@ -66,7 +66,6 @@ export default function PostCard({
   const [showComments, setShowComments] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [isLiking, setIsLiking] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isFollowLoading, setIsFollowLoading] = useState(false);
   const [isUpdatingLostFound, setIsUpdatingLostFound] = useState(false);
@@ -175,29 +174,22 @@ export default function PostCard({
   const moderationStatus = currentPost.moderationStatus ?? "approved";
   const isAwaitingReview = moderationStatus !== "approved";
 
-  const handleLike = useCallback(async () => {
+  const handleLike = useCallback(() => {
     if (!user) {
       toast.error("Please login to like posts");
       router.push("/auth/login");
       return;
     }
 
-    if (isLiking) return;
-
-    setIsLiking(true);
-    try {
-      await togglePostLike(post._id);
-      toast.success(isLiked ? "Post unliked" : "Post liked!");
-    } catch (error: unknown) {
-      console.error("Error:", error);
-      const errorMsg =
-        (error as { response?: { data?: { message?: string } } })?.response
-          ?.data?.message || "Failed to like post";
-      toast.error(errorMsg);
-    } finally {
-      setIsLiking(false);
-    }
-  }, [post._id, isLiking, isLiked, user, togglePostLike, router]);
+    // No in-flight guard and nothing awaited: the store updates the heart
+    // synchronously and coalesces the write, so tapping twice quickly has
+    // to be allowed through — that's the whole point. Guarding on a
+    // pending request was what swallowed the second tap.
+    //
+    // No success toast either: a toast per tap is noise when the gesture is
+    // "like, actually no, unlike". Failures still surface, via the store.
+    togglePostLike(post._id);
+  }, [post._id, user, togglePostLike, router]);
 
   const handleDoubleTap = useCallback(async () => {
     const now = Date.now();
@@ -208,7 +200,7 @@ export default function PostCard({
       if (!isLiked) {
         setDoubleTapLikeAnimation(true);
         setTimeout(() => setDoubleTapLikeAnimation(false), 600);
-        await handleLike();
+        handleLike();
       }
       lastTapRef.current = 0;
     } else {

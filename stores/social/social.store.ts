@@ -574,6 +574,42 @@ const updateAuthorFollowEverywhere = (
  * connect/disconnect need to be idempotent rather than tied 1:1 to any one
  * component's lifecycle.
  */
+/**
+ * ═══════════════════════════════════════════════════════════════════════════════
+ * LIKE WRITE COALESCING — module-level singletons
+ * ═══════════════════════════════════════════════════════════════════════════════
+ *
+ * Liking is a toggle, and people toggle it fast — tap the heart, change
+ * their mind, tap again. Sending a request per tap made that feel broken:
+ * the second tap raced the first, the server's own like cooldown answered
+ * 429, and the failure rolled the optimistic update back so the heart
+ * visibly snapped to the wrong state.
+ *
+ * So the UI updates on every tap and the network write is deferred. When
+ * the tapping stops, the desired state is compared against what the server
+ * is known to hold:
+ *
+ *   - different  -> send exactly one toggle
+ *   - the same   -> send nothing at all
+ *
+ * An even number of taps therefore costs zero requests, and no burst of
+ * tapping can ever produce more than one write per target.
+ */
+const LIKE_FLUSH_MS = 600;
+
+interface PendingLike {
+  timer: ReturnType<typeof setTimeout>;
+  /** What the server held when this burst started — the baseline to diff against. */
+  serverLiked: boolean;
+  /** The like count the server held then, so a failure can restore it exactly. */
+  serverCount: number;
+}
+
+const pendingLikes = new Map<string, PendingLike>();
+
+const likeKey = (targetType: "post" | "comment", id: string) =>
+  `${targetType}:${id}`;
+
 let notificationEventSource: EventSource | null = null;
 let notificationPollTimer: ReturnType<typeof setInterval> | null = null;
 let notificationVisibilityHandler: (() => void) | null = null;
@@ -1223,205 +1259,143 @@ export const useSocialStore = create<SocialStore>((set, get) => ({
   togglePostLike: async (postId: string) => {
     set({ error: null });
 
-    const previousPost =
+    const current =
       get().feed.find((p) => p._id === postId) ||
       Array.from(get().userPosts.values())
         .flat()
         .find((p) => p._id === postId);
-    if (!previousPost) return;
+    if (!current) return;
 
-    const optimisticLiked = !previousPost.likedByCurrentUser;
-    const optimisticLikeCount = Math.max(
-      0,
-      (previousPost.likes || 0) + (optimisticLiked ? 1 : -1),
-    );
+    const key = likeKey("post", postId);
+    const pending = pendingLikes.get(key);
 
-    set((state) => ({
-      feed: state.feed.map((p) =>
-        p._id === postId
-          ? {
-              ...p,
-              likedByCurrentUser: optimisticLiked,
-              likes: optimisticLikeCount,
-            }
-          : p,
-      ),
-      userPosts: updatePostEverywhere(state.userPosts, postId, (p) => ({
-        ...p,
-        likedByCurrentUser: optimisticLiked,
-        likes: optimisticLikeCount,
-      })),
-    }));
+    // The first tap of a burst records what the server holds; later taps in
+    // the same burst keep that baseline so the diff stays meaningful.
+    const serverLiked = pending?.serverLiked ?? Boolean(current.likedByCurrentUser);
+    const serverCount = pending?.serverCount ?? (current.likes || 0);
 
-    try {
-      const res = await toggleLike(postId, "post");
-      const isLiked = res.data?.liked;
-      const actualLikeCount = res.data?.likeCount ?? res.data?.likes;
+    const nextLiked = !current.likedByCurrentUser;
+    const nextCount = Math.max(0, (current.likes || 0) + (nextLiked ? 1 : -1));
 
-      set((state) => {
-        const currentPost = state.feed.find((p) => p._id === postId);
-        const likeCount = actualLikeCount ?? currentPost?.likes ?? 0;
-        const likedByCurrentUser =
-          isLiked ?? currentPost?.likedByCurrentUser ?? false;
-
-        return {
-          feed: state.feed.map((p) =>
-            p._id === postId
-              ? { ...p, likedByCurrentUser, likes: likeCount }
-              : p,
-          ),
-          userPosts: updatePostEverywhere(state.userPosts, postId, (p) => ({
-            ...p,
-            likedByCurrentUser,
-            likes: likeCount,
-          })),
-        };
-      });
-    } catch (error: unknown) {
+    // Instant, unconditional UI update — this is what makes the heart feel
+    // responsive no matter how fast it's tapped.
+    const apply = (liked: boolean, likes: number) =>
       set((state) => ({
-        feed: state.feed.map((p) => (p._id === postId ? previousPost : p)),
-        userPosts: updatePostEverywhere(state.userPosts, postId, (p) =>
-          p._id === postId ? previousPost : p,
+        feed: state.feed.map((p) =>
+          p._id === postId ? { ...p, likedByCurrentUser: liked, likes } : p,
         ),
-        error: getErrorMessage(error) || "Failed to toggle like",
+        userPosts: updatePostEverywhere(state.userPosts, postId, (p) => ({
+          ...p,
+          likedByCurrentUser: liked,
+          likes,
+        })),
       }));
-      throw error;
-    }
+
+    apply(nextLiked, nextCount);
+
+    if (pending) clearTimeout(pending.timer);
+
+    const timer = setTimeout(async () => {
+      pendingLikes.delete(key);
+
+      const settled =
+        get().feed.find((p) => p._id === postId) ||
+        Array.from(get().userPosts.values())
+          .flat()
+          .find((p) => p._id === postId);
+      const desired = Boolean(settled?.likedByCurrentUser);
+
+      // Back where we started — the server already holds this, so there is
+      // nothing to write.
+      if (desired === serverLiked) return;
+
+      try {
+        const res = await toggleLike(postId, "post");
+        const liked = res.data?.liked ?? desired;
+        const count = res.data?.likeCount ?? res.data?.likes;
+        // Reconcile with the server's own numbers, which are authoritative
+        // once other people's likes are in play.
+        apply(liked, count ?? get().feed.find((p) => p._id === postId)?.likes ?? 0);
+      } catch (error: unknown) {
+        apply(serverLiked, serverCount);
+        set({ error: getErrorMessage(error) || "Failed to update like" });
+      }
+    }, LIKE_FLUSH_MS);
+
+    pendingLikes.set(key, { timer, serverLiked, serverCount });
   },
 
   toggleCommentLike: async (commentId: string) => {
     set({ error: null });
 
-    let previousComment: Comment | undefined;
-    for (const comments of get().comments.values()) {
-      previousComment = comments.find((c) => c._id === commentId);
-      if (previousComment) break;
-    }
-    if (!previousComment) {
-      for (const replies of get().replies.values()) {
-        previousComment = replies.find((c) => c._id === commentId);
-        if (previousComment) break;
+    // A comment lives in `comments` (top level) or `replies` (nested), so
+    // both maps are searched and both are updated.
+    const findComment = (): Comment | undefined => {
+      for (const list of get().comments.values()) {
+        const hit = list.find((c) => c._id === commentId);
+        if (hit) return hit;
       }
-    }
-    if (!previousComment) return;
-
-    const optimisticLiked = !previousComment.likedByCurrentUser;
-    const optimisticLikeCount = Math.max(
-      0,
-      (previousComment.likes || 0) + (optimisticLiked ? 1 : -1),
-    );
-
-    set((state) => {
-      const updatedComments = new Map(state.comments);
-      for (const [postId, comments] of updatedComments.entries()) {
-        updatedComments.set(
-          postId,
-          comments.map((c) =>
-            c._id === commentId
-              ? {
-                  ...c,
-                  likedByCurrentUser: optimisticLiked,
-                  likes: optimisticLikeCount,
-                }
-              : c,
-          ),
-        );
+      for (const list of get().replies.values()) {
+        const hit = list.find((c) => c._id === commentId);
+        if (hit) return hit;
       }
-      const updatedReplies = new Map(state.replies);
-      for (const [parentId, replies] of updatedReplies.entries()) {
-        updatedReplies.set(
-          parentId,
-          replies.map((c) =>
-            c._id === commentId
-              ? {
-                  ...c,
-                  likedByCurrentUser: optimisticLiked,
-                  likes: optimisticLikeCount,
-                }
-              : c,
-          ),
-        );
-      }
-      return { comments: updatedComments, replies: updatedReplies };
-    });
+      return undefined;
+    };
 
-    try {
-      const res = await toggleLike(commentId, "comment");
-      const isLiked = res.data?.liked;
-      const actualLikeCount = res.data?.likeCount ?? res.data?.likes;
+    const current = findComment();
+    if (!current) return;
 
+    const key = likeKey("comment", commentId);
+    const pending = pendingLikes.get(key);
+
+    const serverLiked = pending?.serverLiked ?? Boolean(current.likedByCurrentUser);
+    const serverCount = pending?.serverCount ?? (current.likes || 0);
+
+    const nextLiked = !current.likedByCurrentUser;
+    const nextCount = Math.max(0, (current.likes || 0) + (nextLiked ? 1 : -1));
+
+    const apply = (liked: boolean, likes: number) =>
       set((state) => {
-        let currentComment: Comment | undefined;
-        for (const comments of state.comments.values()) {
-          const current = comments.find((c) => c._id === commentId);
-          if (current) {
-            currentComment = current;
-            break;
-          }
-        }
-        if (!currentComment) {
-          for (const replies of state.replies.values()) {
-            const current = replies.find((c) => c._id === commentId);
-            if (current) {
-              currentComment = current;
-              break;
-            }
-          }
-        }
+        const patch = (list: Comment[]) =>
+          list.map((c) =>
+            c._id === commentId
+              ? { ...c, likedByCurrentUser: liked, likes }
+              : c,
+          );
 
-        const likeCount = actualLikeCount ?? currentComment?.likes ?? 0;
-        const likedByCurrentUser =
-          isLiked ?? currentComment?.likedByCurrentUser ?? false;
+        const comments = new Map(state.comments);
+        for (const [postId, list] of comments) comments.set(postId, patch(list));
 
-        const updatedComments = new Map(state.comments);
-        for (const [postId, comments] of updatedComments.entries()) {
-          updatedComments.set(
-            postId,
-            comments.map((c) =>
-              c._id === commentId
-                ? { ...c, likedByCurrentUser, likes: likeCount }
-                : c,
-            ),
-          );
-        }
-        const updatedReplies = new Map(state.replies);
-        for (const [parentId, replies] of updatedReplies.entries()) {
-          updatedReplies.set(
-            parentId,
-            replies.map((c) =>
-              c._id === commentId
-                ? { ...c, likedByCurrentUser, likes: likeCount }
-                : c,
-            ),
-          );
-        }
-        return { comments: updatedComments, replies: updatedReplies };
+        const replies = new Map(state.replies);
+        for (const [parentId, list] of replies) replies.set(parentId, patch(list));
+
+        return { comments, replies };
       });
-    } catch (error: unknown) {
-      set((state) => {
-        const updatedComments = new Map(state.comments);
-        for (const [postId, comments] of updatedComments.entries()) {
-          updatedComments.set(
-            postId,
-            comments.map((c) => (c._id === commentId ? previousComment : c)),
-          );
-        }
-        const updatedReplies = new Map(state.replies);
-        for (const [parentId, replies] of updatedReplies.entries()) {
-          updatedReplies.set(
-            parentId,
-            replies.map((c) => (c._id === commentId ? previousComment : c)),
-          );
-        }
-        return {
-          comments: updatedComments,
-          replies: updatedReplies,
-          error: getErrorMessage(error) || "Failed to toggle comment like",
-        };
-      });
-      throw error;
-    }
+
+    apply(nextLiked, nextCount);
+
+    if (pending) clearTimeout(pending.timer);
+
+    const timer = setTimeout(async () => {
+      pendingLikes.delete(key);
+
+      const desired = Boolean(findComment()?.likedByCurrentUser);
+      if (desired === serverLiked) return;
+
+      try {
+        const res = await toggleLike(commentId, "comment");
+        const liked = res.data?.liked ?? desired;
+        const count = res.data?.likeCount ?? res.data?.likes;
+        apply(liked, count ?? findComment()?.likes ?? 0);
+      } catch (error: unknown) {
+        apply(serverLiked, serverCount);
+        set({ error: getErrorMessage(error) || "Failed to update like" });
+      }
+    }, LIKE_FLUSH_MS);
+
+    pendingLikes.set(key, { timer, serverLiked, serverCount });
   },
+
   /**
    * ───────────────────────────────────────────────────────────────────────────────
    * FOLLOW MANAGEMENT

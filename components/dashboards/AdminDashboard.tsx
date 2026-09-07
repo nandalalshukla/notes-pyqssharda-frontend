@@ -11,6 +11,7 @@ import { DashboardLayout } from "@/components/dashboards/DashboardLayout";
 import { StatsGrid } from "@/components/dashboards/StatCard";
 import OverviewPanel from "@/components/dashboards/admin/OverviewPanel";
 import UsersPanel from "@/components/dashboards/admin/UsersPanel";
+import ContentPanel from "@/components/dashboards/admin/ContentPanel";
 import ModsPanel from "@/components/dashboards/admin/ModsPanel";
 import RequestsPanel from "@/components/dashboards/admin/RequestsPanel";
 import {
@@ -19,6 +20,7 @@ import {
   UserX,
   FileText,
   Activity,
+  Library,
   Clock,
 } from "lucide-react";
 
@@ -221,6 +223,11 @@ export default function AdminDashboard() {
       badge: mods.length,
     },
     {
+      id: "content",
+      label: "Content",
+      icon: <Library size={20} />,
+    },
+    {
       id: "requests",
       label: "Mod Requests",
       icon: <FileText size={20} />,
@@ -234,13 +241,15 @@ export default function AdminDashboard() {
       activeNavId={activeNav}
       onNavChange={setActiveNav}
       title="Admin Dashboard"
-      subtitle="Manage users, moderators, and platform health"
+      subtitle="Manage content, users, moderators and platform health"
       userRole={`${user?.role} • ${user?.name}`}
     >
       {/* Stats Grid - Always visible */}
       <StatsGrid stats={stats} columns={4} />
 
       {activeNav === "overview" && <OverviewPanel users={users} mods={mods} />}
+
+      {activeNav === "content" && <ContentPanel />}
 
       {activeNav === "users" && (
         <UsersPanel
