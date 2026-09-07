@@ -15,7 +15,7 @@ export default function SyllabusPage() {
   return (
     <ResourceLibraryPage
       accent="purple"
-      heading={{ prefix: "Course ", highlight: "Syllabus" }}
+      heading={{ prefix: "Sharda University ", highlight: "Syllabus" }}
       description="Access semester-wise syllabus and stay aligned with your curriculum."
       items={allSyllabus}
       programOptions={["B.Tech CS"]}

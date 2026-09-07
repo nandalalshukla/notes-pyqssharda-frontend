@@ -73,8 +73,10 @@ export default function PyqsPage() {
   return (
     <ResourceLibraryPage
       accent="coral"
-      heading={{ prefix: "Previous Year ", highlight: "Questions" }}
-      description="Find and download past exam papers from across every school."
+      // The H1 is the strongest on-page signal for what this page is
+      // about, so it names the university rather than just the section.
+      heading={{ prefix: "Sharda University ", highlight: "Previous Year Questions" }}
+      description="Download past exam papers from every school at Sharda University — filter by programme, semester, academic year or course code."
       dataSource={dataSource}
       programLabel="PYQ"
       noun={{ singular: "Paper", plural: "Papers" }}

@@ -3,18 +3,26 @@
 import { useEffect, useState } from "react";
 import useAuthStore from "@/stores/user/authStore";
 
-export default function AuthProviders({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+/**
+ * Restores the signed-in session on load, then keeps rendering out of the
+ * way.
+ *
+ * This used to return `null` until Zustand had rehydrated from
+ * localStorage and `/auth/me` had answered — which meant the entire site
+ * rendered as an empty page on the server. Search engines were served a
+ * blank document for every route, and the first paint for real users was
+ * an empty screen until JavaScript had downloaded, parsed and completed a
+ * round trip.
+ *
+ * Pages now render immediately and independently of it. The thing that
+ * gate was protecting against — showing signed-out UI for a moment to
+ * someone who is signed in — is handled where it belongs: `AuthGuard`
+ * holds protected pages until `authLoading` clears, and public pages are
+ * supposed to render for signed-out visitors anyway.
+ */
+export default function AuthProviders() {
   const [hydrated, setHydrated] = useState(false);
-  const {
-    fetchMe,
-    setAuthLoading,
-    setAuthInitialized,
-    authInitialized,
-  } = useAuthStore();
+  const { fetchMe, setAuthLoading, setAuthInitialized } = useAuthStore();
 
   useEffect(() => {
     // Wait for Zustand to finish hydrating from localStorage
@@ -60,10 +68,10 @@ export default function AuthProviders({
     };
   }, [hydrated, fetchMe, setAuthLoading, setAuthInitialized]);
 
-  // Wait for Zustand to hydrate from localStorage
-  if (!hydrated || !authInitialized) {
-    return null;
-  }
-
-  return <>{children}</>;
+  // Renders nothing. It used to wrap the page, which put the whole app
+  // behind a client component boundary — the server then streamed the
+  // footer out before the page content, so the main content of every page
+  // appeared *after* the footer in the HTML a crawler reads. As an
+  // effect-only sibling it does the same job without owning the tree.
+  return null;
 }

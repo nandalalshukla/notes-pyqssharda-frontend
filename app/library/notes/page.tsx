@@ -17,7 +17,7 @@ export default function NotesPage() {
   return (
     <ResourceLibraryPage
       accent="mint"
-      heading={{ highlight: "Notes", suffix: " Library" }}
+      heading={{ prefix: "Sharda University ", highlight: "Notes" }}
       description="Find and download comprehensive study notes for your courses."
       items={allNotes}
       programOptions={["B.Tech CS"]}
