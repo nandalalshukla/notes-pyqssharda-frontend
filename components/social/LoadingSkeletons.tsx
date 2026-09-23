@@ -73,7 +73,11 @@ export function UserCardSkeleton() {
 
 export function FeedLoadingState() {
   return (
-    <div aria-live="polite" aria-busy="true" className="min-h-[60vh] space-y-6 pt-2">
+    <div
+      aria-live="polite"
+      aria-busy="true"
+      className="min-h-[60vh] space-y-6 pt-2"
+    >
       {[1, 2, 3].map((i) => (
         <div key={i} className="animate-fade-in [animation-delay:0.04s]">
           <PostCardSkeleton />

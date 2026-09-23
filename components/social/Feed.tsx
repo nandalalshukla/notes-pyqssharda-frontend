@@ -53,7 +53,8 @@ export default function Feed() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [activeSection, setActiveSection] = useState<PostType>("general");
-  const [lostFoundFilter, setLostFoundFilter] = useState<LostFoundFilter>("all");
+  const [lostFoundFilter, setLostFoundFilter] =
+    useState<LostFoundFilter>("all");
 
   const previousAuthState = useRef<boolean | null>(null);
   const previousSection = useRef<PostType>("general");
@@ -72,7 +73,8 @@ export default function Feed() {
   const hasMore = feedTotalPages > currentPage;
   const isLoadingMore = isLoadingFeed && currentPage > 1;
   const shouldShowFeedSkeleton = isLoadingFeed && feed.length === 0;
-  const shouldShowEmptyState = !isLoadingFeed && feed.length === 0 && hasAttemptedInitialLoad.current;
+  const shouldShowEmptyState =
+    !isLoadingFeed && feed.length === 0 && hasAttemptedInitialLoad.current;
 
   useEffect(() => {
     if (!authInitialized) return;
@@ -153,7 +155,11 @@ export default function Feed() {
       <div className="sticky top-[61px] z-10 border-b border-border/70 bg-background/90 backdrop-blur-xl md:top-[81px]">
         <div className="mx-auto flex max-w-3xl items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8">
           <Tabs
-            items={feedSections.map((s) => ({ value: s.value, label: s.label, icon: s.icon }))}
+            items={feedSections.map((s) => ({
+              value: s.value,
+              label: s.label,
+              icon: s.icon,
+            }))}
             value={activeSection}
             onChange={setActiveSection}
             className="flex-1"
@@ -213,7 +219,8 @@ export default function Feed() {
               Welcome to the campus feed
             </h2>
             <p className="text-sm text-muted-foreground">
-              Sign in to post updates, join discussions, and stay connected with your campus community.
+              Sign in to post updates, join discussions, and stay connected with
+              your campus community.
             </p>
           </div>
         )}
@@ -302,7 +309,10 @@ export default function Feed() {
             }
             action={
               isAuthenticated && (
-                <Button onClick={() => setShowCreateModal(true)} icon={<FiPlus size={18} />}>
+                <Button
+                  onClick={() => setShowCreateModal(true)}
+                  icon={<FiPlus size={18} />}
+                >
                   {isLostFoundSection ? "Post an Item" : "Create First Post"}
                 </Button>
               )

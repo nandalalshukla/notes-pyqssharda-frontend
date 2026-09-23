@@ -177,8 +177,12 @@ const AuthMobileNav = () => {
           className="absolute right-3 left-3 z-50 mt-2 animate-scale-in overflow-hidden rounded-2xl border border-border bg-card shadow-soft-lg sm:right-5 sm:left-5"
         >
           <div className="border-b border-border px-4 py-3">
-            <p className="truncate text-sm font-bold text-foreground">{displayName}</p>
-            <p className="truncate text-xs text-muted-foreground">{user?.email}</p>
+            <p className="truncate text-sm font-bold text-foreground">
+              {displayName}
+            </p>
+            <p className="truncate text-xs text-muted-foreground">
+              {user?.email}
+            </p>
           </div>
           <div className="p-2">
             <button

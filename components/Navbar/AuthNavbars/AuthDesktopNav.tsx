@@ -28,7 +28,9 @@ import { useOnClickOutside } from "@/hooks";
 
 // Only rendered when a "user" role clicks "Become Moderator" — keep it out
 // of the navbar's initial bundle (shipped on every page).
-const ModRequestForm = dynamic(() => import("@/components/forms/ModRequestForm"));
+const ModRequestForm = dynamic(
+  () => import("@/components/forms/ModRequestForm"),
+);
 
 const navLinks = [
   { href: "/", label: "Social", icon: FiMessageCircle },
@@ -173,7 +175,9 @@ const AuthDesktopNav = () => {
                 <p className="truncate text-sm font-bold text-foreground">
                   {displayName}
                 </p>
-                <p className="truncate text-xs text-muted-foreground">{user?.email}</p>
+                <p className="truncate text-xs text-muted-foreground">
+                  {user?.email}
+                </p>
               </div>
               <div className="p-2">
                 <button

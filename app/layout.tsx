@@ -8,10 +8,7 @@ import AuthProviders from "./providers";
 import { ThemeProvider } from "./theme-provider";
 import { Analytics } from "@vercel/analytics/next";
 import { JsonLd } from "@/components/seo/JsonLd";
-import {
-  organisationSchema,
-  webSiteSchema,
-} from "@/lib/seo/structuredData";
+import { organisationSchema, webSiteSchema } from "@/lib/seo/structuredData";
 import {
   SITE_DESCRIPTION,
   SITE_KEYWORDS,
