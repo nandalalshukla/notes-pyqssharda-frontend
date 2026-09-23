@@ -14,6 +14,7 @@ import {
   FiSettings,
   FiShield,
   FiBookOpen,
+  FiBriefcase,
   FiInfo,
 } from "react-icons/fi";
 import ModRequestForm from "@/components/forms/ModRequestForm";
@@ -25,6 +26,7 @@ import { cn } from "@/lib/utils/cn";
 
 const navLinks = [
   { href: "/", label: "Social", icon: FiMessageCircle },
+  { href: "/services", label: "Services", icon: FiBriefcase },
   { href: "/library", label: "Library", icon: FiBookOpen },
   { href: "/library/dashboard", label: "Dashboard", icon: FiGrid },
   { href: "/about-us", label: "About", icon: FiInfo },

@@ -59,6 +59,7 @@ export default function Feed() {
   const previousSection = useRef<PostType>("general");
   const previousLostFoundFilter = useRef<LostFoundFilter>("all");
   const loadMoreSentinelRef = useRef<HTMLDivElement>(null);
+  const hasAttemptedInitialLoad = useRef(false);
 
   const isLostFoundSection = activeSection === "lost_found";
   // The filter only applies to the lost & found board; leaving a stale
@@ -70,9 +71,13 @@ export default function Feed() {
 
   const hasMore = feedTotalPages > currentPage;
   const isLoadingMore = isLoadingFeed && currentPage > 1;
+  const shouldShowFeedSkeleton = isLoadingFeed && feed.length === 0;
+  const shouldShowEmptyState = !isLoadingFeed && feed.length === 0 && hasAttemptedInitialLoad.current;
 
   useEffect(() => {
     if (!authInitialized) return;
+
+    hasAttemptedInitialLoad.current = true;
 
     // Changing section or the lost & found filter is a new list, not more
     // of the current one — reset to page 1 first and let the reset's own
@@ -145,8 +150,8 @@ export default function Feed() {
           `md:` breakpoint) — both this and the navbar are `sticky top-0`,
           so without the offset they'd pin to the same spot and this bar
           would render hidden behind the navbar's higher z-index. */}
-      <div className="sticky top-[61px] z-10 bg-background/90 backdrop-blur-xl md:top-[81px]">
-        <div className="mx-auto flex max-w-3xl items-center justify-between gap-3 px-4 py-4 sm:px-6 lg:px-8">
+      <div className="sticky top-[61px] z-10 border-b border-border/70 bg-background/90 backdrop-blur-xl md:top-[81px]">
+        <div className="mx-auto flex max-w-3xl items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8">
           <Tabs
             items={feedSections.map((s) => ({ value: s.value, label: s.label, icon: s.icon }))}
             value={activeSection}
@@ -154,7 +159,11 @@ export default function Feed() {
             className="flex-1"
           />
           {isAuthenticated && (
-            <Button onClick={() => setShowCreateModal(true)} icon={<FiPlus size={18} />}>
+            <Button
+              onClick={() => setShowCreateModal(true)}
+              icon={<FiPlus size={18} />}
+              className="shrink-0"
+            >
               <span className="hidden sm:inline">New Post</span>
             </Button>
           )}
@@ -165,7 +174,7 @@ export default function Feed() {
             different choices: which board, then which slice of it. */}
         {isLostFoundSection && (
           <div className="mx-auto flex max-w-3xl flex-wrap items-center gap-2 px-4 pb-4 sm:px-6 lg:px-8">
-            <span className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+            <span className="text-xs font-semibold tracking-[0.12em] text-muted-foreground uppercase">
               Show
             </span>
             {lostFoundFilters.map((filter) => {
@@ -176,7 +185,7 @@ export default function Feed() {
                   type="button"
                   aria-pressed={selected}
                   onClick={() => setLostFoundFilter(filter.value)}
-                  className={`cursor-pointer rounded-full border px-3 py-1 text-xs font-semibold transition-colors ${
+                  className={`cursor-pointer rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors ${
                     selected
                       ? "border-primary bg-primary/10 text-primary"
                       : "border-border bg-card text-muted-foreground hover:bg-secondary hover:text-foreground"
@@ -191,20 +200,20 @@ export default function Feed() {
       </div>
 
       {/* Main Content */}
-      <div className="mx-auto max-w-3xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">
+      <div className="mx-auto min-h-[65vh] max-w-3xl space-y-5 px-4 py-6 sm:px-6 lg:px-8">
         {/* Auth Prompt */}
         {!isAuthenticated && (
-          <div className="rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/10 to-accent-purple/10 p-8 text-center shadow-soft-sm">
+          <div className="rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/5 via-card to-accent-purple/5 p-6 text-center shadow-soft-sm sm:p-8">
             <div className="mb-4 flex items-center justify-center">
-              <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-primary/15">
-                <FiStar size={32} className="text-primary" />
+              <div className="inline-flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 ring-1 ring-primary/15">
+                <FiStar size={28} className="text-primary" />
               </div>
             </div>
             <h2 className="mb-1 text-lg font-semibold text-foreground">
-              Sign in to share your thoughts
+              Welcome to the campus feed
             </h2>
             <p className="text-sm text-muted-foreground">
-              Create posts, comment, and connect with your community
+              Sign in to post updates, join discussions, and stay connected with your campus community.
             </p>
           </div>
         )}
@@ -220,8 +229,10 @@ export default function Feed() {
         )}
 
         {/* Loading State */}
-        {isLoadingFeed && feed.length === 0 ? (
-          <FeedLoadingState />
+        {shouldShowFeedSkeleton ? (
+          <div className="min-h-[60vh]">
+            <FeedLoadingState />
+          </div>
         ) : feed.length > 0 ? (
           <>
             {/* Posts Grid, with a library promo slotted in the way a
@@ -273,7 +284,7 @@ export default function Feed() {
               )}
             </div>
           </>
-        ) : (
+        ) : shouldShowEmptyState ? (
           /* Empty State */
           <EmptyState
             icon={<FiFileText size={32} />}
@@ -297,7 +308,7 @@ export default function Feed() {
               )
             }
           />
-        )}
+        ) : null}
       </div>
 
       {/* Create Post Modal */}

@@ -16,6 +16,7 @@ import {
   FiSettings,
   FiShield,
   FiBookOpen,
+  FiBriefcase,
   FiInfo,
   FiUser,
 } from "react-icons/fi";
@@ -32,6 +33,7 @@ const ModRequestForm = dynamic(() => import("@/components/forms/ModRequestForm")
 
 const navLinks = [
   { href: "/", label: "Social", icon: FiMessageCircle },
+  { href: "/services", label: "Services", icon: FiBriefcase },
   { href: "/library", label: "Library", icon: FiBookOpen },
   { href: "/library/dashboard", label: "Dashboard", icon: FiGrid },
   { href: "/about-us", label: "About", icon: FiInfo },

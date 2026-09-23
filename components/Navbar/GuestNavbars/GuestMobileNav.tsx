@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   FiBookOpen,
+  FiBriefcase,
   FiInfo,
   FiLogIn,
   FiMessageCircle,
@@ -15,6 +16,7 @@ import { cn } from "@/lib/utils/cn";
 
 const navLinks = [
   { href: "/", label: "Social", icon: FiMessageCircle },
+  { href: "/services", label: "Services", icon: FiBriefcase },
   { href: "/library", label: "Library", icon: FiBookOpen },
   { href: "/about-us", label: "About", icon: FiInfo },
 ];

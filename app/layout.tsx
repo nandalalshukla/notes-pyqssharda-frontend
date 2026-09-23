@@ -139,14 +139,16 @@ export default function RootLayout({
         <JsonLd data={[organisationSchema(), webSiteSchema()]} />
 
         <ThemeProvider>
-          <ToastProvider />
-          <Navbar />
-          {/* Effect-only: restores the session without owning the tree, so
-              page content stays server-rendered in document order. */}
-          <AuthProviders />
-          <main>{children}</main>
-          <SiteFooter />
-          <Analytics />
+          <div className="flex min-h-screen flex-col bg-background text-foreground">
+            <ToastProvider />
+            <Navbar />
+            {/* Effect-only: restores the session without owning the tree, so
+                page content stays server-rendered in document order. */}
+            <AuthProviders />
+            <main className="flex-1">{children}</main>
+            <SiteFooter />
+            <Analytics />
+          </div>
         </ThemeProvider>
       </body>
     </html>
