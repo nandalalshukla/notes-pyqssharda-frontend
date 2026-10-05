@@ -16,7 +16,7 @@ export default function SyllabusPage() {
     <ResourceLibraryPage
       accent="purple"
       heading={{ prefix: "Sharda University ", highlight: "Syllabus" }}
-      description="Access semester-wise syllabus and stay aligned with your curriculum."
+      description="Access the Sharda University syllabus for B.Tech CS courses, organised by semester and course code so you can plan your exam preparation."
       items={allSyllabus}
       programOptions={["B.Tech CS"]}
       programLabel="B.Tech CS"

@@ -5,7 +5,7 @@ import { breadcrumbSchema, collectionSchema } from "@/lib/seo/structuredData";
 export const metadata: Metadata = {
   title: "Sharda University Syllabus — Course Unit Breakdown",
   description:
-    "Sharda University syllabus PDFs for every course, with the full unit-wise breakdown so you know exactly what is examinable this semester.",
+    "Sharda University syllabus PDFs for B.Tech CS courses, with the full unit-wise breakdown so you know what is examinable this semester.",
   alternates: { canonical: "/library/syllabus" },
   openGraph: {
     title: "Sharda University Syllabus — Course Unit Breakdown",

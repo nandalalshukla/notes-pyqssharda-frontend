@@ -38,6 +38,7 @@ export default function CreatePostModal({
   const [previews, setPreviews] = useState<string[]>([]);
 
   const isLostFound = postType === "lost_found";
+  const isOpportunity = postType === "opportunity";
   // Mirrors the server's rule so the composer can warn before submit; the
   // server is still what actually decides.
   const needsApproval = postWillNeedApproval(postType, user?.role);
@@ -127,7 +128,9 @@ export default function CreatePostModal({
               ? "Posted anonymously"
               : isLostFound
                 ? "Posted to the lost & found board"
-                : "Post created successfully",
+                : isOpportunity
+                  ? "Posted to opportunities"
+                  : "Post created successfully",
         );
       } catch (error: unknown) {
         toast.error(getErrorMessage(error) || "Failed to create post");
@@ -138,6 +141,7 @@ export default function CreatePostModal({
       postType,
       isAnonymous,
       isLostFound,
+      isOpportunity,
       needsApproval,
       lostFound,
       files,
@@ -203,12 +207,18 @@ export default function CreatePostModal({
         postType={postType}
         onPostTypeChange={setPostType}
         contentLabel={
-          isLostFound ? "Describe it in your own words" : "What's on your mind?"
+          isLostFound
+            ? "Describe it in your own words"
+            : isOpportunity
+              ? "Describe the opportunity"
+              : "What's on your mind?"
         }
         contentPlaceholder={
           isLostFound
             ? "Any detail that helps — colour, stickers, what was inside, when you noticed it missing..."
-            : "Share your thoughts, ideas, or questions..."
+            : isOpportunity
+              ? "Share the role, internship, collaboration idea, eligibility, deadline, contact link, or next steps..."
+              : "Share your thoughts, ideas, or questions..."
         }
         content={content}
         onContentChange={setContent}

@@ -39,7 +39,7 @@ export const SITE_URL = (
 export const SITE_NAME = "Sharda Social";
 
 export const SITE_TAGLINE =
-  "The student social network and online library for Sharda University";
+  "The student social media community and online library for Sharda University";
 
 /**
  * The default description. Written to read as a sentence a person would
@@ -47,7 +47,7 @@ export const SITE_TAGLINE =
  * page, but a human decides whether to click it.
  */
 export const SITE_DESCRIPTION =
-  "Sharda Social is the student community and free online library for Sharda University — thousands of previous year question papers, semester notes and syllabus PDFs, plus a campus feed for announcements, events and lost & found.";
+  "Sharda Social is a student social media community and free online library for Sharda University — find previous year question papers, semester notes and syllabus PDFs, and follow campus announcements, events, opportunities and lost & found.";
 
 /**
  * Terms this site is genuinely about. Kept honest: the `keywords` meta tag
@@ -66,6 +66,9 @@ export const SITE_KEYWORDS = [
   "Sharda online library",
   "Sharda University PYQ",
   "Sharda University study material",
+  "Sharda University social media",
+  "Sharda University student community",
+  "Sharda University student opportunities",
   "Sharda University Greater Noida",
   "SET Sharda",
   "B.Tech CSE previous year papers",

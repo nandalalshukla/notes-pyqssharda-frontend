@@ -67,6 +67,7 @@ export default function EditPostModal({ post, onClose }: EditPostModalProps) {
   );
 
   const isLostFound = postType === "lost_found";
+  const isOpportunity = postType === "opportunity";
   // An edit is a re-submission: saving an already-approved announcement
   // sends it back to the queue, so the notice belongs here too.
   const needsApproval = postWillNeedApproval(postType, user?.role);
@@ -209,7 +210,16 @@ export default function EditPostModal({ post, onClose }: EditPostModalProps) {
         postType={postType}
         onPostTypeChange={setPostType}
         contentLabel={
-          isLostFound ? "Describe it in your own words" : "Post Content"
+          isLostFound
+            ? "Describe it in your own words"
+            : isOpportunity
+              ? "Describe the opportunity"
+              : "Post Content"
+        }
+        contentPlaceholder={
+          isOpportunity
+            ? "Share the role, internship, collaboration idea, eligibility, deadline, contact link, or next steps..."
+            : undefined
         }
         content={content}
         onContentChange={setContent}

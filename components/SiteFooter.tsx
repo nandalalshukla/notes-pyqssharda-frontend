@@ -54,7 +54,7 @@ export default function SiteFooter() {
               </strong>
               . Find previous year question papers, semester notes and
               syllabus PDFs shared by students, and keep up with campus
-              announcements, events and lost &amp; found.
+              announcements, events, opportunities and lost &amp; found.
             </p>
           </div>
 

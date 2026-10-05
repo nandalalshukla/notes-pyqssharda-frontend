@@ -311,6 +311,7 @@ const KNOWN_POST_TYPES: PostType[] = [
   "general",
   "event",
   "announcement",
+  "opportunity",
   "lost_found",
 ];
 

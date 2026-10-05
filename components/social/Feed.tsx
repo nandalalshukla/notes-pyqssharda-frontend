@@ -63,6 +63,7 @@ export default function Feed() {
   const hasAttemptedInitialLoad = useRef(false);
 
   const isLostFoundSection = activeSection === "lost_found";
+  const isOpportunitySection = activeSection === "opportunity";
   // The filter only applies to the lost & found board; leaving a stale
   // "resolved" selection applied to a section switch would silently return
   // nothing, so anywhere else it resolves back to "all".
@@ -305,6 +306,8 @@ export default function Feed() {
             description={
               isLostFoundSection
                 ? "Lost something on campus, or found something that isn't yours? Post it here."
+                : isOpportunitySection
+                  ? "Share jobs, internships, collaborations and other openings with the community."
                 : "Be the first to share something with the community!"
             }
             action={
@@ -313,7 +316,11 @@ export default function Feed() {
                   onClick={() => setShowCreateModal(true)}
                   icon={<FiPlus size={18} />}
                 >
-                  {isLostFoundSection ? "Post an Item" : "Create First Post"}
+                  {isLostFoundSection
+                    ? "Post an Item"
+                    : isOpportunitySection
+                      ? "Share Opportunity"
+                      : "Create First Post"}
                 </Button>
               )
             }

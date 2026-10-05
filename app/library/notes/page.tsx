@@ -18,7 +18,7 @@ export default function NotesPage() {
     <ResourceLibraryPage
       accent="mint"
       heading={{ prefix: "Sharda University ", highlight: "Notes" }}
-      description="Find and download comprehensive study notes for your courses."
+      description="Find and download free Sharda University notes for B.Tech CS courses, organised by semester, course code and unit for faster exam revision."
       items={allNotes}
       programOptions={["B.Tech CS"]}
       programLabel="B.Tech CS"

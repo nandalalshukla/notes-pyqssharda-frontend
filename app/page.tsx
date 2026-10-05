@@ -44,7 +44,8 @@ export default function ShardaSocialHome() {
           Sharda Social
         </h1>
         <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-          Campus updates, events, and conversations from the Sharda community.
+          The Sharda University social media community for campus updates,
+          events, opportunities, conversations and student life.
         </p>
       </header>
 

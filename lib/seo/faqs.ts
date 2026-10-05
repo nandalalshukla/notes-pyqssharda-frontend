@@ -21,7 +21,7 @@ export const HOME_FAQS: Faq[] = [
   {
     question: "What is Sharda Social?",
     answer:
-      "Sharda Social is a free, student-run platform for Sharda University, Greater Noida. It combines an online library of previous year question papers, semester notes and syllabus PDFs with a campus feed where students post announcements, events and lost & found items. It is independent and not an official university website.",
+      "Sharda Social is a free, student-run platform for Sharda University, Greater Noida. It combines an online library of previous year question papers, semester notes and syllabus PDFs with a campus feed where students post announcements, events, opportunities and lost & found items. It is independent and not an official university website.",
   },
   {
     question:

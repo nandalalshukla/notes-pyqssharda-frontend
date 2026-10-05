@@ -3,7 +3,7 @@ import { Metadata } from "next";
 export const metadata: Metadata = {
   title: "About Sharda Social — Built by Sharda Students",
   description:
-    "Sharda Social is an independent, student-run community and online library for Sharda University, Greater Noida. Learn who builds it, why it exists and how to contribute notes and past papers.",
+    "Sharda Social is an independent, student-run social media community and online library for Sharda University, Greater Noida. Learn who builds it and how to contribute notes and past papers.",
   alternates: { canonical: "/about-us" },
   openGraph: {
     title: "About Sharda Social — Built by Sharda Students",

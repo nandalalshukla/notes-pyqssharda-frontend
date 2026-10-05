@@ -203,7 +203,11 @@ export default function PostComposerForm({
 
       <div>
         <FieldLabel>Post Type</FieldLabel>
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+        <div
+          className="flex max-w-full gap-2 overflow-x-auto pb-2"
+          role="group"
+          aria-label="Select post type"
+        >
           {postTypeOptions.map(({ value, label, Icon }) => {
             const selected = postType === value;
             return (
@@ -211,8 +215,9 @@ export default function PostComposerForm({
                 key={value}
                 type="button"
                 onClick={() => onPostTypeChange(value)}
+                aria-pressed={selected}
                 className={cn(
-                  "flex cursor-pointer items-center justify-center gap-2 rounded-xl border px-3 py-2.5 text-sm font-semibold transition-colors",
+                  "flex min-w-36 shrink-0 cursor-pointer items-center justify-center gap-2 rounded-xl border px-3 py-2.5 text-sm font-semibold transition-colors",
                   selected
                     ? "border-primary bg-primary/10 text-primary"
                     : "border-border bg-card text-foreground hover:bg-secondary",

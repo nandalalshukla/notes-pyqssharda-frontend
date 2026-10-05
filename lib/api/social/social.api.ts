@@ -37,7 +37,12 @@ export interface PostAuthor extends Omit<User, "_id"> {
   _id: string | null;
 }
 
-export type PostType = "general" | "event" | "announcement" | "lost_found";
+export type PostType =
+  | "general"
+  | "event"
+  | "announcement"
+  | "opportunity"
+  | "lost_found";
 
 /**
  * Whether a post is publicly visible yet.

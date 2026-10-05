@@ -2,6 +2,7 @@ import {
   FiMessageSquare,
   FiBell,
   FiCalendar,
+  FiBriefcase,
   FiSearch,
   FiSmartphone,
   FiFileText,
@@ -68,6 +69,14 @@ export const postTypeMeta: Record<PostType, PostTypeMeta> = {
     Icon: FiCalendar,
     badgeVariant: "mint",
   },
+  opportunity: {
+    value: "opportunity",
+    label: "Opportunity",
+    tabLabel: "Opportunities",
+    emptyTitle: "No opportunities yet",
+    Icon: FiBriefcase,
+    badgeVariant: "sky",
+  },
   lost_found: {
     value: "lost_found",
     label: "Lost & Found",
@@ -83,6 +92,7 @@ export const postTypeOrder: PostType[] = [
   "general",
   "announcement",
   "event",
+  "opportunity",
   "lost_found",
 ];
 
