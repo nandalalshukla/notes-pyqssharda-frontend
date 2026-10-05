@@ -2,12 +2,14 @@
 
 import SYLLABUS2_DATA_2024_25 from "@/DATA/Syllabus/BtechCS/2ndSem";
 import SYLLABUS4_DATA_2024_25 from "@/DATA/Syllabus/BtechCS/4thSem";
+import SYLLABUS5_DATA_2024_25 from "@/DATA/Syllabus/BtechCS/5thSem";
 import SYLLABUS6_DATA_2024_25 from "@/DATA/Syllabus/BtechCS/6thSem";
 import { ResourceLibraryPage, type LibraryItem } from "@/components/library/ResourceLibraryPage";
 
 const allSyllabus: LibraryItem[] = [
   ...SYLLABUS2_DATA_2024_25,
   ...SYLLABUS4_DATA_2024_25,
+  ...SYLLABUS5_DATA_2024_25,
   ...SYLLABUS6_DATA_2024_25,
 ];
 
