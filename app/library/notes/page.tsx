@@ -2,6 +2,7 @@
 
 import NOTES2_DATA_2024_25 from "@/DATA/Notes/BtechCS/2ndSem";
 import NOTES4_DATA_2024_25 from "@/DATA/Notes/BtechCS/4thSem";
+import NOTES5_DATA_2024_25 from "@/DATA/Notes/BtechCS/5thSem";
 import NOTES6_DATA_2024_25 from "@/DATA/Notes/BtechCS/6thSem";
 import NOTES8_DATA_2024_25 from "@/DATA/Notes/BtechCS/8thSem";
 import { ResourceLibraryPage, type LibraryItem } from "@/components/library/ResourceLibraryPage";
@@ -9,6 +10,7 @@ import { ResourceLibraryPage, type LibraryItem } from "@/components/library/Reso
 const allNotes: LibraryItem[] = [
   ...NOTES2_DATA_2024_25,
   ...NOTES4_DATA_2024_25,
+  ...NOTES5_DATA_2024_25,
   ...NOTES6_DATA_2024_25,
   ...NOTES8_DATA_2024_25,
 ];
