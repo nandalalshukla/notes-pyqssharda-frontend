@@ -8,6 +8,8 @@ import { useNotesStore } from "@/stores/notes/notes.store";
 import { Button, Input, Select } from "@/components/ui";
 import { PROGRAM_OPTIONS } from "@/lib/constants/programs";
 
+const MAX_NOTE_FILE_SIZE_BYTES = 100 * 1024 * 1024;
+
 interface NotesFormProps {
   onClose?: () => void;
   initialData?: Note;
@@ -52,9 +54,19 @@ export default function NotesForm({
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setFile(e.target.files[0]);
+    const selectedFile = e.target.files?.[0];
+    if (!selectedFile) {
+      return;
     }
+
+    if (selectedFile.size > MAX_NOTE_FILE_SIZE_BYTES) {
+      toast.error("File size must be 100 MB or less");
+      e.target.value = "";
+      setFile(null);
+      return;
+    }
+
+    setFile(selectedFile);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -72,6 +84,12 @@ export default function NotesForm({
 
     if (!initialData && !file) {
       toast.error("Please select a file");
+      setLoading(false);
+      return;
+    }
+
+    if (file && file.size > MAX_NOTE_FILE_SIZE_BYTES) {
+      toast.error("File size must be 100 MB or less");
       setLoading(false);
       return;
     }
@@ -184,6 +202,9 @@ export default function NotesForm({
             className="w-full cursor-pointer rounded-xl border border-input bg-card px-3.5 py-2 text-sm font-medium text-foreground outline-none transition-colors file:mr-4 file:cursor-pointer file:rounded-full file:border-0 file:bg-accent-mint file:px-3 file:py-1 file:text-xs file:font-bold file:text-accent-mint-foreground hover:file:opacity-90 focus:ring-2 focus:ring-ring"
             required={!initialData}
           />
+          <p className="mt-1 text-xs text-muted-foreground">
+            Maximum file size: 100 MB
+          </p>
           {initialData && initialData.fileUrl && (
             <div className="mt-1 text-xs">
               Current file:{" "}

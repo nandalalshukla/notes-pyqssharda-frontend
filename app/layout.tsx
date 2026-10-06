@@ -4,6 +4,7 @@ import "./globals.css";
 import Navbar from "@/components/Navbar/navbar";
 import SiteFooter from "@/components/SiteFooter";
 import ToastProvider from "@/components/ToastProvide";
+import WelcomeModal from "@/components/WelcomeModal";
 import AuthProviders from "./providers";
 import { ThemeProvider } from "./theme-provider";
 import { Analytics } from "@vercel/analytics/next";
@@ -139,6 +140,7 @@ export default function RootLayout({
           <div className="flex min-h-screen flex-col bg-background text-foreground">
             <ToastProvider />
             <Navbar />
+            <WelcomeModal />
             {/* Effect-only: restores the session without owning the tree, so
                 page content stays server-rendered in document order. */}
             <AuthProviders />
