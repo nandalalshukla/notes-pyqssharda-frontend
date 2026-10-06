@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/Navbar/navbar";
 import SiteFooter from "@/components/SiteFooter";
@@ -29,6 +29,12 @@ const geistSans = Geist({
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
+  subsets: ["latin"],
+  display: "swap",
+});
+
+const brandSerif = Playfair_Display({
+  variable: "--font-brand-serif",
   subsets: ["latin"],
   display: "swap",
 });
@@ -129,7 +135,7 @@ export default function RootLayout({
         <link rel="dns-prefetch" href="https://res.cloudinary.com" />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${brandSerif.variable} antialiased`}
       >
         {/* Site-wide structured data. Emitted once in the root layout so
             every page inherits the publisher and search-box definitions,

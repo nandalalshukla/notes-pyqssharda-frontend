@@ -181,6 +181,47 @@ body {
     color 200ms ease;
 }
 
+/* A slow, understated sheen for the welcome actions. */
+.welcome-shimmer {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+
+.welcome-shimmer::after {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  transform: translateX(-120%) skewX(-18deg);
+  width: 45%;
+  background: linear-gradient(
+    105deg,
+    transparent,
+    rgb(255 255 255 / 0.42),
+    transparent
+  );
+  content: "";
+  animation: welcome-shimmer 3.8s ease-in-out infinite;
+}
+
+@keyframes welcome-shimmer {
+  0%,
+  45% {
+    transform: translateX(-120%) skewX(-18deg);
+  }
+  70%,
+  100% {
+    transform: translateX(280%) skewX(-18deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .welcome-shimmer::after {
+    animation: none;
+  }
+}
+
 @keyframes fade-in-up {
   0% {
     opacity: 0;
