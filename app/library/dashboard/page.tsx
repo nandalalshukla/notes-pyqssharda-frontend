@@ -10,6 +10,16 @@ import {
 import AuthGuard from "@/components/AuthGuard";
 import { Shield, CheckCircle, BookOpen } from "lucide-react";
 
+const readSavedDashboard = () => {
+  if (typeof window === "undefined") return null;
+
+  try {
+    return window.localStorage.getItem("active-dashboard");
+  } catch {
+    return null;
+  }
+};
+
 export default function Dashboard() {
   const { user } = useAuthStore();
 
@@ -20,9 +30,7 @@ export default function Dashboard() {
     return "user";
   };
 
-  const [currentDashboard, setCurrentDashboard] = useState<string>(
-    getInitialDashboard(),
-  );
+  const [currentDashboard, setCurrentDashboard] = useState<string | null>(null);
 
   // Determine which dashboards the user can access
   const accessibleDashboards = useMemo(() => {
@@ -76,8 +84,48 @@ export default function Dashboard() {
 
   const multiDashboard = accessibleDashboards.length > 1;
 
-  // Handle case where user might be null initially (though AuthGuard handles redirect)
+  const savedDashboard = user ? readSavedDashboard() : null;
+  const isSavedDashboardAllowed = accessibleDashboards.some(
+    (dashboard) => dashboard.id === savedDashboard,
+  );
+  const activeDashboard =
+    currentDashboard &&
+    accessibleDashboards.some(
+      (dashboard) => dashboard.id === currentDashboard,
+    )
+      ? currentDashboard
+      : isSavedDashboardAllowed && savedDashboard
+        ? savedDashboard
+        : user
+          ? getInitialDashboard()
+          : null;
+
+  const handleDashboardChange = (dashboardId: string) => {
+    if (!accessibleDashboards.some((dashboard) => dashboard.id === dashboardId)) {
+      return;
+    }
+
+    setCurrentDashboard(dashboardId);
+
+    try {
+      window.localStorage.setItem("active-dashboard", dashboardId);
+    } catch {
+      // In-memory state still keeps navigation working for this session.
+    }
+  };
+
+  // Handle the short interval before the authenticated user is available.
   if (!user) {
+    return (
+      <AuthGuard>
+        <div className="flex min-h-screen items-center justify-center bg-background">
+          <div className="h-12 w-12 animate-spin rounded-full border-t-2 border-b-2 border-primary"></div>
+        </div>
+      </AuthGuard>
+    );
+  }
+
+  if (!activeDashboard) {
     return (
       <AuthGuard>
         <div className="flex min-h-screen items-center justify-center bg-background">
@@ -97,7 +145,7 @@ export default function Dashboard() {
               <div className="flex gap-2 overflow-x-auto py-3 sm:py-4">
                 {accessibleDashboards.map((dashboard) => {
                   const IconComponent = dashboard.icon;
-                  const isActive = currentDashboard === dashboard.id;
+                  const isActive = activeDashboard === dashboard.id;
 
                   const colorMap: Record<string, string> = {
                     blue: "primary",
@@ -122,7 +170,7 @@ export default function Dashboard() {
                   return (
                     <button
                       key={dashboard.id}
-                      onClick={() => setCurrentDashboard(dashboard.id)}
+                      onClick={() => handleDashboardChange(dashboard.id)}
                       className={`
                         min-w-max px-4 py-2.5 rounded-xl font-semibold text-sm
                         flex items-center gap-2.5 group cursor-pointer
