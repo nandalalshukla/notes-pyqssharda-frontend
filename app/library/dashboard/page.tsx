@@ -195,14 +195,14 @@ export default function Dashboard() {
 
         {/* Dashboard Content */}
         <div className="min-h-dvh">
-          {currentDashboard === "admin" && user.role === "admin" && (
+          {activeDashboard === "admin" && user.role === "admin" && (
             <AdminDashboardNew />
           )}
-          {currentDashboard === "moderator" &&
+          {activeDashboard === "moderator" &&
             (user.role === "admin" || user.role === "mod") && (
               <ModeratorDashboard />
             )}
-          {currentDashboard === "user" &&
+          {activeDashboard === "user" &&
             (user.role === "admin" ||
               user.role === "mod" ||
               user.role === "user") && <UserDashboard />}
