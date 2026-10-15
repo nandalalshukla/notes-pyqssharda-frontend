@@ -8,19 +8,28 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const authLoading = useAuthStore((s) => s.authLoading);
+  const authInitialized = useAuthStore((s) => s.authInitialized);
   const hasRedirected = useRef(false);
 
   useEffect(() => {
-    // Don't redirect while still loading auth state
-    if (!authLoading && !isAuthenticated && !hasRedirected.current) {
+    // Never make an auth decision before persisted state and /auth/me have
+    // finished. The store starts with isAuthenticated=false on every reload.
+    if (
+      authInitialized &&
+      !authLoading &&
+      !isAuthenticated &&
+      !hasRedirected.current
+    ) {
       hasRedirected.current = true;
       toast.error("Please log in to access this page");
       router.replace("/auth/login");
     }
-  }, [isAuthenticated, authLoading, router]);
+  }, [authInitialized, isAuthenticated, authLoading, router]);
 
-  // Show loading state while verifying authentication
-  if (authLoading) {
+  // Show loading state while persisted auth state and the server session are
+  // being restored. This prevents a refresh from rendering or redirecting
+  // based on the store's initial logged-out state.
+  if (!authInitialized || authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#F2F4F8]">
         <div className="text-center">
@@ -34,7 +43,7 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
   }
 
   // Don't render children if not authenticated
-  if (!isAuthenticated) {
+  if (authInitialized && !isAuthenticated) {
     return null;
   }
 
