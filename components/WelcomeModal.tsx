@@ -4,13 +4,22 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { X } from "lucide-react";
 import { Modal } from "@/components/ui";
+import useAuthStore from "@/stores/user/authStore";
 
 const WELCOME_MODAL_STORAGE_KEY = "sharda-social-welcome-seen";
 
 export default function WelcomeModal() {
   const [isOpen, setIsOpen] = useState(false);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const authInitialized = useAuthStore((state) => state.authInitialized);
+  const authLoading = useAuthStore((state) => state.authLoading);
 
   useEffect(() => {
+    // Wait until persisted auth state and the server session are resolved.
+    // Otherwise an authenticated user could briefly see guest actions while
+    // the store is still restoring after a full page load.
+    if (!authInitialized || authLoading) return;
+
     try {
       if (window.localStorage.getItem(WELCOME_MODAL_STORAGE_KEY) !== "true") {
         queueMicrotask(() => setIsOpen(true));
@@ -19,7 +28,7 @@ export default function WelcomeModal() {
       // If storage is unavailable, the modal still works for this visit.
       queueMicrotask(() => setIsOpen(true));
     }
-  }, []);
+  }, [authInitialized, authLoading]);
 
   const dismiss = () => {
     try {
@@ -43,7 +52,7 @@ export default function WelcomeModal() {
           type="button"
           onClick={dismiss}
           aria-label="Close welcome message"
-          className="absolute right-4 top-4 z-10 rounded-full bg-card/70 p-2 text-muted-foreground shadow-sm transition-colors hover:bg-card hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="pointer-events-auto absolute right-4 top-4 z-20 cursor-pointer rounded-full bg-card/70 p-2 text-muted-foreground shadow-sm transition-colors hover:bg-card hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           <X size={18} />
         </button>
@@ -62,20 +71,24 @@ export default function WelcomeModal() {
           </p>
 
           <div className="relative z-10 mt-8 flex flex-col justify-center gap-3 sm:flex-row">
-            <Link
-              href="/auth/register"
-              onClick={dismiss}
-              className="welcome-shimmer inline-flex h-10 items-center justify-center rounded-xl bg-primary px-4 text-sm font-semibold text-primary-foreground shadow-soft-sm transition-colors hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-            >
-              Sign up with Sharda email
-            </Link>
-            <Link
-              href="/auth/login"
-              onClick={dismiss}
-              className="welcome-shimmer inline-flex h-10 items-center justify-center rounded-xl border border-border bg-transparent px-4 text-sm font-semibold text-foreground transition-colors hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-            >
-              Sign in
-            </Link>
+            {!isAuthenticated && (
+              <>
+                <Link
+                  href="/auth/register"
+                  onClick={dismiss}
+                  className="welcome-shimmer inline-flex h-10 items-center justify-center rounded-xl border border-primary/40 bg-primary px-4 text-sm font-semibold text-primary-foreground shadow-soft-sm transition-colors hover:border-primary hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                >
+                  Sign up with Sharda email
+                </Link>
+                <Link
+                  href="/auth/login"
+                  onClick={dismiss}
+                  className="welcome-shimmer inline-flex h-10 items-center justify-center rounded-xl border border-border bg-transparent px-4 text-sm font-semibold text-foreground transition-colors hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                >
+                  Sign in
+                </Link>
+              </>
+            )}
           </div>
         </div>
 
@@ -83,7 +96,7 @@ export default function WelcomeModal() {
           aria-hidden="true"
           viewBox="0 0 640 116"
           preserveAspectRatio="none"
-          className="absolute inset-x-0 bottom-0 h-24 w-full"
+          className="pointer-events-none absolute inset-x-0 bottom-0 h-24 w-full"
         >
           <path d="M0 113C120 103 210 112 320 108s210-9 320 3v5H0Z" fill="#d8f0d2" />
           <g stroke="#32734b" strokeWidth="3" strokeLinecap="round" fill="none">
