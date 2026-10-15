@@ -105,6 +105,51 @@ export default function PyqsPage() {
       noun={{ singular: "Paper", plural: "Papers" }}
       viewLabel="View Paper"
       codePlaceholder="e.g. CSE252"
+      seoContent={{
+        heading: "Sharda University previous year question papers",
+        paragraphs: [
+          "Looking for Sharda University previous year question papers or a PYQ PDF download? This library keeps past exam papers organised by programme, semester, academic year and course code so you can find the right paper without searching through scattered links.",
+          "Open a paper to read it on sharda.social or download the PDF for offline revision. Use the subject search for a course name such as Computer Networks, or enter a code such as CSE252. Papers are shared for student revision and the collection grows as students contribute useful material.",
+        ],
+        links: [
+          {
+            href: "/library/syllabus",
+            label: "Sharda University syllabus",
+            description:
+              "Check the semester and course-unit syllabus before using a PYQ for revision.",
+          },
+          {
+            href: "/library/notes",
+            label: "Sharda University notes",
+            description:
+              "Review unit-wise notes alongside previous year questions.",
+          },
+          {
+            href: "/library",
+            label: "Sharda online library",
+            description:
+              "Browse the complete Sharda library for PYQs, notes and syllabus material.",
+          },
+        ],
+        faqs: [
+          {
+            question:
+              "Where can I download Sharda University previous year question papers?",
+            answer:
+              "Use the Sharda Social PYQ library to filter papers by programme, semester, year or course code. Select a paper and choose Download PDF to save it for offline exam preparation.",
+          },
+          {
+            question: "Are Sharda University PYQ PDFs free to download?",
+            answer:
+              "Yes. The papers in this student library are free to browse and download, with no sign-up required for library access.",
+          },
+          {
+            question: "How do I find a specific Sharda University question paper?",
+            answer:
+              "Search by subject name or course code, then narrow the results using the programme, academic year and semester filters.",
+          },
+        ],
+      }}
       />
     </>
   );

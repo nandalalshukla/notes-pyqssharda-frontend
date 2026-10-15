@@ -9,14 +9,14 @@ import type { Metadata } from "next";
  * The index page's own schema lives in its page.tsx instead.
  */
 export const metadata: Metadata = {
-  title: "Sharda Online Library — Notes, PYQs & Syllabus",
+  title: "Sharda Library & E-Library — Notes, PYQs & Syllabus",
   description:
-    "The free Sharda online library: previous year question papers, semester notes and syllabus PDFs for every school at Sharda University, Greater Noida. Search by course code, semester or programme.",
+    "The free Sharda library and e-library: find Sharda University previous year question papers, semester notes and syllabus PDFs by course code, semester or programme.",
   alternates: { canonical: "/library" },
   openGraph: {
-    title: "Sharda Online Library — Notes, PYQs & Syllabus",
+    title: "Sharda Library & E-Library — Notes, PYQs & Syllabus",
     description:
-      "Previous year question papers, semester notes and syllabus PDFs for every school at Sharda University, Greater Noida.",
+      "Find previous year question papers, semester notes and syllabus PDFs for Sharda University in one searchable online library.",
     url: "/library",
     type: "website",
     images: ["/shardasocial.png"],

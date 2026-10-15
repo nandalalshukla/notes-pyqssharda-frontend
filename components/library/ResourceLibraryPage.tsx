@@ -6,6 +6,10 @@ import { Search, ChevronDown, Download, FileText, Loader2 } from "lucide-react";
 import { EmptyState, Skeleton } from "@/components/ui";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { cn } from "@/lib/utils/cn";
+import {
+  LibrarySeoContent,
+  type LibrarySeoContentProps,
+} from "@/components/library/LibrarySeoContent";
 
 export interface LibraryItem {
   subject: string;
@@ -128,6 +132,7 @@ export interface ResourceLibraryPageProps {
   noun: { singular: string; plural: string };
   viewLabel: string;
   codePlaceholder: string;
+  seoContent?: LibrarySeoContentProps;
 }
 
 export function ResourceLibraryPage({
@@ -141,6 +146,7 @@ export function ResourceLibraryPage({
   noun,
   viewLabel,
   codePlaceholder,
+  seoContent,
 }: ResourceLibraryPageProps) {
   const styles = accentConfig[accent];
   const staticItems = useMemo(() => items ?? [], [items]);
@@ -605,6 +611,8 @@ export function ResourceLibraryPage({
             description="Try adjusting your filters or searching for something else."
           />
         )}
+
+        {seoContent && <LibrarySeoContent {...seoContent} />}
       </div>
     </div>
   );

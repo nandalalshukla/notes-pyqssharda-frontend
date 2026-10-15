@@ -3,14 +3,14 @@ import { JsonLd } from "@/components/seo/JsonLd";
 import { breadcrumbSchema, collectionSchema } from "@/lib/seo/structuredData";
 
 export const metadata: Metadata = {
-  title: "Sharda University Syllabus — Course Unit Breakdown",
+  title: "Sharda University Syllabus PDF — B.Tech CSE Course Units",
   description:
-    "Sharda University syllabus PDFs for B.Tech CS courses, with the full unit-wise breakdown so you know what is examinable this semester.",
+    "Find the Sharda University syllabus PDF for B.Tech CSE courses, organised by semester and course code with the unit-wise breakdown for exam preparation.",
   alternates: { canonical: "/library/syllabus" },
   openGraph: {
-    title: "Sharda University Syllabus — Course Unit Breakdown",
+    title: "Sharda University Syllabus PDF — B.Tech CSE Course Units",
     description:
-      "Sharda University syllabus PDFs for every course, with the full unit-wise breakdown so you know exactly what is examinable this semester.",
+      "Find Sharda University B.Tech CSE syllabus PDFs by semester and course code, then plan your preparation around the listed course units.",
     url: "/library/syllabus",
     type: "website",
     images: ["/shardasocial.png"],

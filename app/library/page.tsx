@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { JsonLd } from "@/components/seo/JsonLd";
-import { breadcrumbSchema, collectionSchema } from "@/lib/seo/structuredData";
+import { breadcrumbSchema, collectionSchema, faqSchema } from "@/lib/seo/structuredData";
 import HomeContentShowcase from "@/components/HomeContentShowcase";
 
 export default function HomePage() {
@@ -132,6 +132,56 @@ export default function HomePage() {
               examinable before you start revising.
             </p>
           </article>
+        </div>
+      </section>
+
+      <section
+        aria-labelledby="sharda-library-guide"
+        className="mb-16 w-full max-w-4xl text-left"
+      >
+        <JsonLd
+          data={faqSchema([
+            {
+              question: "What is the Sharda online library?",
+              answer:
+                "The Sharda online library on Sharda Social is a free student resource for finding Sharda University previous year question papers, semester notes and syllabus PDFs in one place.",
+            },
+            {
+              question: "Is the Sharda e-library free to use?",
+              answer:
+                "Yes. You can browse, search and download study material from the Sharda Social library without creating an account.",
+            },
+          ])}
+        />
+        <h2
+          id="sharda-library-guide"
+          className="mb-5 text-2xl font-black md:text-3xl"
+        >
+          Sharda library and e-library study resources
+        </h2>
+        <div className="space-y-4 text-base leading-7 text-muted-foreground">
+          <p>
+            Sharda Social is a free online library for Sharda University
+            students. It brings together previous year question papers, notes
+            and syllabus documents so you can move from finding the right
+            course to planning revision without opening multiple websites.
+          </p>
+          <p>
+            Search the library by subject, course code, semester or programme.
+            You can use the{" "}
+            <Link href="/library/pyqs" className="font-bold text-primary underline">
+              Sharda University PYQ library
+            </Link>{" "}
+            for past exam practice, check the{" "}
+            <Link href="/library/syllabus" className="font-bold text-primary underline">
+              Sharda University syllabus PDFs
+            </Link>{" "}
+            for course units, and revise with{" "}
+            <Link href="/library/notes" className="font-bold text-primary underline">
+              semester notes
+            </Link>
+            . Library browsing is open without sign-up.
+          </p>
         </div>
       </section>
 
