@@ -131,6 +131,12 @@ export default function RootLayout({
         {/* The API and Cloudinary are both hit on nearly every page; opening
             the connections during HTML parse removes a DNS + TLS round trip
             from the first request to each. */}
+        <Script
+          data-website-id="dfid_iSyxXtIQqZdTYqr5jfpgX"
+          data-domain="sharda.social"
+          src="https://datafa.st/js/script.js"
+          strategy="afterInteractive"
+        />
         <link rel="preconnect" href="https://res.cloudinary.com" />
         <link rel="dns-prefetch" href="https://res.cloudinary.com" />
       </head>
