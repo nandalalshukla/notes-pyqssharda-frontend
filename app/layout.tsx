@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Playfair_Display } from "next/font/google";
 import "./globals.css";
+import Script from "next/script";
 import Navbar from "@/components/Navbar/navbar";
 import SiteFooter from "@/components/SiteFooter";
 import ToastProvider from "@/components/ToastProvide";
