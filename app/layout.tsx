@@ -104,8 +104,13 @@ export const metadata: Metadata = {
   },
 
   icons: {
-    icon: "/shardasocial.png",
-    apple: "/shardasocial.png",
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/shardasocial.png", type: "image/png", sizes: "512x512" },
+    ],
+    // iOS rounds the corners itself, so it gets the full-bleed square — a
+    // transparent-cornered icon would show black corners on the home screen.
+    apple: [{ url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
   },
 
   // Fill in once the property is claimed in Google Search Console.
