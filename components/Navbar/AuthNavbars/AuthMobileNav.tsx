@@ -108,7 +108,7 @@ const AuthMobileNav = () => {
             alt="Sharda Social"
             width={64}
             height={64}
-            className="h-11 w-11 object-contain drop-shadow-md sm:h-14 sm:w-14"
+            className="h-9 w-9 rounded-lg object-contain drop-shadow-sm"
             priority
           />
         </Link>

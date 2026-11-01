@@ -149,11 +149,11 @@ export default function Feed() {
           border/shadow of its own: the site navbar above already draws its
           own edge on scroll, and adding a second one here framed the pills
           row with a line above AND below it. `top` is offset by the site
-          navbar's own height (61px mobile / 81px desktop, matching its
+          navbar's own height (53px mobile / 61px desktop, matching its
           `md:` breakpoint) — both this and the navbar are `sticky top-0`,
           so without the offset they'd pin to the same spot and this bar
           would render hidden behind the navbar's higher z-index. */}
-      <div className="sticky top-[61px] z-10 border-b border-border/70 bg-background/90 backdrop-blur-xl md:top-[81px]">
+      <div className="sticky top-[53px] z-10 border-b border-border/70 bg-background/90 backdrop-blur-xl md:top-[61px]">
         <div className="mx-auto flex max-w-3xl items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8">
           <Tabs
             items={feedSections.map((s) => ({

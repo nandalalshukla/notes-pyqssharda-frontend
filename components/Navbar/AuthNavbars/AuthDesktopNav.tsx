@@ -99,7 +99,7 @@ const AuthDesktopNav = () => {
           alt="Sharda Social"
           width={72}
           height={72}
-          className="h-14 w-14 object-contain drop-shadow-md sm:h-16 sm:w-16"
+          className="h-11 w-11 rounded-xl object-contain drop-shadow-sm"
           priority
         />
       </Link>
