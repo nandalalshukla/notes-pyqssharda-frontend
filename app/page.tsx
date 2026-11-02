@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { Feed } from "@/components/social";
-import { FeedLoadingState } from "@/components/social/LoadingSkeletons";
+import HomeFeedPage from "@/components/social/HomeFeedPage";
+import LegacyPostLink from "@/components/social/LegacyPostLink";
 import { SITE_DESCRIPTION } from "@/lib/seo/site";
 
 /**
@@ -35,35 +35,15 @@ export const metadata: Metadata = {
 
 export default function ShardaSocialHome() {
   return (
-    <div className="bg-background">
-      {/* A single compact heading. Every page needs an h1 for search and
-          for screen-reader navigation, but this one stays out of the way
-          rather than pushing the feed below the fold. */}
-      <header className="mx-auto max-w-3xl px-4 pb-2 pt-7 sm:px-6 lg:px-8">
-        <h1 className="text-2xl font-black tracking-tight text-foreground">
-          Sharda Social
-        </h1>
-        <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-          The Sharda University social media community for campus updates,
-          events, opportunities, conversations and student life.
-        </p>
-      </header>
-
-      <div className="min-h-[62vh]">
-        <Suspense
-          fallback={
-            <div
-              aria-busy="true"
-              aria-live="polite"
-              className="mx-auto min-h-[62vh] max-w-3xl px-4 py-6 sm:px-6 lg:px-8"
-            >
-              <FeedLoadingState />
-            </div>
-          }
-        >
-          <Feed />
-        </Suspense>
-      </div>
-    </div>
+    <>
+      <HomeFeedPage />
+      {/* Opens `/?postId=<id>` links — the format post links had before
+          posts got their own /post/<id> address. Its own Suspense boundary
+          because reading the query string would otherwise de-optimise the
+          whole page. */}
+      <Suspense fallback={null}>
+        <LegacyPostLink />
+      </Suspense>
+    </>
   );
 }

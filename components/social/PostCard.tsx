@@ -38,6 +38,7 @@ const CommentsModal = dynamic(() => import("./CommentsModal"));
 const EditPostModal = dynamic(() => import("./EditPostModal"));
 const LikesModal = dynamic(() => import("./LikesModal"));
 const ReportModal = dynamic(() => import("./ReportModal"));
+const ShareModal = dynamic(() => import("./ShareModal"));
 const ConfirmationDialog = dynamic(
   () => import("@/components/shared/ConfirmationDialog"),
 );
@@ -70,6 +71,10 @@ export default function PostCard({
   const [isFollowLoading, setIsFollowLoading] = useState(false);
   const [isUpdatingLostFound, setIsUpdatingLostFound] = useState(false);
   const [showLikesModal, setShowLikesModal] = useState(false);
+  // Mounted on first use (so its code isn't loaded for every card in the
+  // feed) and then kept mounted so closing it can animate out.
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [shareMounted, setShareMounted] = useState(false);
   const [showProfileHover, setShowProfileHover] = useState(false);
   const [hoverCloseTimer, setHoverCloseTimer] = useState<NodeJS.Timeout | null>(
     null,
@@ -233,11 +238,9 @@ export default function PostCard({
   }, [post._id, removePost]);
 
   const handleShare = useCallback(() => {
-    const url = `${window.location.origin}/?postId=${post._id}`;
-    navigator.clipboard.writeText(url).then(() => {
-      toast.success("Post link copied to clipboard");
-    });
-  }, [post._id]);
+    setShareMounted(true);
+    setShowShareModal(true);
+  }, []);
 
   const handleViewProfile = useCallback(() => {
     if (canOpenAuthorProfile && authorId) {
@@ -800,6 +803,19 @@ export default function PostCard({
         onConfirm={handleDelete}
         onCancel={() => setShowDeleteDialog(false)}
       />
+
+      {shareMounted && (
+        <ShareModal
+          isOpen={showShareModal}
+          onClose={() => setShowShareModal(false)}
+          post={currentPost}
+          // Anonymous posts are shared as anonymous — even by their own
+          // author, since the link and its preview are public.
+          authorName={
+            isAnonymousPost ? "Anonymous" : authorDisplayName || "A student"
+          }
+        />
+      )}
 
       <LikesModal
         postId={post._id}

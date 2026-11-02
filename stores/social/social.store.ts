@@ -5,6 +5,7 @@ import {
   deletePost,
   getFeed,
   getUserPosts,
+  getPost,
   getUserProfile,
   getComments,
   getCommentReplies,
@@ -43,6 +44,14 @@ import useAuthStore from "@/stores/user/authStore";
  * TYPES
  * ═══════════════════════════════════════════════════════════════════════════════
  */
+
+/**
+ * Where a post opened from a shared link (/post/:id) is kept. It lives in
+ * `userPosts` under a reserved key so that every existing action — like,
+ * follow, edit, delete, comment counts — updates it with no special casing,
+ * since they already patch every list in that map.
+ */
+export const PERMALINK_KEY = "__permalink__";
 
 interface PostsState {
   feed: Post[];
@@ -106,6 +115,8 @@ interface SocialStore
     lostFoundStatus?: LostFoundStatus | "all",
   ) => Promise<void>;
   fetchUserPosts: (userId: string, page?: number) => Promise<void>;
+  loadPermalinkPost: (postId: string) => Promise<Post>;
+  clearPermalinkPost: () => void;
   createNewPost: (data: FormData) => Promise<void>;
   updatePost: (postId: string, data: FormData) => Promise<void>;
   removePost: (postId: string) => Promise<void>;
@@ -168,6 +179,8 @@ const initialState: Omit<
   keyof {
     fetchFeed: unknown;
     fetchUserPosts: unknown;
+    loadPermalinkPost: unknown;
+    clearPermalinkPost: unknown;
     createNewPost: unknown;
     updatePost: unknown;
     removePost: unknown;
@@ -698,6 +711,25 @@ export const useSocialStore = create<SocialStore>((set, get) => ({
       throw error;
     }
   },
+
+  loadPermalinkPost: async (postId: string) => {
+    const res = await getPost(postId);
+    const raw = res.data?.post;
+    if (!raw) throw new Error("Post not found");
+    const post = normalizePost(raw);
+    set((state) => ({
+      userPosts: new Map(state.userPosts).set(PERMALINK_KEY, [post]),
+      followStats: mergeFollowStatsFromPosts(state.followStats, [post]),
+    }));
+    return post;
+  },
+
+  clearPermalinkPost: () =>
+    set((state) => {
+      const next = new Map(state.userPosts);
+      next.delete(PERMALINK_KEY);
+      return { userPosts: next };
+    }),
 
   createNewPost: async (data: FormData) => {
     set({ isLoading: true, error: null });
