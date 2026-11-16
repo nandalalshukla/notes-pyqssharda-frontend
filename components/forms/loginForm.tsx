@@ -70,7 +70,9 @@ const LoginForm = () => {
         ?.status;
       if (status === 403 && !isDeactivatedAccountError(error)) {
         sessionStorage.setItem("verifyEmail", email);
-        toast.error("Verify your email to continue — we've sent a new OTP");
+        toast.error(
+          "Verify your email to continue. Use the latest code or request another after one minute.",
+        );
         router.push("/auth/verify-email");
         return;
       }

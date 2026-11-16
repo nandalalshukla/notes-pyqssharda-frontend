@@ -90,10 +90,12 @@ const RegisterForm = () => {
     setLoading(true);
 
     try {
-      await register({ name, username, email, password, confirmPassword });
+      const response = await register({ name, username, email, password, confirmPassword });
       sessionStorage.setItem("verifyEmail", email);
-      toast.success("Registration successful!");
-      toast.success("Please verify the OTP sent to your email.");
+      toast.success(
+        response.data?.message ||
+          "Account created. Verify your email within 24 hours to keep your account.",
+      );
 
       // ✅ Clear form
       setFormData({

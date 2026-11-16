@@ -378,11 +378,12 @@ export const deleteComment = async (postId: string, commentId: string) => {
  * ═══════════════════════════════════════════════════════════════════════════════
  */
 
-export const toggleLike = async (
+export const setLikeState = async (
   targetId: string,
   targetType: "post" | "comment",
+  liked: boolean,
 ) => {
-  const response = await api.post<
+  const response = await api.put<
     ApiResponse<{
       liked: boolean;
       likeCount: number;
@@ -390,9 +391,10 @@ export const toggleLike = async (
       targetId: string;
       targetType: string;
     }>
-  >("/social/likes/toggle", {
+  >("/social/likes/state", {
     targetId,
     targetType,
+    liked,
   });
   return response.data;
 };

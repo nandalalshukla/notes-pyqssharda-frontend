@@ -12,7 +12,7 @@ import {
   createComment,
   editComment,
   deleteComment,
-  toggleLike,
+  setLikeState,
   toggleFollow,
   getFollowers,
   getFollowing,
@@ -603,20 +603,23 @@ const updateAuthorFollowEverywhere = (
  * the tapping stops, the desired state is compared against what the server
  * is known to hold:
  *
- *   - different  -> send exactly one toggle
+ *   - different  -> send the desired state
  *   - the same   -> send nothing at all
  *
  * An even number of taps therefore costs zero requests, and no burst of
- * tapping can ever produce more than one write per target.
+ * tapping is serialized per target; writes use an explicit desired state.
  */
 const LIKE_FLUSH_MS = 600;
 
 interface PendingLike {
-  timer: ReturnType<typeof setTimeout>;
+  timer: ReturnType<typeof setTimeout> | null;
   /** What the server held when this burst started — the baseline to diff against. */
   serverLiked: boolean;
   /** The like count the server held then, so a failure can restore it exactly. */
   serverCount: number;
+  /** Latest user intent; requests are serialized until this matches serverLiked. */
+  desired: boolean;
+  running: boolean;
 }
 
 const pendingLikes = new Map<string, PendingLike>();
@@ -1326,36 +1329,47 @@ export const useSocialStore = create<SocialStore>((set, get) => ({
 
     apply(nextLiked, nextCount);
 
-    if (pending) clearTimeout(pending.timer);
+    const entry = pending ?? {
+      timer: null,
+      serverLiked,
+      serverCount,
+      desired: nextLiked,
+      running: false,
+    };
+    entry.desired = nextLiked;
+    if (entry.timer) clearTimeout(entry.timer);
+    pendingLikes.set(key, entry);
 
-    const timer = setTimeout(async () => {
-      pendingLikes.delete(key);
-
-      const settled =
-        get().feed.find((p) => p._id === postId) ||
-        Array.from(get().userPosts.values())
-          .flat()
-          .find((p) => p._id === postId);
-      const desired = Boolean(settled?.likedByCurrentUser);
-
-      // Back where we started — the server already holds this, so there is
-      // nothing to write.
-      if (desired === serverLiked) return;
-
+    const flush = async (): Promise<void> => {
+      if (entry.running) return;
+      entry.timer = null;
+      entry.running = true;
       try {
-        const res = await toggleLike(postId, "post");
-        const liked = res.data?.liked ?? desired;
-        const count = res.data?.likeCount ?? res.data?.likes;
-        // Reconcile with the server's own numbers, which are authoritative
-        // once other people's likes are in play.
-        apply(liked, count ?? get().feed.find((p) => p._id === postId)?.likes ?? 0);
-      } catch (error: unknown) {
-        apply(serverLiked, serverCount);
-        set({ error: getErrorMessage(error) || "Failed to update like" });
-      }
-    }, LIKE_FLUSH_MS);
+        while (entry.desired !== entry.serverLiked) {
+          const requestedState = entry.desired;
+          const res = await setLikeState(postId, "post", requestedState);
+          entry.serverLiked = res.data?.liked ?? requestedState;
+          entry.serverCount = res.data?.likeCount ?? res.data?.likes ?? entry.serverCount;
 
-    pendingLikes.set(key, { timer, serverLiked, serverCount });
+          // Preserve a newer tap made while the request was in flight.
+          const optimisticCount = Math.max(
+            0,
+            entry.serverCount + (entry.desired === entry.serverLiked ? 0 : entry.desired ? 1 : -1),
+          );
+          apply(entry.desired, optimisticCount);
+        }
+      } catch (error: unknown) {
+        apply(entry.serverLiked, entry.serverCount);
+        set({ error: getErrorMessage(error) || "Failed to update like" });
+      } finally {
+        entry.running = false;
+        if (pendingLikes.get(key) === entry) pendingLikes.delete(key);
+      }
+    };
+
+    if (!entry.running) {
+      entry.timer = setTimeout(() => void flush(), LIKE_FLUSH_MS);
+    }
   },
 
   toggleCommentLike: async (commentId: string) => {
@@ -1407,26 +1421,45 @@ export const useSocialStore = create<SocialStore>((set, get) => ({
 
     apply(nextLiked, nextCount);
 
-    if (pending) clearTimeout(pending.timer);
+    const entry = pending ?? {
+      timer: null,
+      serverLiked,
+      serverCount,
+      desired: nextLiked,
+      running: false,
+    };
+    entry.desired = nextLiked;
+    if (entry.timer) clearTimeout(entry.timer);
+    pendingLikes.set(key, entry);
 
-    const timer = setTimeout(async () => {
-      pendingLikes.delete(key);
-
-      const desired = Boolean(findComment()?.likedByCurrentUser);
-      if (desired === serverLiked) return;
-
+    const flush = async (): Promise<void> => {
+      if (entry.running) return;
+      entry.timer = null;
+      entry.running = true;
       try {
-        const res = await toggleLike(commentId, "comment");
-        const liked = res.data?.liked ?? desired;
-        const count = res.data?.likeCount ?? res.data?.likes;
-        apply(liked, count ?? findComment()?.likes ?? 0);
+        while (entry.desired !== entry.serverLiked) {
+          const requestedState = entry.desired;
+          const res = await setLikeState(commentId, "comment", requestedState);
+          entry.serverLiked = res.data?.liked ?? requestedState;
+          entry.serverCount = res.data?.likeCount ?? res.data?.likes ?? entry.serverCount;
+          const optimisticCount = Math.max(
+            0,
+            entry.serverCount + (entry.desired === entry.serverLiked ? 0 : entry.desired ? 1 : -1),
+          );
+          apply(entry.desired, optimisticCount);
+        }
       } catch (error: unknown) {
-        apply(serverLiked, serverCount);
+        apply(entry.serverLiked, entry.serverCount);
         set({ error: getErrorMessage(error) || "Failed to update like" });
+      } finally {
+        entry.running = false;
+        if (pendingLikes.get(key) === entry) pendingLikes.delete(key);
       }
-    }, LIKE_FLUSH_MS);
+    };
 
-    pendingLikes.set(key, { timer, serverLiked, serverCount });
+    if (!entry.running) {
+      entry.timer = setTimeout(() => void flush(), LIKE_FLUSH_MS);
+    }
   },
 
   /**

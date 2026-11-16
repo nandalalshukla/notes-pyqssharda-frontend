@@ -1,12 +1,17 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useSyncExternalStore } from "react";
 import { toast } from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import { verifyEmail, resendOtp } from "@/lib/api/user/auth.api";
 import useAuthStore from "@/stores/user/authStore";
-import { getErrorMessage } from "@/lib/utils/errorHandler";
+import { getApiError, getErrorMessage } from "@/lib/utils/errorHandler";
 import { Button, Input } from "@/components/ui";
+
+const subscribeToSessionStorage = () => () => {};
+const getStoredVerificationEmail = () =>
+  typeof window === "undefined" ? null : sessionStorage.getItem("verifyEmail");
+const getServerVerificationEmail = () => null;
 
 const VerifyEmailForm = () => {
   const router = useRouter();
@@ -14,21 +19,21 @@ const VerifyEmailForm = () => {
     (s) => s.completeEmailVerification,
   );
   const [otp, setOtp] = useState("");
-  const [email, setEmail] = useState<string | null>(null);
+  const email = useSyncExternalStore(
+    subscribeToSessionStorage,
+    getStoredVerificationEmail,
+    getServerVerificationEmail,
+  );
   const [loading, setLoading] = useState(false);
   const [resending, setResending] = useState(false);
 
-  // ✅ Read email safely on client
+  // Read the browser-only address after hydration without setting state
+  // synchronously from an effect (which also avoids a server/client mismatch).
   useEffect(() => {
-    const storedEmail = sessionStorage.getItem("verifyEmail");
-
-    if (!storedEmail) {
+    if (!email) {
       router.push("/auth/register");
-      return;
     }
-
-    setEmail(storedEmail);
-  }, [router]);
+  }, [email, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -70,7 +75,15 @@ const VerifyEmailForm = () => {
         router.push("/auth/login");
       }
     } catch (error: unknown) {
-      const message = getErrorMessage(error);
+      const apiError = getApiError(error);
+      const message = apiError.message;
+
+      if (apiError.code === "REGISTRATION_EXPIRED") {
+        sessionStorage.removeItem("verifyEmail");
+        toast.error(message);
+        router.replace("/auth/register");
+        return;
+      }
 
       // An email that's already verified has nothing left to do here —
       // usually a stale tab, or a second submit of the same OTP. Sending
@@ -94,8 +107,11 @@ const VerifyEmailForm = () => {
 
     setResending(true);
     try {
-      await resendOtp({ email });
-      toast.success("A new OTP is on its way");
+      const response = await resendOtp({ email });
+      toast.success(
+        response.data?.message ||
+          "If your registration is still active, a verification code will be sent. Codes expire after 10 minutes.",
+      );
     } catch (error: unknown) {
       toast.error(getErrorMessage(error) || "Could not resend the OTP");
     } finally {
@@ -162,7 +178,22 @@ const VerifyEmailForm = () => {
           </Button>
 
           <p className="rounded-lg border border-border bg-muted px-4 py-2 text-center text-xs text-muted-foreground">
-            Check your spam folder if you did not receive the OTP.
+            Check your spam folder if you did not receive the code. Codes
+            expire after 10 minutes; your registration expires after 24 hours.
+          </p>
+          <p className="text-center text-xs text-muted-foreground">
+            If your registration has expired,{" "}
+            <button
+              type="button"
+              onClick={() => {
+                sessionStorage.removeItem("verifyEmail");
+                router.push("/auth/register");
+              }}
+              className="font-semibold text-primary underline underline-offset-2"
+            >
+              create a new account
+            </button>
+            .
           </p>
         </div>
       </form>
