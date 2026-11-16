@@ -6,6 +6,7 @@ import { toast } from "react-hot-toast";
 import { register } from "@/lib/api/user/auth.api";
 import { FiEye, FiEyeOff } from "react-icons/fi";
 import { Button, Input } from "@/components/ui";
+import { getApiError } from "@/lib/utils/errorHandler";
 
 const RegisterForm = () => {
   const router = useRouter();
@@ -56,13 +57,28 @@ const RegisterForm = () => {
       return;
     }
 
-    if (!email.endsWith("@ug.sharda.ac.in")) {
+    if (!email.trim().toLowerCase().endsWith("@ug.sharda.ac.in")) {
       toast.error("Please use your Sharda email");
       return;
     }
 
-    if (password.length < 6) {
-      toast.error("Password must be at least 6 characters");
+    if (password.length < 8 || password.length > 128) {
+      toast.error("Password must be between 8 and 128 characters");
+      return;
+    }
+
+    if (!/[a-z]/.test(password)) {
+      toast.error("Password must contain at least one lowercase letter");
+      return;
+    }
+
+    if (!/[A-Z]/.test(password)) {
+      toast.error("Password must contain at least one uppercase letter");
+      return;
+    }
+
+    if (!/[0-9]/.test(password)) {
+      toast.error("Password must contain at least one number");
       return;
     }
 
@@ -91,9 +107,7 @@ const RegisterForm = () => {
       // ✅ Navigate to FRONTEND verify page
       router.push("/auth/verify-email");
     } catch (error: unknown) {
-      const errorMessage =
-        error instanceof Error ? error.message : "Registration failed";
-      toast.error(errorMessage);
+      toast.error(getApiError(error).message);
     } finally {
       setLoading(false);
     }

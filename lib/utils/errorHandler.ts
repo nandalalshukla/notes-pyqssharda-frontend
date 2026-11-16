@@ -56,6 +56,29 @@ function statusFallback(status: number): string {
   return GENERIC_MESSAGE;
 }
 
+/** HTTP status text and Axios' default message describe the protocol, not the
+ * action the user can take. Prefer the backend's validation details or a
+ * human-readable status fallback when a server/proxy returns one of these. */
+function isTechnicalMessage(message: string): boolean {
+  const value = message.trim();
+  return (
+    /^(?:request failed with status code\s+)?\d{3}(?:\s+[\w ]+)?$/i.test(value) ||
+    /^(?:bad request|unauthorized|forbidden|not found|conflict|unprocessable entity|internal server error|service unavailable)$/i.test(value)
+  );
+}
+
+function firstFieldMessage(errors: unknown): string | undefined {
+  if (!errors || typeof errors !== "object") return undefined;
+  for (const value of Object.values(errors)) {
+    if (typeof value === "string" && value.trim()) return value;
+    if (Array.isArray(value)) {
+      const first = value.find((item) => typeof item === "string" && item.trim());
+      if (typeof first === "string") return first;
+    }
+  }
+  return undefined;
+}
+
 /**
  * Structured version — use this when a caller needs more than just a
  * string (a `code` to branch on, `fieldErrors` to attach to a form,
@@ -67,14 +90,23 @@ export function getApiError(error: unknown): ApiError {
       const body = error.response.data as
         | {
             message?: string;
+            error?: string | { message?: string };
             code?: string;
             errors?: Record<string, string>;
             data?: unknown;
             retryAfter?: number;
           }
         | undefined;
+      const serverMessages = [
+        body?.message,
+        typeof body?.error === "string" ? body.error : body?.error?.message,
+      ].filter((value): value is string => typeof value === "string" && Boolean(value.trim()));
+      const message =
+        serverMessages.find((value) => !isTechnicalMessage(value)) ||
+        firstFieldMessage(body?.errors) ||
+        statusFallback(error.response.status);
       return {
-        message: body?.message || statusFallback(error.response.status),
+        message,
         status: error.response.status,
         code: body?.code,
         fieldErrors: body?.errors,
@@ -105,11 +137,19 @@ export function getApiError(error: unknown): ApiError {
   }
 
   if (error instanceof Error) {
-    return { message: error.message, isNetworkError: false, isTimeout: false };
+    return {
+      message: isTechnicalMessage(error.message) ? GENERIC_MESSAGE : error.message,
+      isNetworkError: false,
+      isTimeout: false,
+    };
   }
 
   if (typeof error === "string") {
-    return { message: error, isNetworkError: false, isTimeout: false };
+    return {
+      message: isTechnicalMessage(error) ? GENERIC_MESSAGE : error,
+      isNetworkError: false,
+      isTimeout: false,
+    };
   }
 
   return { message: GENERIC_MESSAGE, isNetworkError: false, isTimeout: false };

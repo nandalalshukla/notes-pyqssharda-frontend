@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { getErrorMessage } from "@/lib/utils/errorHandler";
 import {
   getAllUsers,
   deleteUser,
@@ -79,8 +80,7 @@ export const useAdminStore = create<AdminState>((set, get) => ({
       const res = await getAllUsers();
       set({ users: res.users, isLoading: false });
     } catch (err: unknown) {
-      const message =
-        err instanceof Error ? err.message : "Failed to fetch users";
+      const message = getErrorMessage(err);
       set({ isLoading: false, error: message });
     }
   },
@@ -91,8 +91,7 @@ export const useAdminStore = create<AdminState>((set, get) => ({
       const res = await getActiveUsers();
       set({ activeUsers: res.users || [], isLoading: false });
     } catch (err: unknown) {
-      const message =
-        err instanceof Error ? err.message : "Failed to fetch active users";
+      const message = getErrorMessage(err);
       set({
         isLoading: false,
         error: message,
@@ -106,8 +105,7 @@ export const useAdminStore = create<AdminState>((set, get) => ({
       const res = await getInactiveUsers();
       set({ inactiveUsers: res.users || [], isLoading: false });
     } catch (err: unknown) {
-      const message =
-        err instanceof Error ? err.message : "Failed to fetch inactive users";
+      const message = getErrorMessage(err);
       set({
         isLoading: false,
         error: message,
@@ -121,8 +119,7 @@ export const useAdminStore = create<AdminState>((set, get) => ({
       const res = await getAllMods();
       set({ mods: res.mods, isLoading: false });
     } catch (err: unknown) {
-      const message =
-        err instanceof Error ? err.message : "Failed to fetch mods";
+      const message = getErrorMessage(err);
       set({ isLoading: false, error: message });
     }
   },
@@ -134,8 +131,7 @@ export const useAdminStore = create<AdminState>((set, get) => ({
       // Backend returns { success: true, mods: [...] } for mod requests
       set({ modRequests: res.mods || [], isLoading: false });
     } catch (err: unknown) {
-      const message =
-        err instanceof Error ? err.message : "Failed to fetch requests";
+      const message = getErrorMessage(err);
       set({
         isLoading: false,
         error: message,

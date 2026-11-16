@@ -11,6 +11,7 @@ import {
   rejectSyllabus,
 } from "@/lib/api/mod/mod.api";
 import { toast } from "react-hot-toast";
+import { getErrorMessage } from "@/lib/utils/errorHandler";
 
 // Simplified generic interface for pending items
 interface PendingItem {
@@ -30,7 +31,7 @@ interface PendingItem {
   };
   createdAt?: string;
   status?: string;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 interface ModState {
@@ -53,7 +54,7 @@ type PendingNotesResponse = { notes?: PendingItem[] };
 type PendingPyqsResponse = { pyqs?: PendingItem[] };
 type PendingSyllabusResponse = { syllabus?: PendingItem[] };
 
-export const useModStore = create<ModState>((set, get) => ({
+export const useModStore = create<ModState>((set) => ({
   pendingNotes: [],
   pendingPyqs: [],
   pendingSyllabus: [],
@@ -85,8 +86,7 @@ export const useModStore = create<ModState>((set, get) => ({
         isLoading: false,
       });
     } catch (err: unknown) {
-      const errorMessage =
-        err instanceof Error ? err.message : "Failed to fetch pending content";
+      const errorMessage = getErrorMessage(err);
       set({
         isLoading: false,
         error: errorMessage,
@@ -115,8 +115,7 @@ export const useModStore = create<ModState>((set, get) => ({
         }));
       }
     } catch (err: unknown) {
-      const errorMessage =
-        err instanceof Error ? err.message : `Failed to approve ${type}`;
+      const errorMessage = getErrorMessage(err);
       set({ error: errorMessage });
       console.error(`Failed to approve ${type}`, err);
       throw new Error(errorMessage);
@@ -147,8 +146,7 @@ export const useModStore = create<ModState>((set, get) => ({
         }));
       }
     } catch (err: unknown) {
-      const errorMessage =
-        err instanceof Error ? err.message : `Failed to reject ${type}`;
+      const errorMessage = getErrorMessage(err);
       set({ error: errorMessage });
       console.error(`Failed to reject ${type}`, err);
       throw new Error(errorMessage);

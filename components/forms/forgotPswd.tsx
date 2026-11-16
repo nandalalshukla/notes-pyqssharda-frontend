@@ -5,6 +5,7 @@ import { useState } from "react";
 import { toast } from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import { Button, Input } from "@/components/ui";
+import { getErrorMessage } from "@/lib/utils/errorHandler";
 
 const ForgotPasswordForm = () => {
   const [email, setEmail] = useState("");
@@ -29,14 +30,7 @@ const ForgotPasswordForm = () => {
       setEmail("");
       router.push("/auth/reset-password");
     } catch (error: unknown) {
-      const message =
-        error instanceof Error && "response" in error
-          ? (error as { response: { data: { message: string } } }).response
-              ?.data?.message
-          : undefined;
-      toast.error(
-        message || "We are experiencing high traffic. Please try again later.",
-      );
+      toast.error(getErrorMessage(error));
     } finally {
       setLoading(false);
     }

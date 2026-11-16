@@ -6,6 +6,7 @@ import { requestModRole } from "@/lib/api/user/user.api";
 import useAuthStore from "@/stores/user/authStore";
 import { FiShield, FiCheckCircle, FiAlertCircle, FiClock } from "react-icons/fi";
 import { Button, Input, Modal, Textarea } from "@/components/ui";
+import { getErrorMessage } from "@/lib/utils/errorHandler";
 
 interface ModRequestFormProps {
   isOpen: boolean;
@@ -70,9 +71,7 @@ export default function ModRequestForm({
       if (onSuccess) onSuccess();
       if (onClose) onClose();
     } catch (error: unknown) {
-      const errorMessage =
-        error instanceof Error ? error.message : "Failed to submit request";
-      toast.error(errorMessage);
+      toast.error(getErrorMessage(error));
     } finally {
       setLoading(false);
     }
