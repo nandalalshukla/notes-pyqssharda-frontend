@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useEffect, useState, useRef, useCallback } from "react";
+import React, { useEffect, useLayoutEffect, useState, useRef, useCallback } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import { getUserProfile, UserProfile } from "@/lib/api/social/social.api";
 import useAuthStore from "@/stores/user/authStore";
@@ -13,13 +14,20 @@ import { cn } from "@/lib/utils/cn";
 
 interface ProfileCardHoverProps {
   userId: string;
+  anchorRef: React.RefObject<HTMLElement | null>;
   onClose?: () => void;
   onMouseEnter?: () => void;
   className?: string;
 }
 
+function getPortalRoot(): HTMLElement | null {
+  if (typeof document === "undefined") return null;
+  return document.getElementById("headlessui-portal-root") ?? document.body;
+}
+
 const ProfileCardHover = ({
   userId,
+  anchorRef,
   onClose,
   onMouseEnter,
   className = "",
@@ -28,12 +36,64 @@ const ProfileCardHover = ({
   const [isLoading, setIsLoading] = useState(true);
   const [isFollowLoading, setIsFollowLoading] = useState(false);
   const [isFollowing, setIsFollowing] = useState(false);
+  const portalRoot = getPortalRoot();
   const cardRef = useRef<HTMLDivElement>(null);
   const closeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const { user: currentUser } = useAuthStore();
   const { toggleUserFollow, followStats } = useSocialStore();
   const storeFollowStatus = followStats.get(userId)?.isFollowedByCurrentUser;
   const isFollowingCurrent = storeFollowStatus ?? isFollowing;
+
+  useEffect(() => {
+    return () => {
+      if (closeTimeoutRef.current) clearTimeout(closeTimeoutRef.current);
+    };
+  }, []);
+
+  useLayoutEffect(() => {
+    const card = cardRef.current;
+    if (!portalRoot || !card) return;
+
+    const updatePosition = () => {
+      const anchor = anchorRef.current;
+      if (!anchor) return;
+
+      const rect = anchor.getBoundingClientRect();
+      const margin = 12;
+      const gap = 8;
+      const width = Math.min(320, window.innerWidth - margin * 2);
+      const desiredHeight = Math.min(390, window.innerHeight - margin * 2);
+      const spaceBelow = window.innerHeight - rect.bottom - gap - margin;
+      const spaceAbove = rect.top - gap - margin;
+      const placeBelow =
+        spaceBelow >= desiredHeight ||
+        (spaceBelow >= spaceAbove && rect.bottom < window.innerHeight - margin);
+      const maxHeight = Math.max(
+        180,
+        Math.min(desiredHeight, placeBelow ? spaceBelow : spaceAbove),
+      );
+      const left = Math.min(
+        Math.max(margin, rect.left),
+        Math.max(margin, window.innerWidth - width - margin),
+      );
+      const top = placeBelow
+        ? Math.min(rect.bottom + gap, window.innerHeight - margin - maxHeight)
+        : Math.max(margin, rect.top - gap - maxHeight);
+
+      card.style.left = `${left}px`;
+      card.style.top = `${top}px`;
+      card.style.maxHeight = `${maxHeight}px`;
+      card.style.visibility = "visible";
+    };
+
+    updatePosition();
+    window.addEventListener("resize", updatePosition);
+    window.addEventListener("scroll", updatePosition, true);
+    return () => {
+      window.removeEventListener("resize", updatePosition);
+      window.removeEventListener("scroll", updatePosition, true);
+    };
+  }, [anchorRef, portalRoot]);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -104,16 +164,20 @@ const ProfileCardHover = ({
     onMouseEnter?.();
   };
 
-  return (
-    <div
-      ref={cardRef}
-      onMouseEnter={handleMouseEnterLocal}
-      onMouseLeave={handleMouseLeave}
-      className={cn(
-        "animate-in fade-in zoom-in-95 w-80 overflow-hidden rounded-2xl border border-border bg-card shadow-soft-lg duration-200",
-        className,
-      )}
-    >
+  if (!portalRoot) return null;
+
+  return createPortal(
+    <div className="pointer-events-none fixed inset-0 z-50">
+      <div
+        ref={cardRef}
+        onMouseEnter={handleMouseEnterLocal}
+        onMouseLeave={handleMouseLeave}
+        style={{ visibility: "hidden", maxHeight: "calc(100dvh - 1.5rem)" }}
+        className={cn(
+          "animate-in fade-in zoom-in-95 pointer-events-auto fixed z-[1] w-[min(20rem,calc(100vw-1.5rem))] overflow-y-auto overscroll-contain rounded-2xl border border-border bg-card shadow-soft-lg duration-200",
+          className,
+        )}
+      >
       {isLoading ? (
         <div className="flex h-96 items-center justify-center bg-card">
           <div className="flex flex-col items-center gap-2">
@@ -220,7 +284,9 @@ const ProfileCardHover = ({
           </div>
         </div>
       ) : null}
-    </div>
+      </div>
+    </div>,
+    portalRoot,
   );
 };
 

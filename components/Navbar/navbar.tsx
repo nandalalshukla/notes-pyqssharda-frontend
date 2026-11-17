@@ -22,8 +22,8 @@ const Navbar = () => {
     <nav
       className={`sticky top-0 z-50 border-b transition-all duration-300 ${
         isScrolled
-          ? "border-border bg-background/90 shadow-soft-sm backdrop-blur-xl"
-          : "border-transparent bg-background/80 backdrop-blur-xl"
+          ? "border-border bg-background shadow-soft-sm"
+          : "border-transparent bg-background"
       }`}
     >
       <div className="hidden md:block">

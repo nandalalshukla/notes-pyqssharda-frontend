@@ -30,7 +30,7 @@ export default function PostModerationBanner({
 
   return (
     <div
-      className={`mx-5 mt-4 rounded-xl border p-4 ${
+      className={`mt-4 rounded-xl border p-4 ${
         isRejected
           ? "border-destructive/30 bg-destructive/5"
           : "border-warning/30 bg-warning/10"

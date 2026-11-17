@@ -187,7 +187,7 @@ export default function PostPermalinkModal({ postId, closeHref = "/" }: PostPerm
         aria-modal="true"
         aria-label="Post"
         tabIndex={-1}
-        className="animate-fade-in-up relative flex max-h-[92vh] w-full max-w-2xl flex-col rounded-2xl border border-border bg-card shadow-soft-lg outline-none"
+        className="animate-fade-in-up relative flex max-h-[92vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-soft-lg outline-none"
       >
         <div className="flex items-center justify-between border-b border-border px-5 py-3.5">
           <h2 className="text-lg font-bold text-foreground">Post</h2>
@@ -201,7 +201,7 @@ export default function PostPermalinkModal({ postId, closeHref = "/" }: PostPerm
           </button>
         </div>
 
-        <div className="overflow-y-auto overscroll-contain bg-background p-3 sm:p-4">
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain bg-background p-3 sm:p-4">
           {(status === "loading" || (status === "ready" && !post)) && (
             <div aria-busy="true" aria-live="polite">
               <PostCardSkeleton />

@@ -55,7 +55,7 @@ export default function LostFoundDetails({ details }: LostFoundDetailsProps) {
     : null;
 
   return (
-    <div className="mx-5 mt-4 rounded-xl border border-border bg-muted/40 p-4">
+    <div className="mt-4 space-y-3">
       <div className="mb-3 flex flex-wrap items-center gap-2">
         <Badge variant={isResolved ? "default" : kindMeta.badgeVariant}>
           {kindMeta.label}

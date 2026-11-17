@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback, useMemo } from "react";
+import React, { useState, useCallback, useMemo, useRef } from "react";
 import dynamic from "next/dynamic";
 import { useSocialStore } from "@/stores/social/social.store";
 import useAuthStore from "@/stores/user/authStore";
@@ -22,7 +22,6 @@ import {
 } from "react-icons/fi";
 import { FaHeart } from "react-icons/fa";
 import toast from "react-hot-toast";
-import ProfileCardHover from "./ProfileCardHover";
 import Image from "next/image";
 import { Menu, Transition } from "@headlessui/react";
 import { Fragment } from "react";
@@ -47,12 +46,14 @@ interface PostCardProps {
   post: Post;
   className?: string;
   style?: React.CSSProperties;
+  onHoverStart?: (element: HTMLDivElement) => void;
 }
 
 export default function PostCard({
   post,
   className = "",
   style,
+  onHoverStart,
 }: PostCardProps) {
   const router = useRouter();
   const user = useAuthStore((s) => s.user);
@@ -75,10 +76,7 @@ export default function PostCard({
   // feed) and then kept mounted so closing it can animate out.
   const [showShareModal, setShowShareModal] = useState(false);
   const [shareMounted, setShareMounted] = useState(false);
-  const [showProfileHover, setShowProfileHover] = useState(false);
-  const [hoverCloseTimer, setHoverCloseTimer] = useState<NodeJS.Timeout | null>(
-    null,
-  );
+  const cardRef = useRef<HTMLDivElement>(null);
   const [doubleTapLikeAnimation, setDoubleTapLikeAnimation] = useState(false);
   const [reportModal, setReportModal] = useState({
     isOpen: false,
@@ -151,7 +149,6 @@ export default function PostCard({
   const authorRole =
     (currentPost.author as { role?: string } | undefined)?.role ?? undefined;
   const typeMeta = resolvePostTypeMeta(currentPost.type);
-  const TypeIcon = typeMeta.Icon;
 
   // An anonymous post that the *viewer* wrote still arrives with the real
   // author attached (that's how edit/delete stay available to them), so
@@ -273,22 +270,6 @@ export default function PostCard({
     [authorId, router, user],
   );
 
-  const openProfileHover = useCallback(() => {
-    if (hoverCloseTimer) {
-      clearTimeout(hoverCloseTimer);
-    }
-    if (!canOpenAuthorProfile) return;
-    setShowProfileHover(true);
-  }, [canOpenAuthorProfile, hoverCloseTimer]);
-
-  const scheduleProfileHoverClose = useCallback(() => {
-    if (hoverCloseTimer) {
-      clearTimeout(hoverCloseTimer);
-    }
-    const timer = setTimeout(() => setShowProfileHover(false), 250);
-    setHoverCloseTimer(timer);
-  }, [hoverCloseTimer]);
-
   const handleFollow = useCallback(async () => {
     if (!user) {
       toast.error("Please login to follow users");
@@ -359,83 +340,16 @@ export default function PostCard({
   return (
     <>
       <div
+        ref={cardRef}
         style={style}
-        className={`relative isolate overflow-visible rounded-2xl border border-border bg-card shadow-soft-sm transition-all duration-300 hover:shadow-soft-md ${
-          showProfileHover ? "z-50" : "z-0"
-        } ${className}`}
+        onMouseEnter={(event) => onHoverStart?.(event.currentTarget)}
+        onFocusCapture={() => {
+          if (cardRef.current) onHoverStart?.(cardRef.current);
+        }}
+        className={`group/post relative z-10 isolate rounded-xl bg-transparent p-3 sm:px-4 sm:py-3 ${className}`}
       >
-        {/* Header Section */}
-        <div className="flex items-center justify-between border-b border-border px-5 pt-4 pb-3">
-          <div className="relative flex min-w-0 flex-1 items-center gap-3">
-            <span
-              onClick={handleViewProfile}
-              onMouseEnter={openProfileHover}
-              onMouseLeave={scheduleProfileHoverClose}
-              className={`flex-shrink-0 ${
-                canOpenAuthorProfile ? "cursor-pointer" : ""
-              }`}
-            >
-              {hideAuthorIdentity ? (
-                // Not an <Avatar>: rendering the masked author through the
-                // same component that takes a `src` invites a future edit
-                // to pass the real picture straight back in.
-                <span className="flex h-10 w-10 items-center justify-center rounded-full bg-muted text-muted-foreground">
-                  <FiEyeOff size={18} />
-                </span>
-              ) : (
-                <Avatar src={authorImage} alt={authorDisplayName || "User"} size="md" />
-              )}
-            </span>
-            <div className="min-w-0 flex-1">
-              <span
-                className="relative inline-flex w-fit flex-col min-w-0"
-                onMouseEnter={openProfileHover}
-                onMouseLeave={scheduleProfileHoverClose}
-              >
-                <p
-                  className={`truncate text-sm font-semibold text-foreground underline-offset-2 decoration-2 transition-opacity ${
-                    canOpenAuthorProfile ? "cursor-pointer hover:underline" : ""
-                  }`}
-                  onClick={handleViewProfile}
-                >
-                  <span className="inline-flex items-center gap-1">
-                    {authorDisplayName}
-                    {!hideAuthorIdentity && (
-                      <VerifiedBadge role={authorRole} size={12} />
-                    )}
-                  </span>
-                </p>
-                <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                  {formatDate(currentPost.createdAt)}
-                  {/* Only the author needs telling — for everyone else the
-                      byline already reads "Anonymous", and repeating it
-                      here would just say the same thing twice. */}
-                  {isAnonymousPost && isAuthor && (
-                    <span className="inline-flex items-center gap-1">
-                      <span aria-hidden="true">·</span>
-                      <FiEyeOff size={11} />
-                      Posted anonymously
-                    </span>
-                  )}
-                </p>
-
-                {showProfileHover && canOpenAuthorProfile && authorId && (
-                  <ProfileCardHover
-                    userId={authorId}
-                    className="absolute left-0 top-full mt-2 z-[999]"
-                    onClose={() => setShowProfileHover(false)}
-                    onMouseEnter={openProfileHover}
-                  />
-                )}
-              </span>
-            </div>
-          </div>
-
-          <Badge variant={typeMeta.badgeVariant} icon={<TypeIcon size={13} />} className="mr-2 shrink-0">
-            {typeMeta.label}
-          </Badge>
-
-          {/* More Menu */}
+        {/* Keep post actions available without taking space from the content. */}
+        <div className="absolute right-2 top-2 z-10">
           <Menu as="div" className="relative flex-shrink-0">
             <Menu.Button className="rounded-full p-1.5 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground focus:outline-none cursor-pointer">
               <FiMoreVertical className="h-5 w-5" />
@@ -589,11 +503,13 @@ export default function PostCard({
             block, above the free-text body a reader only gets to once the
             item itself has caught their eye. */}
         {isLostFoundPost && lostFound && (
-          <LostFoundDetails details={lostFound} />
+          <div className="pr-8">
+            <LostFoundDetails details={lostFound} />
+          </div>
         )}
 
         {/* Content Section */}
-        <div className="px-5 py-4">
+        <div className="pr-8">
           <p className="whitespace-pre-wrap break-words text-base leading-relaxed text-foreground">
             {post.content}
           </p>
@@ -603,7 +519,7 @@ export default function PostCard({
             (as well as in the overflow menu) because closing an item out is
             the action this post type exists to end on. */}
         {isAuthor && isLostFoundPost && (
-          <div className="px-5 pb-4">
+          <div className="mt-4">
             <button
               type="button"
               onClick={handleToggleLostFoundStatus}
@@ -633,7 +549,7 @@ export default function PostCard({
 
         {/* Media Gallery */}
         {post.files && post.files.length > 0 && (
-          <div className="border-t border-b border-border bg-muted/50 px-5 py-3">
+          <div className="mt-4">
             <div
               className={`grid gap-2 rounded-xl overflow-hidden ${
                 post.files.length === 1
@@ -700,72 +616,128 @@ export default function PostCard({
           </div>
         )}
 
-        {/* Engagement row — hidden entirely while a post is unpublished:
-            likes, comments and a shareable link all presuppose that other
-            people can reach it. */}
-        {!isAwaitingReview && (
-        <div className="flex items-center gap-6 border-t border-border px-5 py-3 text-sm font-semibold text-muted-foreground">
-          {/* Like Section */}
-          <div className="flex items-center gap-2">
+        {/* Author, engagement and category metadata sit together at the foot
+            of the post, leaving the content as the first thing people scan. */}
+        <div
+          className="mt-4 flex flex-wrap items-center justify-between gap-x-4 gap-y-3"
+        >
+          <div
+            className="flex min-w-0 items-center gap-2.5"
+          >
             <button
               type="button"
-              onClick={handleLike}
-              className="group flex items-center p-1 hover:text-destructive cursor-pointer"
+              onClick={handleViewProfile}
+              disabled={!canOpenAuthorProfile}
+              aria-label={canOpenAuthorProfile ? `View ${authorDisplayName}'s profile` : "Anonymous author"}
+              className={`shrink-0 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${canOpenAuthorProfile ? "cursor-pointer" : "cursor-default"}`}
             >
-              {isLiked ? (
-                <FaHeart
-                  size={20}
-                  className="text-destructive group-hover:scale-110"
-                />
+              {hideAuthorIdentity ? (
+                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-muted-foreground">
+                  <FiEyeOff size={15} />
+                </span>
               ) : (
-                <FiHeart size={20} className="group-hover:scale-110" />
+                <Avatar src={authorImage} alt="" size="sm" />
               )}
             </button>
-            <button
-              type="button"
-              onClick={() => setShowLikesModal(true)}
-              disabled={likeCount === 0}
-              className="font-bold text-foreground hover:text-destructive disabled:opacity-50 cursor-pointer"
-            >
-              {likeCount > 1000
-                ? (likeCount / 1000).toFixed(1) + "K"
-                : likeCount}
-            </button>
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
+                <button
+                  type="button"
+                  onClick={handleViewProfile}
+                  disabled={!canOpenAuthorProfile}
+                  className={`truncate text-sm font-semibold text-foreground ${canOpenAuthorProfile ? "cursor-pointer hover:underline" : "cursor-default"}`}
+                >
+                  {authorDisplayName}
+                </button>
+                {!hideAuthorIdentity && <VerifiedBadge role={authorRole} size={13} />}
+                <span className="text-xs text-muted-foreground">
+                  {formatDate(currentPost.createdAt)}
+                </span>
+                {isAnonymousPost && isAuthor && (
+                  <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+                    <FiEyeOff size={11} />
+                    Posted anonymously
+                  </span>
+                )}
+              </div>
+            </div>
           </div>
 
-          {/* Comment Section */}
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={handleComment}
-              className="group flex items-center transition-colors hover:text-primary cursor-pointer"
-            >
-              <FiMessageCircle
-                size={20}
-                className="transition-transform group-hover:scale-110"
-              />
-            </button>
-            <button
-              type="button"
-              onClick={handleComment}
-              className="font-bold text-foreground transition-colors hover:text-primary cursor-pointer"
-            >
-              {post.commentCount}
-            </button>
-          </div>
+          {!isAwaitingReview && (
+            <div className="flex items-center gap-4 text-sm font-small text-muted-foreground">
+              <div className="flex items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={handleLike}
+                  aria-label={isLiked ? "Unlike post" : "Like post"}
+                  className="group flex items-center p-1 transition-colors hover:text-destructive cursor-pointer"
+                >
+                  {isLiked ? (
+                    <FaHeart size={17} className="text-destructive group-hover:scale-110" />
+                  ) : (
+                    <FiHeart size={18} className="group-hover:scale-110" />
+                  )}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowLikesModal(true)}
+                  disabled={likeCount === 0}
+                  className="text-foreground hover:text-destructive disabled:opacity-50 cursor-pointer"
+                >
+                  {likeCount > 1000 ? `${(likeCount / 1000).toFixed(1)}K` : likeCount}
+                </button>
+              </div>
 
-          {/* Share Section */}
-          <button
-            onClick={handleShare}
-            className="group flex items-center transition-colors hover:text-success cursor-pointer"
-          >
-            <FiShare2
-              size={20}
-              className="transition-transform group-hover:scale-110"
-            />
-          </button>
+              <div className="flex items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={handleComment}
+                  aria-label="Open comments"
+                  className="group flex items-center transition-colors hover:text-primary cursor-pointer"
+                >
+                  <FiMessageCircle size={18} className="transition-transform group-hover:scale-110" />
+                </button>
+                <button
+                  type="button"
+                  onClick={handleComment}
+                  className="text-foreground transition-colors hover:text-primary cursor-pointer"
+                >
+                  {post.commentCount}
+                </button>
+              </div>
+
+              <button
+                type="button"
+                onClick={handleShare}
+                aria-label="Share post"
+                className="group flex items-center transition-colors hover:text-success cursor-pointer"
+              >
+                <FiShare2 size={17} className="transition-transform group-hover:scale-110" />
+              </button>
+            </div>
+          )}
         </div>
-        )}
+
+        <div className="mt-2 flex flex-wrap items-center gap-1.5">
+          <Badge variant="default" className="rounded-sm px-2 py-0.5 dark:bg-gray-800 text-xs font-medium">
+            {typeMeta.label}
+          </Badge>
+          {isLostFoundPost && lostFound && (
+            <>
+              <Badge variant="default" className="rounded-md px-2 py-0.5 text-xs font-medium">
+                {lostFound.kind === "found" ? "Found" : "Lost"}
+              </Badge>
+              <Badge variant="default" className="rounded-md px-2 py-0.5 text-xs font-medium">
+                {lostFound.category.replaceAll("_", " ")}
+              </Badge>
+              {isLostFoundResolved && (
+                <Badge variant="default" className="rounded-md px-2 py-0.5 text-xs font-medium">
+                  Resolved
+                </Badge>
+              )}
+            </>
+          )}
+        </div>
       </div>
 
       {/* Comments Modal */}

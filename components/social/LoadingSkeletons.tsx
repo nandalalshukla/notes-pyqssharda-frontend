@@ -4,41 +4,30 @@ import { Skeleton } from "@/components/ui";
 
 export function PostCardSkeleton() {
   return (
-    <div className="group relative overflow-hidden rounded-[28px] border border-border/70 bg-gradient-to-br from-card via-card to-secondary/20 p-5 shadow-[0_20px_50px_-28px_rgba(15,23,42,0.35)] ring-1 ring-black/5 backdrop-blur-sm">
-      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
-
-      <div className="mb-5 flex items-center gap-3">
-        <Skeleton className="h-11 w-11 rounded-full bg-gradient-to-br from-muted/80 via-muted to-muted/60" />
-        <div className="flex-1">
-          <div className="mb-2 flex items-center gap-2">
-            <Skeleton className="h-4 w-28 bg-gradient-to-r from-muted/80 via-muted to-muted/60" />
-            <Skeleton className="h-5 w-16 rounded-full bg-gradient-to-r from-muted/80 via-muted to-muted/60" />
-          </div>
-          <Skeleton className="h-3 w-32 bg-gradient-to-r from-muted/80 via-muted to-muted/60" />
-        </div>
-        <Skeleton className="h-8 w-8 rounded-full bg-gradient-to-r from-muted/80 via-muted to-muted/60" />
+    <div className="rounded-2xl p-4 sm:p-5">
+      <div className="mb-3 space-y-3">
+        <Skeleton className="h-4 w-5/6" />
+        <Skeleton className="h-4 w-4/6" />
       </div>
 
-      <div className="mb-5 space-y-3">
-        <Skeleton className="h-4 w-5/6 bg-gradient-to-r from-muted/80 via-muted to-muted/60" />
-        <Skeleton className="h-4 w-4/6 bg-gradient-to-r from-muted/80 via-muted to-muted/60" />
-        <Skeleton className="h-4 w-2/5 bg-gradient-to-r from-muted/80 via-muted to-muted/60" />
+      <div className="mb-4 overflow-hidden rounded-xl">
+        <Skeleton className="h-36 w-full" />
+      </div>
 
-        <div className="overflow-hidden rounded-2xl border border-border/70 bg-secondary/40 shadow-inner">
-          <Skeleton className="h-32 w-full bg-gradient-to-br from-muted/70 via-muted/50 to-muted/80" />
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2.5">
+          <Skeleton className="h-8 w-8 rounded-full" />
+          <Skeleton className="h-3 w-28" />
+        </div>
+        <div className="flex gap-3">
+          <Skeleton className="h-3 w-8" />
+          <Skeleton className="h-3 w-8" />
         </div>
       </div>
 
-      <div className="mb-4 flex gap-4 border-y border-border/70 py-3">
-        <Skeleton className="h-4 w-16 bg-gradient-to-r from-muted/80 via-muted to-muted/60" />
-        <Skeleton className="h-4 w-20 bg-gradient-to-r from-muted/80 via-muted to-muted/60" />
-        <Skeleton className="ml-auto h-4 w-14 bg-gradient-to-r from-muted/80 via-muted to-muted/60" />
-      </div>
-
-      <div className="flex gap-2">
-        <Skeleton className="h-10 flex-1 rounded-xl bg-gradient-to-r from-muted/80 via-muted to-muted/60" />
-        <Skeleton className="h-10 flex-1 rounded-xl bg-gradient-to-r from-muted/80 via-muted to-muted/60" />
-        <Skeleton className="h-10 flex-1 rounded-xl bg-gradient-to-r from-muted/80 via-muted to-muted/60" />
+      <div className="mt-3 flex gap-1.5">
+        <Skeleton className="h-5 w-16 rounded-md" />
+        <Skeleton className="h-5 w-12 rounded-md" />
       </div>
     </div>
   );
@@ -76,7 +65,7 @@ export function FeedLoadingState() {
     <div
       aria-live="polite"
       aria-busy="true"
-      className="min-h-[60vh] space-y-6 pt-2"
+      className="min-h-[60vh] space-y-1 pt-2"
     >
       {[1, 2, 3].map((i) => (
         <div key={i} className="animate-fade-in [animation-delay:0.04s]">

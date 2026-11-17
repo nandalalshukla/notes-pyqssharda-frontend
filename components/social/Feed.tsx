@@ -1,7 +1,9 @@
 "use client";
 
 import React, { useEffect, useState, useRef } from "react";
+import { Fragment } from "react";
 import dynamic from "next/dynamic";
+import { Menu, Transition } from "@headlessui/react";
 import { useSocialStore } from "@/stores/social/social.store";
 import useAuthStore from "@/stores/user/authStore";
 import PostCard from "./PostCard";
@@ -10,10 +12,10 @@ import { FeedLoadingState, PostCardSkeleton } from "./LoadingSkeletons";
 
 // Only rendered after clicking "New Post" — keep it out of the initial bundle.
 const CreatePostModal = dynamic(() => import("./CreatePostModal"));
-import { FiPlus, FiStar, FiFileText } from "react-icons/fi";
+import { FiPlus, FiStar, FiFileText, FiSliders } from "react-icons/fi";
 import { LostFoundStatus, PostType } from "@/lib/api/social/social.api";
 import { postTypeOptions, resolvePostTypeMeta } from "./postMeta";
-import { Button, EmptyState, Tabs } from "@/components/ui";
+import { Button, EmptyState } from "@/components/ui";
 
 const feedSections = postTypeOptions.map((meta) => ({
   value: meta.value,
@@ -55,12 +57,30 @@ export default function Feed() {
   const [activeSection, setActiveSection] = useState<PostType>("general");
   const [lostFoundFilter, setLostFoundFilter] =
     useState<LostFoundFilter>("all");
+  const [hasAttemptedInitialLoad, setHasAttemptedInitialLoad] = useState(false);
 
-  const previousAuthState = useRef<boolean | null>(null);
-  const previousSection = useRef<PostType>("general");
-  const previousLostFoundFilter = useRef<LostFoundFilter>("all");
   const loadMoreSentinelRef = useRef<HTMLDivElement>(null);
-  const hasAttemptedInitialLoad = useRef(false);
+  const postListRef = useRef<HTMLDivElement>(null);
+  const [hoverRect, setHoverRect] = useState<{
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  } | null>(null);
+
+  const handlePostHover = (element: HTMLDivElement) => {
+    const list = postListRef.current;
+    if (!list) return;
+
+    const listRect = list.getBoundingClientRect();
+    const postRect = element.getBoundingClientRect();
+    setHoverRect({
+      x: postRect.left - listRect.left + list.scrollLeft,
+      y: postRect.top - listRect.top + list.scrollTop,
+      width: postRect.width,
+      height: postRect.height,
+    });
+  };
 
   const isLostFoundSection = activeSection === "lost_found";
   const isOpportunitySection = activeSection === "opportunity";
@@ -75,44 +95,23 @@ export default function Feed() {
   const isLoadingMore = isLoadingFeed && currentPage > 1;
   const shouldShowFeedSkeleton = isLoadingFeed && feed.length === 0;
   const shouldShowEmptyState =
-    !isLoadingFeed && feed.length === 0 && hasAttemptedInitialLoad.current;
+    !isLoadingFeed && feed.length === 0 && hasAttemptedInitialLoad;
+
+  const selectSection = (section: PostType) => {
+    if (section !== activeSection) setCurrentPage(1);
+    setActiveSection(section);
+  };
+
+  const selectLostFoundFilter = (filter: LostFoundFilter) => {
+    if (filter !== lostFoundFilter) setCurrentPage(1);
+    setLostFoundFilter(filter);
+  };
 
   useEffect(() => {
     if (!authInitialized) return;
-
-    hasAttemptedInitialLoad.current = true;
-
-    // Changing section or the lost & found filter is a new list, not more
-    // of the current one — reset to page 1 first and let the reset's own
-    // render do the fetching, so an in-flight page 3 can't append rows
-    // from the section the user just left.
-    if (
-      previousSection.current !== activeSection ||
-      previousLostFoundFilter.current !== effectiveLostFoundFilter
-    ) {
-      previousSection.current = activeSection;
-      previousLostFoundFilter.current = effectiveLostFoundFilter;
-      if (currentPage !== 1) {
-        setCurrentPage(1);
-        return;
-      }
-    }
-
-    if (previousAuthState.current === null) {
-      previousAuthState.current = isAuthenticated;
-      fetchFeed(currentPage, activeSection, effectiveLostFoundFilter);
-      return;
-    }
-
-    if (previousAuthState.current !== isAuthenticated) {
-      previousAuthState.current = isAuthenticated;
-      if (currentPage !== 1) {
-        setCurrentPage(1);
-        return;
-      }
-    }
-
-    fetchFeed(currentPage, activeSection, effectiveLostFoundFilter);
+    void fetchFeed(currentPage, activeSection, effectiveLostFoundFilter).finally(
+      () => setHasAttemptedInitialLoad(true),
+    );
   }, [
     authInitialized,
     isAuthenticated,
@@ -121,6 +120,18 @@ export default function Feed() {
     currentPage,
     fetchFeed,
   ]);
+
+  // Auth can change outside the feed (for example through the navbar).
+  // Subscribe to that event and reset pagination without state changes in a
+  // render effect, so a new account context always starts at the first page.
+  useEffect(() => {
+    let previousAuthState = useAuthStore.getState().isAuthenticated;
+    return useAuthStore.subscribe((state) => {
+      if (state.isAuthenticated === previousAuthState) return;
+      previousAuthState = state.isAuthenticated;
+      setCurrentPage(1);
+    });
+  }, []);
 
   // Auto-load the next page as the bottom of the feed approaches the
   // viewport, instead of requiring a manual "Load More" click — the
@@ -146,25 +157,136 @@ export default function Feed() {
   return (
     <div className="min-h-screen bg-background">
       {/* Page Header — just the section pills + new-post action. No
-          border/shadow of its own: the site navbar above already draws its
-          own edge on scroll, and adding a second one here framed the pills
-          row with a line above AND below it. `top` is offset by the site
-          navbar's own height (53px mobile / 61px desktop, matching its
-          `md:` breakpoint) — both this and the navbar are `sticky top-0`,
-          so without the offset they'd pin to the same spot and this bar
-          would render hidden behind the navbar's higher z-index. */}
-      <div className="sticky top-[53px] z-10 border-b border-border/70 bg-background/90 backdrop-blur-xl md:top-[61px]">
-        <div className="mx-auto flex max-w-3xl items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8">
-          <Tabs
-            items={feedSections.map((s) => ({
-              value: s.value,
-              label: s.label,
-              icon: s.icon,
-            }))}
-            value={activeSection}
-            onChange={setActiveSection}
-            className="flex-1"
-          />
+          solid background prevents posts from showing through while they
+          scroll underneath. The sticky offset clears the navbar height. */}
+      <div className="sticky top-[57px] z-20 border-b border-border/70 bg-background md:top-[61px]">
+        <div className="mx-auto flex max-w-4xl items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8">
+          <div className="flex min-w-0 flex-1 items-center gap-2">
+            <button
+              type="button"
+              aria-pressed={activeSection === "general"}
+              onClick={() => selectSection("general")}
+              className={`shrink-0 cursor-pointer rounded-full border px-3.5 py-2 text-sm font-medium transition-colors ${
+                activeSection === "general"
+                  ? "border-primary bg-primary text-primary-foreground shadow-soft-sm"
+                  : "border-border bg-card text-muted-foreground hover:bg-secondary hover:text-foreground"
+              }`}
+            >
+              General
+            </button>
+
+            <div className="hidden min-w-0 items-center gap-2 md:flex">
+              {feedSections
+                .filter((section) => section.value !== "general")
+                .map((section) => {
+                  const selected = activeSection === section.value;
+                  return (
+                    <button
+                      key={section.value}
+                      type="button"
+                      aria-pressed={selected}
+                      onClick={() => selectSection(section.value)}
+                      className={`shrink-0 cursor-pointer rounded-full border px-3.5 py-2 text-sm font-medium transition-colors ${
+                        selected
+                          ? "border-primary bg-primary text-primary-foreground shadow-soft-sm"
+                          : "border-border bg-card text-muted-foreground hover:bg-secondary hover:text-foreground"
+                      }`}
+                    >
+                      {section.label}
+                    </button>
+                  );
+                })}
+            </div>
+
+            <Menu as="div" className="relative md:hidden">
+              <Menu.Button
+                aria-label={
+                  activeSection === "general"
+                    ? "More feed filters"
+                    : `${resolvePostTypeMeta(activeSection).tabLabel} filter selected. Open filters`
+                }
+                className="relative inline-flex shrink-0 cursor-pointer items-center gap-2 rounded-full border border-border bg-card px-3.5 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+              >
+                <FiSliders size={15} />
+                Filters
+                {activeSection !== "general" && (
+                  <span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-primary" />
+                )}
+              </Menu.Button>
+              <Transition
+                as={Fragment}
+                enter="transition ease-out duration-100"
+                enterFrom="transform opacity-0 scale-95"
+                enterTo="transform opacity-100 scale-100"
+                leave="transition ease-in duration-75"
+                leaveFrom="transform opacity-100 scale-100"
+                leaveTo="transform opacity-0 scale-95"
+              >
+                <Menu.Items className="absolute left-0 z-20 mt-2 w-56 origin-top-left rounded-2xl border border-border bg-card p-1.5 shadow-soft-lg focus:outline-none">
+                  <p className="px-3 pb-1.5 pt-2 text-[11px] font-bold tracking-[0.12em] text-muted-foreground uppercase">
+                    Feed sections
+                  </p>
+                  {feedSections.map((section) => {
+                    const selected = activeSection === section.value;
+                    return (
+                      <Menu.Item key={section.value}>
+                        {({ active }) => (
+                          <button
+                            type="button"
+                            aria-pressed={selected}
+                            onClick={() => selectSection(section.value)}
+                            className={`flex w-full cursor-pointer items-center justify-between rounded-xl px-3 py-2.5 text-left text-sm font-medium transition-colors ${
+                              selected
+                                ? "bg-primary/10 text-primary"
+                                : active
+                                  ? "bg-secondary text-foreground"
+                                  : "text-foreground"
+                            }`}
+                          >
+                            {section.label}
+                            {selected && <span className="h-1.5 w-1.5 rounded-full bg-primary" />}
+                          </button>
+                        )}
+                      </Menu.Item>
+                    );
+                  })}
+                  {isLostFoundSection && (
+                    <>
+                      <div className="my-1.5 border-t border-border" />
+                      <p className="px-3 pb-1.5 pt-2 text-[11px] font-bold tracking-[0.12em] text-muted-foreground uppercase">
+                        Item status
+                      </p>
+                      {lostFoundFilters.map((filter) => {
+                        const selected = lostFoundFilter === filter.value;
+                        return (
+                          <Menu.Item key={filter.value}>
+                            {({ active }) => (
+                              <button
+                                type="button"
+                                aria-pressed={selected}
+                                onClick={() => selectLostFoundFilter(filter.value)}
+                                className={`flex w-full cursor-pointer items-center justify-between rounded-xl px-3 py-2.5 text-left text-sm font-medium transition-colors ${
+                                  selected
+                                    ? "bg-primary/10 text-primary"
+                                    : active
+                                      ? "bg-secondary text-foreground"
+                                      : "text-foreground"
+                                }`}
+                              >
+                                {filter.label}
+                                {selected && <span className="h-1.5 w-1.5 rounded-full bg-primary" />}
+                              </button>
+                            )}
+                          </Menu.Item>
+                        );
+                      })}
+                    </>
+                  )}
+                </Menu.Items>
+              </Transition>
+            </Menu>
+          </div>
+
           {isAuthenticated && (
             <Button
               onClick={() => setShowCreateModal(true)}
@@ -176,14 +298,10 @@ export default function Feed() {
           )}
         </div>
 
-        {/* Lost & found board sub-filter. Rendered as a second row rather
-            than merged into the section pills so the two stay clearly
-            different choices: which board, then which slice of it. */}
+        {/* On desktop the Lost & Found status is a compact secondary pill row;
+            on mobile the same options live in the Filters menu above. */}
         {isLostFoundSection && (
-          <div className="mx-auto flex max-w-3xl flex-wrap items-center gap-2 px-4 pb-4 sm:px-6 lg:px-8">
-            <span className="text-xs font-semibold tracking-[0.12em] text-muted-foreground uppercase">
-              Show
-            </span>
+          <div className="mx-auto hidden max-w-4xl flex-wrap items-center gap-2 px-4 pb-3 sm:px-6 md:flex lg:px-8">
             {lostFoundFilters.map((filter) => {
               const selected = lostFoundFilter === filter.value;
               return (
@@ -191,8 +309,8 @@ export default function Feed() {
                   key={filter.value}
                   type="button"
                   aria-pressed={selected}
-                  onClick={() => setLostFoundFilter(filter.value)}
-                  className={`cursor-pointer rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors ${
+                  onClick={() => selectLostFoundFilter(filter.value)}
+                  className={`cursor-pointer rounded-full border px-3.5 py-2 text-sm font-medium transition-colors ${
                     selected
                       ? "border-primary bg-primary/10 text-primary"
                       : "border-border bg-card text-muted-foreground hover:bg-secondary hover:text-foreground"
@@ -207,7 +325,7 @@ export default function Feed() {
       </div>
 
       {/* Main Content */}
-      <div className="mx-auto min-h-[65vh] max-w-3xl space-y-5 px-4 py-6 sm:px-6 lg:px-8">
+      <div className="mx-auto min-h-[65vh] max-w-4xl space-y-2 px-4 py-6 sm:px-6 lg:px-8">
         {/* Auth Prompt */}
         {!isAuthenticated && (
           <div className="rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/5 via-card to-accent-purple/5 p-6 text-center shadow-soft-sm sm:p-8">
@@ -245,11 +363,30 @@ export default function Feed() {
           <>
             {/* Posts Grid, with a library promo slotted in the way a
                 social feed slots in an ad. */}
-            <div className="space-y-5">
+            <div
+              ref={postListRef}
+              onMouseLeave={() => setHoverRect(null)}
+              className="relative space-y-1"
+            >
+              <div
+                aria-hidden="true"
+                className="pointer-events-none absolute left-0 top-0 z-0 rounded-xl bg-neutral-100/75 shadow-[0_4px_14px_-10px_rgba(82,82,82,0.24)] transition-[transform,width,height,opacity] duration-300 ease-out dark:bg-neutral-800/45 dark:shadow-[0_4px_14px_-10px_rgba(210,210,210,0.12)]"
+                style={
+                  hoverRect
+                    ? {
+                        width: hoverRect.width,
+                        height: hoverRect.height,
+                        transform: `translate3d(${hoverRect.x}px, ${hoverRect.y}px, 0)`,
+                        opacity: 1,
+                      }
+                    : { opacity: 0 }
+                }
+              />
               {feed.map((post, index) => (
                 <React.Fragment key={post._id}>
                   <PostCard
                     post={post}
+                    onHoverStart={handlePostHover}
                     className="animate-fade-in"
                     style={{
                       // Capped so a batch of newly-appended posts staggers in
@@ -265,7 +402,9 @@ export default function Feed() {
                       two-post Lost & Found tab still shows it. */}
                   {index ===
                     Math.min(PROMO_AFTER_POST - 1, feed.length - 1) && (
-                    <InFeedLibraryPromo className="animate-fade-in" />
+                    <div className="py-2">
+                      <InFeedLibraryPromo className="animate-fade-in" />
+                    </div>
                   )}
                 </React.Fragment>
               ))}
