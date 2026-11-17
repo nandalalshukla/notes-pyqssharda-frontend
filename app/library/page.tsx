@@ -62,7 +62,7 @@ export default function HomePage() {
         Everything you need for <strong className="font-semibold text-foreground">Sharda
         University</strong> semester exams in one place — previous year question
         papers, unit-wise notes and the official syllabus for every school at
-        Greater Noida. Free to browse, no sign-up required.
+        Greater Noida. Sign in with your Sharda account to browse and download.
       </p>
 
       {/* CTA Buttons */}
@@ -149,7 +149,7 @@ export default function HomePage() {
             {
               question: "Is the Sharda e-library free to use?",
               answer:
-                "Yes. You can browse, search and download study material from the Sharda Social library without creating an account.",
+                "The study material is free for Sharda students with an account. Sign in to browse, search and download papers, notes and syllabus documents.",
             },
           ])}
         />
@@ -180,7 +180,7 @@ export default function HomePage() {
             <Link href="/library/notes" className="font-bold text-primary underline">
               semester notes
             </Link>
-            . Library browsing is open without sign-up.
+            . Sign in with your Sharda account to access the free library.
           </p>
         </div>
       </section>

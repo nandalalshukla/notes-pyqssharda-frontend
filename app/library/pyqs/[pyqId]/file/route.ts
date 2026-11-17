@@ -1,5 +1,6 @@
 import { NextRequest } from "next/server";
 import { getPyqById } from "@/lib/api/pyqs/pyqs.api";
+import { getServerAuthStatus } from "@/lib/server/auth";
 
 /**
  * Serves a question paper's PDF from this domain.
@@ -36,6 +37,20 @@ export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ pyqId: string }> },
 ) {
+  const authStatus = await getServerAuthStatus();
+  if (authStatus === "unavailable") {
+    return new Response("Authentication service is temporarily unavailable", {
+      status: 503,
+      headers: { "Cache-Control": "private, no-store" },
+    });
+  }
+  if (authStatus !== "authenticated") {
+    return new Response("Authentication required", {
+      status: 401,
+      headers: { "Cache-Control": "private, no-store" },
+    });
+  }
+
   const { pyqId } = await params;
   const pyq = await getPyqById(pyqId);
 
@@ -87,10 +102,10 @@ export async function GET(
   }
   if (!headers.has("accept-ranges")) headers.set("Accept-Ranges", "bytes");
 
-  // A paper never changes once imported, so let the CDN and the browser
-  // keep it. This is what stops every view costing a round trip to
-  // Cloudinary and burning your hosting bandwidth.
-  headers.set("Cache-Control", "public, max-age=3600, s-maxage=86400, immutable");
+  // Papers are protected content, so shared browser and CDN caches must
+  // not retain a copy that could be served to a different account.
+  headers.set("Cache-Control", "private, no-store");
+  headers.set("Vary", "Cookie");
   headers.set("X-Content-Type-Options", "nosniff");
 
   // Streamed rather than buffered: the route hands the upstream body

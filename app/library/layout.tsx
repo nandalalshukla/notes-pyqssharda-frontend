@@ -1,4 +1,7 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
+import { getServerAuthCookies, getServerAuthStatus, safeReturnTo } from "@/lib/server/auth";
 
 /**
  * Metadata shared by every /library route.
@@ -21,12 +24,29 @@ export const metadata: Metadata = {
     type: "website",
     images: ["/shardasocial.png"],
   },
+  robots: { index: false, follow: false, googleBot: { index: false, follow: false } },
 };
 
-export default function LibraryLayout({
+export default async function LibraryLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const requestHeaders = await headers();
+  const returnTo = safeReturnTo(requestHeaders.get("x-app-pathname"));
+  const status = await getServerAuthStatus();
+
+  if (status === "unavailable") {
+    throw new Error("Authentication service is temporarily unavailable.");
+  }
+
+  if (status === "unauthenticated") {
+    const { refreshToken } = await getServerAuthCookies();
+    if (refreshToken) {
+      redirect(`/auth/refresh?returnTo=${encodeURIComponent(returnTo)}`);
+    }
+    redirect(`/auth/login?next=${encodeURIComponent(returnTo)}`);
+  }
+
   return <>{children}</>;
 }

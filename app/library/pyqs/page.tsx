@@ -141,7 +141,7 @@ export default function PyqsPage() {
           {
             question: "Are Sharda University PYQ PDFs free to download?",
             answer:
-              "Yes. The papers in this student library are free to browse and download, with no sign-up required for library access.",
+              "Yes. The papers are free to download for Sharda students. Sign in with your Sharda account to browse and download them.",
           },
           {
             question: "How do I find a specific Sharda University question paper?",

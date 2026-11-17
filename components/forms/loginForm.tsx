@@ -17,7 +17,7 @@ import { getErrorMessage } from "@/lib/utils/errorHandler";
 const isDeactivatedAccountError = (error: unknown) =>
   getErrorMessage(error).toLowerCase().includes("deactivated");
 
-const LoginForm = () => {
+const LoginForm = ({ nextPath = "/library/dashboard" }: { nextPath?: string }) => {
   const router = useRouter();
   const login = useAuthStore((s) => s.login);
 
@@ -59,7 +59,7 @@ const LoginForm = () => {
       await login({ email, password });
       toast.success("Logged in successfully 🎉");
       setFormData({ email: "", password: "" });
-      router.push("/library/dashboard");
+      router.replace(nextPath);
     } catch (error: unknown) {
       // An unverified account is the one login failure that isn't a dead
       // end: the server has already sent a fresh OTP by the time it
@@ -70,10 +70,18 @@ const LoginForm = () => {
         ?.status;
       if (status === 403 && !isDeactivatedAccountError(error)) {
         sessionStorage.setItem("verifyEmail", email);
+        sessionStorage.setItem("authReturnTo", nextPath);
         toast.error(
           "Verify your email to continue. Use the latest code or request another after one minute.",
         );
         router.push("/auth/verify-email");
+        return;
+      }
+
+      const code = (error as { response?: { data?: { code?: string } } })?.response?.data?.code;
+      if (code === "REGISTRATION_EXPIRED") {
+        toast.error("Your registration expired. Please register again to continue.");
+        setFormData((prev) => ({ ...prev, password: "" }));
         return;
       }
 

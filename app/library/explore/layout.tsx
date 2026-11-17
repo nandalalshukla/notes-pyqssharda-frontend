@@ -5,12 +5,12 @@ import { breadcrumbSchema, collectionSchema } from "@/lib/seo/structuredData";
 export const metadata: Metadata = {
   title: "Search the Sharda Online Library",
   description:
-    "Search the Sharda online library across Sharda University past papers, notes and syllabus documents. Find study material by subject, course code, semester or programme.",
+    "Search Sharda University past papers, notes and syllabus documents by subject, course code, semester or programme. Free access for students with a Sharda account.",
   alternates: { canonical: "/library/explore" },
   openGraph: {
     title: "Search the Sharda Online Library",
     description:
-      "Search across every Sharda University past paper, note and syllabus in one place. Find study material by subject, course code, semester or programme.",
+      "Search Sharda University past papers, notes and syllabus documents by subject, course code, semester or programme. Free for students with a Sharda account.",
     url: "/library/explore",
     type: "website",
     images: ["/shardasocial.png"],

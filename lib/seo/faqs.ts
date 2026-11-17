@@ -37,7 +37,7 @@ export const HOME_FAQS: Faq[] = [
   {
     question: "Do I need an account to use the Sharda online library?",
     answer:
-      "No. Browsing, searching and downloading study material is open to everyone with no sign-up. You only need a free account — using your @ug.sharda.ac.in email — to upload your own material, post on the campus feed, comment or follow other students.",
+      "Yes. Sign in with a free Sharda account using your @ug.sharda.ac.in email to browse, search and download the library's study material.",
   },
   {
     question: "Is Sharda Social free to use?",

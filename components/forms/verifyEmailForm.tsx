@@ -66,7 +66,12 @@ const VerifyEmailForm = () => {
 
       if (user) {
         toast.success("Email verified — you're all set 🎉");
-        router.push("/library/dashboard");
+        const returnTo = sessionStorage.getItem("authReturnTo");
+        sessionStorage.removeItem("authReturnTo");
+        const safeReturnTo = returnTo?.startsWith("/") && !returnTo.startsWith("//")
+          ? returnTo
+          : "/library/dashboard";
+        router.replace(safeReturnTo);
       } else {
         // No user in the payload means the session didn't come back for
         // some reason; falling back to the login screen is the safe

@@ -3,12 +3,12 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Sharda University Previous Year Question Papers (PYQs)",
   description:
-    "Download Sharda University previous year question papers (PYQs) for every school and semester. Filter thousands of past exam papers by programme, semester, academic year or course code — free, with no sign-up needed.",
+    "Browse Sharda University previous year question papers (PYQs) by programme, semester, year or course code. Free access for students with a Sharda account.",
   alternates: { canonical: "/library/pyqs" },
   openGraph: {
     title: "Sharda University Previous Year Question Papers (PYQs)",
     description:
-      "Download Sharda University previous year question papers for every school and semester. Filter thousands of past exam papers by programme, semester, academic year or course code — free, no sign-up needed.",
+      "Browse Sharda University previous year question papers by programme, semester, year or course code. Free for students with a Sharda account.",
     url: "/library/pyqs",
     type: "website",
     images: ["/shardasocial.png"],
