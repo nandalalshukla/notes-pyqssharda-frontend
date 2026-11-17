@@ -508,13 +508,6 @@ export default function PostCard({
           </div>
         )}
 
-        {/* Content Section */}
-        <div className="pr-8">
-          <p className="whitespace-pre-wrap break-words text-base leading-relaxed text-foreground">
-            {post.content}
-          </p>
-        </div>
-
         {/* The author's own one-tap resolve control. Kept out on the card
             (as well as in the overflow menu) because closing an item out is
             the action this post type exists to end on. */}
@@ -613,6 +606,16 @@ export default function PostCard({
                 </div>
               ))}
             </div>
+          </div>
+        )}
+
+        {/* Captions follow attached media so the image or video is the first
+            thing readers see in posts that contain both. */}
+        {post.content.trim().length > 0 && (
+          <div className={post.files?.length ? "mt-4 pr-8" : "pr-8"}>
+            <p className="whitespace-pre-wrap break-words text-base leading-relaxed text-foreground">
+              {post.content}
+            </p>
           </div>
         )}
 

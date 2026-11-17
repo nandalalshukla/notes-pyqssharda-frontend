@@ -12,7 +12,7 @@ import { FeedLoadingState, PostCardSkeleton } from "./LoadingSkeletons";
 
 // Only rendered after clicking "New Post" — keep it out of the initial bundle.
 const CreatePostModal = dynamic(() => import("./CreatePostModal"));
-import { FiPlus, FiStar, FiFileText, FiSliders } from "react-icons/fi";
+import { FiPlus, FiFileText, FiSliders } from "react-icons/fi";
 import { LostFoundStatus, PostType } from "@/lib/api/social/social.api";
 import { postTypeOptions, resolvePostTypeMeta } from "./postMeta";
 import { Button, EmptyState } from "@/components/ui";
@@ -326,24 +326,6 @@ export default function Feed() {
 
       {/* Main Content */}
       <div className="mx-auto min-h-[65vh] max-w-4xl space-y-2 px-4 py-6 sm:px-6 lg:px-8">
-        {/* Auth Prompt */}
-        {!isAuthenticated && (
-          <div className="rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/5 via-card to-accent-purple/5 p-6 text-center shadow-soft-sm sm:p-8">
-            <div className="mb-4 flex items-center justify-center">
-              <div className="inline-flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 ring-1 ring-primary/15">
-                <FiStar size={28} className="text-primary" />
-              </div>
-            </div>
-            <h2 className="mb-1 text-lg font-semibold text-foreground">
-              Welcome to the campus feed
-            </h2>
-            <p className="text-sm text-muted-foreground">
-              Sign in to post updates, join discussions, and stay connected with
-              your campus community.
-            </p>
-          </div>
-        )}
-
         {/* Error State */}
         {error && (
           <div className="rounded-2xl border border-destructive/20 bg-destructive/5 p-6 text-center shadow-soft-sm">

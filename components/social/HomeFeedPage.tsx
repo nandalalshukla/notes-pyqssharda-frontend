@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import { Feed } from "@/components/social";
 import { FeedLoadingState } from "@/components/social/LoadingSkeletons";
+import SiteAnalyticsSummary from "@/components/analytics/SiteAnalyticsSummary";
 
 /**
  * The campus feed page body, shared by the home page and by /post/[postId].
@@ -13,18 +14,7 @@ import { FeedLoadingState } from "@/components/social/LoadingSkeletons";
 export default function HomeFeedPage() {
   return (
     <div className="bg-background">
-      {/* A single compact heading. Every page needs an h1 for search and for
-          screen-reader navigation, but this one stays out of the way rather
-          than pushing the feed below the fold. */}
-      <header className="mx-auto max-w-4xl px-4 pb-2 pt-7 sm:px-6 lg:px-8">
-        <h1 className="text-2xl font-black tracking-tight text-foreground">
-          Sharda Social
-        </h1>
-        <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-          The Sharda University social media community for campus updates,
-          events, opportunities, conversations and student life.
-        </p>
-      </header>
+      <SiteAnalyticsSummary />
 
       <div className="min-h-[62vh]">
         <Suspense

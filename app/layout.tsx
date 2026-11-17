@@ -9,6 +9,7 @@ import WelcomeModal from "@/components/WelcomeModal";
 import AuthProviders from "./providers";
 import { ThemeProvider } from "./theme-provider";
 import { Analytics } from "@vercel/analytics/next";
+import SiteAnalyticsHeartbeat from "@/components/analytics/SiteAnalyticsHeartbeat";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { organisationSchema, webSiteSchema } from "@/lib/seo/structuredData";
 import {
@@ -157,6 +158,7 @@ export default function RootLayout({
         <ThemeProvider>
           <div className="flex min-h-screen flex-col bg-background text-foreground">
             <ToastProvider />
+            <SiteAnalyticsHeartbeat />
             <Navbar />
             <WelcomeModal />
             {/* Effect-only: restores the session without owning the tree, so
