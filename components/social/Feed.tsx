@@ -7,6 +7,7 @@ import { Menu, Transition } from "@headlessui/react";
 import { useSocialStore } from "@/stores/social/social.store";
 import useAuthStore from "@/stores/user/authStore";
 import PostCard from "./PostCard";
+import PostHoverList from "./PostHoverList";
 import InFeedLibraryPromo from "./InFeedLibraryPromo";
 import { FeedLoadingState, PostCardSkeleton } from "./LoadingSkeletons";
 
@@ -60,27 +61,6 @@ export default function Feed() {
   const [hasAttemptedInitialLoad, setHasAttemptedInitialLoad] = useState(false);
 
   const loadMoreSentinelRef = useRef<HTMLDivElement>(null);
-  const postListRef = useRef<HTMLDivElement>(null);
-  const [hoverRect, setHoverRect] = useState<{
-    x: number;
-    y: number;
-    width: number;
-    height: number;
-  } | null>(null);
-
-  const handlePostHover = (element: HTMLDivElement) => {
-    const list = postListRef.current;
-    if (!list) return;
-
-    const listRect = list.getBoundingClientRect();
-    const postRect = element.getBoundingClientRect();
-    setHoverRect({
-      x: postRect.left - listRect.left + list.scrollLeft,
-      y: postRect.top - listRect.top + list.scrollTop,
-      width: postRect.width,
-      height: postRect.height,
-    });
-  };
 
   const isLostFoundSection = activeSection === "lost_found";
   const isOpportunitySection = activeSection === "opportunity";
@@ -345,30 +325,11 @@ export default function Feed() {
           <>
             {/* Posts Grid, with a library promo slotted in the way a
                 social feed slots in an ad. */}
-            <div
-              ref={postListRef}
-              onMouseLeave={() => setHoverRect(null)}
-              className="relative space-y-1"
-            >
-              <div
-                aria-hidden="true"
-                className="pointer-events-none absolute left-0 top-0 z-0 rounded-xl bg-neutral-100/75 shadow-[0_4px_14px_-10px_rgba(82,82,82,0.24)] transition-[transform,width,height,opacity] duration-300 ease-out dark:bg-neutral-800/45 dark:shadow-[0_4px_14px_-10px_rgba(210,210,210,0.12)]"
-                style={
-                  hoverRect
-                    ? {
-                        width: hoverRect.width,
-                        height: hoverRect.height,
-                        transform: `translate3d(${hoverRect.x}px, ${hoverRect.y}px, 0)`,
-                        opacity: 1,
-                      }
-                    : { opacity: 0 }
-                }
-              />
+            <PostHoverList className="space-y-1">
               {feed.map((post, index) => (
                 <React.Fragment key={post._id}>
                   <PostCard
                     post={post}
-                    onHoverStart={handlePostHover}
                     className="animate-fade-in"
                     style={{
                       // Capped so a batch of newly-appended posts staggers in
@@ -390,7 +351,7 @@ export default function Feed() {
                   )}
                 </React.Fragment>
               ))}
-            </div>
+            </PostHoverList>
 
             {/* Infinite-scroll sentinel — auto-loads the next page on
                 approach; shows a skeleton while that page is in flight, or

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback, useMemo, useRef } from "react";
+import React, { useState, useCallback, useMemo, useRef, useEffect } from "react";
 import dynamic from "next/dynamic";
 import { useSocialStore } from "@/stores/social/social.store";
 import useAuthStore from "@/stores/user/authStore";
@@ -28,6 +28,7 @@ import { Fragment } from "react";
 import VerifiedBadge from "./VerifiedBadge";
 import LostFoundDetails from "./LostFoundDetails";
 import PostModerationBanner from "./PostModerationBanner";
+import { usePostHoverHighlight } from "./PostHoverList";
 import { resolvePostTypeMeta } from "./postMeta";
 import { Avatar, Badge } from "@/components/ui";
 
@@ -41,6 +42,53 @@ const ShareModal = dynamic(() => import("./ShareModal"));
 const ConfirmationDialog = dynamic(
   () => import("@/components/shared/ConfirmationDialog"),
 );
+
+const formatLikeCount = (count: number) =>
+  count > 1000 ? `${(count / 1000).toFixed(1)}K` : count;
+
+function AnimatedLikeCount({ count }: { count: number }) {
+  const previousCount = useRef(count);
+  const [display, setDisplay] = useState({
+    value: count,
+    key: 0,
+    direction: "up" as "up" | "down",
+    isAnimating: false,
+  });
+
+  useEffect(() => {
+    if (count === previousCount.current) return;
+
+    const direction = count >= previousCount.current ? "up" : "down";
+    previousCount.current = count;
+    setDisplay((current) => ({
+      value: count,
+      key: current.key + 1,
+      direction,
+      isAnimating: true,
+    }));
+
+    const timeoutId = window.setTimeout(() => {
+      setDisplay((current) => ({ ...current, isAnimating: false }));
+    }, 220);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [count]);
+
+  return (
+    <span className="inline-flex h-[1.25em] items-center overflow-hidden align-bottom">
+      <span
+        key={display.key}
+        className={`block leading-none ${
+          display.isAnimating
+            ? `like-count-scroll-${display.direction}`
+            : ""
+        }`}
+      >
+        {formatLikeCount(display.value)}
+      </span>
+    </span>
+  );
+}
 
 interface PostCardProps {
   post: Post;
@@ -56,6 +104,8 @@ export default function PostCard({
   onHoverStart,
 }: PostCardProps) {
   const router = useRouter();
+  const contextHoverStart = usePostHoverHighlight();
+  const notifyPostHover = onHoverStart ?? contextHoverStart;
   const user = useAuthStore((s) => s.user);
   const togglePostLike = useSocialStore((s) => s.togglePostLike);
   const removePost = useSocialStore((s) => s.removePost);
@@ -210,15 +260,9 @@ export default function PostCard({
     }
   }, [isLiked, handleLike]);
 
-  const handleComment = useCallback(async () => {
-    if (!user) {
-      toast.error("Please login to comment");
-      router.push("/auth/login");
-      return;
-    }
-
+  const handleComment = useCallback(() => {
     setShowComments(true);
-  }, [user, router]);
+  }, []);
 
   const handleDelete = useCallback(async () => {
     setIsDeleting(true);
@@ -342,9 +386,9 @@ export default function PostCard({
       <div
         ref={cardRef}
         style={style}
-        onMouseEnter={(event) => onHoverStart?.(event.currentTarget)}
+        onMouseEnter={(event) => notifyPostHover?.(event.currentTarget)}
         onFocusCapture={() => {
-          if (cardRef.current) onHoverStart?.(cardRef.current);
+          if (cardRef.current) notifyPostHover?.(cardRef.current);
         }}
         className={`group/post relative z-10 isolate rounded-xl bg-transparent p-3 sm:px-4 sm:py-3 ${className}`}
       >
@@ -612,7 +656,7 @@ export default function PostCard({
         {/* Captions follow attached media so the image or video is the first
             thing readers see in posts that contain both. */}
         {post.content.trim().length > 0 && (
-          <div className={post.files?.length ? "mt-4 pr-8" : "pr-8"}>
+          <div className={post.files?.length ? "mt-4 pl-2 pr-8" : "pl-2 pr-8"}>
             <p className="whitespace-pre-wrap break-words text-base leading-relaxed text-foreground">
               {post.content}
             </p>
@@ -673,12 +717,12 @@ export default function PostCard({
                   type="button"
                   onClick={handleLike}
                   aria-label={isLiked ? "Unlike post" : "Like post"}
-                  className="group flex items-center p-1 transition-colors hover:text-destructive cursor-pointer"
+                  className="flex items-center p-1 transition-colors hover:text-destructive cursor-pointer"
                 >
                   {isLiked ? (
-                    <FaHeart size={17} className="text-destructive group-hover:scale-110" />
+                    <FaHeart size={17} className="text-destructive" />
                   ) : (
-                    <FiHeart size={18} className="group-hover:scale-110" />
+                    <FiHeart size={18} />
                   )}
                 </button>
                 <button
@@ -687,7 +731,7 @@ export default function PostCard({
                   disabled={likeCount === 0}
                   className="text-foreground hover:text-destructive disabled:opacity-50 cursor-pointer"
                 >
-                  {likeCount > 1000 ? `${(likeCount / 1000).toFixed(1)}K` : likeCount}
+                  <AnimatedLikeCount count={likeCount} />
                 </button>
               </div>
 
@@ -696,9 +740,9 @@ export default function PostCard({
                   type="button"
                   onClick={handleComment}
                   aria-label="Open comments"
-                  className="group flex items-center transition-colors hover:text-primary cursor-pointer"
+                  className="flex items-center transition-colors hover:text-primary cursor-pointer"
                 >
-                  <FiMessageCircle size={18} className="transition-transform group-hover:scale-110" />
+                  <FiMessageCircle size={18} />
                 </button>
                 <button
                   type="button"
@@ -713,9 +757,9 @@ export default function PostCard({
                 type="button"
                 onClick={handleShare}
                 aria-label="Share post"
-                className="group flex items-center transition-colors hover:text-success cursor-pointer"
+                className="flex items-center transition-colors hover:text-success cursor-pointer"
               >
-                <FiShare2 size={17} className="transition-transform group-hover:scale-110" />
+                <FiShare2 size={17} />
               </button>
             </div>
           )}

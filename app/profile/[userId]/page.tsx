@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import useAuthStore from "@/stores/user/authStore";
 import { useSocialStore } from "@/stores/social/social.store";
 import PostCard from "@/components/social/PostCard";
+import PostHoverList from "@/components/social/PostHoverList";
 import ProfileHeader from "@/components/social/ProfileHeader";
 import { ProfilePageLoadingState } from "@/components/social/LoadingSkeletons";
 import toast from "react-hot-toast";
@@ -95,7 +96,7 @@ export default function UserProfilePage() {
     try {
       await toggleUserFollow(userId, wasFollowing);
       toast.success(wasFollowing ? "Unfollowed" : "Followed");
-    } catch (err: unknown) {
+    } catch {
       toast.error("Failed to update follow status");
     } finally {
       setIsFollowLoading(false);
@@ -153,11 +154,11 @@ export default function UserProfilePage() {
           {isPostsLoading && posts.length === 0 ? (
             <ProfilePageLoadingState />
           ) : posts.length > 0 ? (
-            <div className="space-y-6">
+            <PostHoverList className="space-y-6">
               {posts.map((post) => (
                 <PostCard key={post._id} post={post} />
               ))}
-            </div>
+            </PostHoverList>
           ) : (
             <EmptyState
               icon={<span className="text-2xl">📝</span>}

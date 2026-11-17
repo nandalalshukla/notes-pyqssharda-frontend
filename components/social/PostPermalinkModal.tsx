@@ -11,6 +11,7 @@ import { PERMALINK_KEY, useSocialStore } from "@/stores/social/social.store";
 import useAuthStore from "@/stores/user/authStore";
 import { getErrorMessage } from "@/lib/utils/errorHandler";
 import PostCard from "./PostCard";
+import PostHoverList from "./PostHoverList";
 import { PostCardSkeleton } from "./LoadingSkeletons";
 
 type Status = "loading" | "ready" | "missing" | "error";
@@ -208,7 +209,11 @@ export default function PostPermalinkModal({ postId, closeHref = "/" }: PostPerm
             </div>
           )}
 
-          {status === "ready" && post && <PostCard post={post} />}
+          {status === "ready" && post && (
+            <PostHoverList>
+              <PostCard post={post} />
+            </PostHoverList>
+          )}
 
           {status === "missing" && (
             <EmptyState
