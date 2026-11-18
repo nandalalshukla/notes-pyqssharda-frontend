@@ -146,11 +146,7 @@ export default function Feed() {
               type="button"
               aria-pressed={activeSection === "general"}
               onClick={() => selectSection("general")}
-              className={`shrink-0 cursor-pointer rounded-full border px-3.5 py-2 text-sm font-medium transition-colors ${
-                activeSection === "general"
-                  ? "border-primary bg-primary text-primary-foreground shadow-soft-sm"
-                  : "border-border bg-card text-muted-foreground hover:bg-secondary hover:text-foreground"
-              }`}
+              className="feed-filter-pill shrink-0 cursor-pointer"
             >
               General
             </button>
@@ -166,11 +162,7 @@ export default function Feed() {
                       type="button"
                       aria-pressed={selected}
                       onClick={() => selectSection(section.value)}
-                      className={`shrink-0 cursor-pointer rounded-full border px-3.5 py-2 text-sm font-medium transition-colors ${
-                        selected
-                          ? "border-primary bg-primary text-primary-foreground shadow-soft-sm"
-                          : "border-border bg-card text-muted-foreground hover:bg-secondary hover:text-foreground"
-                      }`}
+                      className="feed-filter-pill shrink-0 cursor-pointer"
                     >
                       {section.label}
                     </button>
@@ -185,7 +177,7 @@ export default function Feed() {
                     ? "More feed filters"
                     : `${resolvePostTypeMeta(activeSection).tabLabel} filter selected. Open filters`
                 }
-                className="relative inline-flex shrink-0 cursor-pointer items-center gap-2 rounded-full border border-border bg-card px-3.5 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+                className="feed-filter-pill relative shrink-0 cursor-pointer"
               >
                 <FiSliders size={15} />
                 Filters
@@ -290,11 +282,7 @@ export default function Feed() {
                   type="button"
                   aria-pressed={selected}
                   onClick={() => selectLostFoundFilter(filter.value)}
-                  className={`cursor-pointer rounded-full border px-3.5 py-2 text-sm font-medium transition-colors ${
-                    selected
-                      ? "border-primary bg-primary/10 text-primary"
-                      : "border-border bg-card text-muted-foreground hover:bg-secondary hover:text-foreground"
-                  }`}
+                  className="feed-filter-pill cursor-pointer"
                 >
                   {filter.label}
                 </button>
