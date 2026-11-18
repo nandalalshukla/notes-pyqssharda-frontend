@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { getServerAuthCookies, getServerAuthStatus, safeReturnTo } from "@/lib/server/auth";
+import { getServerAuthStatus, safeReturnTo } from "@/lib/server/auth";
 
 /**
  * Metadata shared by every /library route.
@@ -41,10 +41,6 @@ export default async function LibraryLayout({
   }
 
   if (status === "unauthenticated") {
-    const { refreshToken } = await getServerAuthCookies();
-    if (refreshToken) {
-      redirect(`/auth/refresh?returnTo=${encodeURIComponent(returnTo)}`);
-    }
     redirect(`/auth/login?next=${encodeURIComponent(returnTo)}`);
   }
 
