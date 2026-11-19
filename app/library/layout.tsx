@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import LibraryMusicPlayer from "@/components/library/LibraryMusicPlayer";
 
 /**
  * Metadata shared by every /library route.
@@ -29,5 +30,10 @@ export default function LibraryLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return <>{children}</>;
+  return (
+    <>
+      {children}
+      <LibraryMusicPlayer />
+    </>
+  );
 }

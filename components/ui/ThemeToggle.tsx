@@ -19,7 +19,7 @@ export function ThemeToggle({ className }: { className?: string }) {
     return (
       <div
         aria-hidden="true"
-        className={cn("h-9 w-9 rounded-xl bg-secondary", className)}
+        className={cn("feed-filter-pill icon-control nav-control h-11 w-11", className)}
       />
     );
   }
@@ -32,11 +32,15 @@ export function ThemeToggle({ className }: { className?: string }) {
       onClick={() => setTheme(isDark ? "light" : "dark")}
       aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
       className={cn(
-        "inline-flex h-9 w-9 items-center justify-center rounded-xl border border-border bg-card text-foreground transition-colors hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer",
+        "feed-filter-pill icon-control nav-control h-11 w-11 cursor-pointer",
         className,
       )}
     >
-      {isDark ? <Sun size={17} /> : <Moon size={17} />}
+      {isDark ? (
+        <Sun className="text-foreground" />
+      ) : (
+        <Moon className="text-foreground" />
+      )}
     </button>
   );
 }

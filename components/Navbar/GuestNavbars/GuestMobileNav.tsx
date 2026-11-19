@@ -46,7 +46,7 @@ const GuestMobileNav = () => {
           />
         </Link>
 
-        <div className="flex flex-1 items-center justify-center gap-1 rounded-full border border-border bg-card/80 px-1 py-1 shadow-soft-sm backdrop-blur-md">
+        <div className="flex flex-1 items-center justify-center gap-1">
           {navLinks.map((link) => {
             const active =
               link.href === "/"
@@ -60,14 +60,14 @@ const GuestMobileNav = () => {
                 href={link.href}
                 title={link.label}
                 aria-label={link.label}
+                aria-current={active ? "page" : undefined}
+                data-active={active}
                 className={cn(
-                  "inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm transition-all duration-200",
-                  active
-                    ? "bg-primary text-primary-foreground shadow-soft-sm"
-                    : "text-muted-foreground hover:bg-secondary hover:text-foreground",
+                  "feed-filter-pill icon-control h-11 w-11 shrink-0 cursor-pointer",
+                  active && "text-primary-foreground",
                 )}
               >
-                <Icon aria-hidden="true" />
+                <Icon className="!h-6 !w-6" aria-hidden="true" />
                 <span className="sr-only">{link.label}</span>
               </Link>
             );
@@ -80,18 +80,19 @@ const GuestMobileNav = () => {
             href="/auth/login"
             aria-label="Login"
             title="Login"
-            className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-border bg-card text-foreground transition-all hover:bg-secondary"
+            className="feed-filter-pill icon-control h-11 w-11 cursor-pointer"
           >
-            <FiLogIn className="text-base" />
+            <FiLogIn className="!h-6 !w-6" />
             <span className="sr-only">Login</span>
           </Link>
           <Link
             href="/auth/register"
             aria-label="Register"
             title="Register"
-            className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-soft-sm transition-all hover:bg-primary-hover"
+            data-active="true"
+            className="feed-filter-pill icon-control h-11 w-11 cursor-pointer text-primary-foreground"
           >
-            <FiUserPlus className="text-base" />
+            <FiUserPlus className="!h-6 !w-6" />
             <span className="sr-only">Register</span>
           </Link>
         </div>

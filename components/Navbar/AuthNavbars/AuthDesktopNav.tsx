@@ -105,7 +105,7 @@ const AuthDesktopNav = () => {
       </Link>
 
       {/* Main Navigation Links */}
-      <div className="flex items-center justify-center gap-1 rounded-full border border-border bg-card/70 px-1.5 py-1.5 shadow-soft-sm backdrop-blur-md">
+      <div className="flex items-center justify-center gap-2">
         {navLinks.map((link) => {
           const active =
             link.href === "/"
@@ -118,11 +118,11 @@ const AuthDesktopNav = () => {
               key={link.href}
               href={link.href}
               title={link.label}
+              aria-current={active ? "page" : undefined}
+              data-active={active}
               className={cn(
-                "inline-flex items-center gap-2 rounded-full px-3.5 py-2 text-sm font-semibold transition-all duration-200 xl:px-4",
-                active
-                  ? "bg-primary text-primary-foreground shadow-soft-sm"
-                  : "text-muted-foreground hover:bg-secondary hover:text-foreground",
+                "feed-filter-pill cursor-pointer xl:px-4",
+                active && "text-primary-foreground",
               )}
             >
               <Icon className="text-base" aria-hidden="true" />
@@ -142,7 +142,7 @@ const AuthDesktopNav = () => {
         <div className="relative" ref={wrapperRef}>
           <button
             onClick={() => setIsProfileOpen(!isProfileOpen)}
-            className="flex items-center gap-2 rounded-full border border-border bg-card px-2 py-1 shadow-soft-sm transition-all hover:shadow-soft-md cursor-pointer"
+            className="feed-filter-pill cursor-pointer"
           >
             <span className="relative flex h-7 w-7 overflow-hidden rounded-full bg-muted sm:h-8 sm:w-8">
               {profileImage ? (

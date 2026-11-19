@@ -44,7 +44,7 @@ const GuestDesktopNav = () => {
       </Link>
 
       {/* Main Navigation Links */}
-      <div className="flex items-center justify-center gap-1 rounded-full border border-border bg-card/70 px-1.5 py-1.5 shadow-soft-sm backdrop-blur-md">
+      <div className="flex items-center justify-center gap-2">
         {navLinks.map((link) => {
           const active =
             link.href === "/"
@@ -56,11 +56,11 @@ const GuestDesktopNav = () => {
             <Link
               key={link.href}
               href={link.href}
+              aria-current={active ? "page" : undefined}
+              data-active={active}
               className={cn(
-                "inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition-all duration-200",
-                active
-                  ? "bg-primary text-primary-foreground shadow-soft-sm"
-                  : "text-muted-foreground hover:bg-secondary hover:text-foreground",
+                "feed-filter-pill cursor-pointer",
+                active && "text-primary-foreground",
               )}
             >
               <Icon className="text-base" aria-hidden="true" />
@@ -75,14 +75,15 @@ const GuestDesktopNav = () => {
         <ThemeToggle />
         <Link
           href="/auth/login"
-          className="inline-flex h-9 items-center justify-center rounded-xl border border-border bg-card px-4 text-sm font-semibold text-foreground transition-all hover:bg-secondary"
+          className="feed-filter-pill cursor-pointer"
         >
           <FiLogIn className="mr-1.5 text-base" />
           Login
         </Link>
         <Link
           href="/auth/register"
-          className="inline-flex h-9 items-center justify-center rounded-xl bg-primary px-4 text-sm font-semibold text-primary-foreground shadow-soft-sm transition-all hover:bg-primary-hover hover:shadow-soft-md"
+          data-active="true"
+          className="feed-filter-pill cursor-pointer text-primary-foreground"
         >
           <FiUserPlus className="mr-1.5 text-base" />
           Register

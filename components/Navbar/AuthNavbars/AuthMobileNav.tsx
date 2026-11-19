@@ -114,7 +114,7 @@ const AuthMobileNav = () => {
         </Link>
 
         {/* Navigation Links */}
-        <div className="flex flex-1 items-center justify-center gap-1 rounded-full border border-border bg-card/80 px-1 py-1 shadow-soft-sm backdrop-blur-md">
+        <div className="flex flex-1 items-center justify-center gap-1">
           {navLinks.map((link) => {
             const active =
               link.href === "/"
@@ -128,14 +128,14 @@ const AuthMobileNav = () => {
                 href={link.href}
                 title={link.label}
                 aria-label={link.label}
+                aria-current={active ? "page" : undefined}
+                data-active={active}
                 className={cn(
-                  "inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm transition-all duration-200",
-                  active
-                    ? "bg-primary text-primary-foreground shadow-soft-sm"
-                    : "text-muted-foreground hover:bg-secondary hover:text-foreground",
+                  "feed-filter-pill icon-control h-11 w-11 shrink-0 cursor-pointer",
+                  active && "text-primary-foreground",
                 )}
               >
-                <Icon aria-hidden="true" />
+                <Icon className="!h-6 !w-6" aria-hidden="true" />
                 <span className="sr-only">{link.label}</span>
               </Link>
             );
@@ -150,7 +150,7 @@ const AuthMobileNav = () => {
           <button
             ref={profileButtonRef}
             onClick={() => setIsProfileOpen(!isProfileOpen)}
-            className="flex h-9 w-9 shrink-0 overflow-hidden rounded-full bg-muted ring-1 ring-border cursor-pointer"
+            className="feed-filter-pill icon-control h-11 w-11 shrink-0 cursor-pointer overflow-hidden"
             aria-label="Profile menu"
           >
             {profileImage ? (

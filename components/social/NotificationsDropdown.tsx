@@ -144,10 +144,10 @@ export default function NotificationsDropdown() {
       {/* Bell Icon Button */}
       <button
         onClick={handleOpenDropdown}
-        className="relative rounded-full p-2 text-foreground transition-colors hover:bg-secondary cursor-pointer"
+        className="feed-filter-pill icon-control nav-control relative h-11 w-11 cursor-pointer"
         aria-label="Notifications"
       >
-        <FiBell size={22} />
+        <FiBell className="text-foreground" />
         {unreadCount > 0 && (
           <span className="absolute top-1 right-1 inline-flex min-w-[20px] translate-x-1/2 -translate-y-1/2 transform items-center justify-center rounded-full bg-destructive px-2 py-1 text-xs leading-none font-bold text-destructive-foreground">
             {unreadCount > 99 ? "99+" : unreadCount}
