@@ -150,7 +150,7 @@ export default function ContentPanel() {
             {row.courseName || row.title}
           </p>
           <p className="text-xs text-muted-foreground">
-            {[row.courseCode, row.program, `Sem ${row.semester}`, row.year]
+            {[row.courseCode, row.program, row.semester > 0 ? `Sem ${row.semester}` : "Semester not listed", row.year]
               .filter(Boolean)
               .join(" · ")}
           </p>

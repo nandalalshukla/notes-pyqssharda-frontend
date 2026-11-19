@@ -118,7 +118,7 @@ export default function HomeContentShowcase() {
 
               <div className="flex items-end justify-between">
                 <div className="text-xs font-bold text-muted-foreground">
-                  {item.program} • Sem {item.semester}
+                  {item.program} • {item.semester > 0 ? `Sem ${item.semester}` : "Semester not listed"}
                   {item.year && ` • ${item.year}`}
                 </div>
                 <a

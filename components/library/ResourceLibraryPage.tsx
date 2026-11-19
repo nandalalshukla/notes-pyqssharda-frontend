@@ -157,8 +157,8 @@ export function ResourceLibraryPage({
 
   const semesterOptions = useMemo(
     () =>
-      serverOptions?.semesters ??
-      [...new Set(staticItems.map((item) => item.semester.toString()))].sort(
+      serverOptions?.semesters.map(String).filter((value) => Number(value) > 0) ??
+      [...new Set(staticItems.map((item) => item.semester.toString()).filter((value) => Number(value) > 0))].sort(
         (a, b) => Number(a) - Number(b),
       ),
     [serverOptions, staticItems],
@@ -348,7 +348,7 @@ export function ResourceLibraryPage({
   const itemsBySemester = useMemo(() => {
     const grouped: Record<string, LibraryItem[]> = {};
     filteredItems.forEach((item) => {
-      const semesterKey = `Semester ${item.semester}`;
+      const semesterKey = item.semester > 0 ? `Semester ${item.semester}` : "Semester not listed";
       if (!grouped[semesterKey]) grouped[semesterKey] = [];
       grouped[semesterKey].push(item);
     });
@@ -637,7 +637,9 @@ function ResourceCard({
         <span className={cn("rounded-full px-3 py-1 text-xs font-bold tracking-wider uppercase", styles.badge)}>
           {item.program ?? programLabel}
         </span>
-        <span className="text-xs font-bold text-muted-foreground">Sem {item.semester}</span>
+        <span className="text-xs font-bold text-muted-foreground">
+          {item.semester > 0 ? `Sem ${item.semester}` : "Semester not listed"}
+        </span>
       </div>
 
       <div className="mb-4 flex-grow">
