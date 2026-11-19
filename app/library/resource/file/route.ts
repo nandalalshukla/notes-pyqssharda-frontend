@@ -6,20 +6,6 @@ import { getServerAuthStatus } from "@/lib/server/auth";
 export const runtime = "nodejs";
 
 export async function GET(request: NextRequest) {
-  const authStatus = await getServerAuthStatus();
-  if (authStatus === "unavailable") {
-    return new Response("Authentication service is temporarily unavailable", {
-      status: 503,
-      headers: { "Cache-Control": "private, no-store" },
-    });
-  }
-  if (authStatus !== "authenticated") {
-    return new Response("Authentication required", {
-      status: 401,
-      headers: { "Cache-Control": "private, no-store" },
-    });
-  }
-
   const type = request.nextUrl.searchParams.get("type");
   const src = request.nextUrl.searchParams.get("src");
   const sourcePrefix = type === "notes" ? "/Notes/" : type === "syllabus" ? "/Syllabus/" : null;
@@ -31,6 +17,19 @@ export async function GET(request: NextRequest) {
     !src.toLowerCase().endsWith(".pdf")
   ) {
     return new Response("Resource not found", { status: 404 });
+  }
+
+  const authStatus = await getServerAuthStatus();
+  if (authStatus === "unavailable") {
+    return new Response("Authentication service is temporarily unavailable", {
+      status: 503,
+      headers: { "Cache-Control": "private, no-store" },
+    });
+  }
+  if (authStatus !== "authenticated") {
+    const returnTo = `/library/resource?type=${type}&src=${encodeURIComponent(src)}`;
+    const loginUrl = new URL(`/auth/login?next=${encodeURIComponent(returnTo)}`, request.url);
+    return Response.redirect(loginUrl, 303);
   }
 
   const segments = src.slice(sourcePrefix.length).split("/");

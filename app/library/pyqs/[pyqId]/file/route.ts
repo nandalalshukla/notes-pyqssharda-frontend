@@ -37,6 +37,11 @@ export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ pyqId: string }> },
 ) {
+  const { pyqId } = await params;
+  if (!/^[0-9a-fA-F]{24}$/.test(pyqId)) {
+    return new Response("Paper not found", { status: 404 });
+  }
+
   const authStatus = await getServerAuthStatus();
   if (authStatus === "unavailable") {
     return new Response("Authentication service is temporarily unavailable", {
@@ -45,13 +50,11 @@ export async function GET(
     });
   }
   if (authStatus !== "authenticated") {
-    return new Response("Authentication required", {
-      status: 401,
-      headers: { "Cache-Control": "private, no-store" },
-    });
+    const returnTo = `/library/pyqs/${pyqId}`;
+    const loginUrl = new URL(`/auth/login?next=${encodeURIComponent(returnTo)}`, request.url);
+    return Response.redirect(loginUrl, 303);
   }
 
-  const { pyqId } = await params;
   const pyq = await getPyqById(pyqId);
 
   if (!pyq?.fileUrl) {

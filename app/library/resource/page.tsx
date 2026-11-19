@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Download } from "lucide-react";
+import { Download, ExternalLink } from "lucide-react";
 import { notFound, redirect } from "next/navigation";
 import { getServerAuthStatus } from "@/lib/server/auth";
 
@@ -36,13 +36,24 @@ export default async function LibraryResourcePage({ searchParams }: PageProps) {
         </Link>
         <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
           <h1 className="text-2xl font-black sm:text-3xl">{title}</h1>
-          <a
-            href={`/library/resource/file?type=${type}&src=${encodeURIComponent(src)}&download=1`}
-            className="inline-flex items-center gap-2 rounded-lg bg-ink px-5 py-3 font-black text-background"
-          >
-            <Download className="h-5 w-5" />
-            Download PDF
-          </a>
+          <div className="flex flex-wrap gap-3">
+            <a
+              href={`/library/resource/file?type=${type}&src=${encodeURIComponent(src)}&download=1`}
+              className="inline-flex items-center gap-2 rounded-lg bg-ink px-5 py-3 font-black text-background"
+            >
+              <Download className="h-5 w-5" />
+              Download PDF
+            </a>
+            <a
+              href={`/library/resource/file?type=${type}&src=${encodeURIComponent(src)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 rounded-lg border border-border bg-card px-5 py-3 font-bold text-foreground hover:bg-secondary"
+            >
+              <ExternalLink className="h-5 w-5" />
+              Open in new tab
+            </a>
+          </div>
         </div>
         <iframe
           src={`/library/resource/file?type=${type}&src=${encodeURIComponent(src)}`}
