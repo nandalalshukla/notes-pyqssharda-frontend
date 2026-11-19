@@ -28,6 +28,9 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  outputFileTracingIncludes: {
+    "/library/resource/file": ["./private-resources/**/*"],
+  },
   async rewrites() {
     return [
       {

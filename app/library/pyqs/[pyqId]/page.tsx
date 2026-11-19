@@ -6,6 +6,8 @@ import { getPyqById, type Pyq } from "@/lib/api/pyqs/pyqs.api";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { breadcrumbSchema } from "@/lib/seo/structuredData";
 import { absoluteUrl } from "@/lib/seo/site";
+import { getServerAuthStatus } from "@/lib/server/auth";
+import { redirect } from "next/navigation";
 
 /**
  * One question paper, on this site.
@@ -63,6 +65,15 @@ export async function generateMetadata({
 
 export default async function PyqPaperPage({ params }: PageProps) {
   const { pyqId } = await params;
+  const authStatus = await getServerAuthStatus();
+  if (authStatus === "unavailable") {
+    throw new Error("Authentication service is temporarily unavailable.");
+  }
+  if (authStatus !== "authenticated") {
+    const returnTo = `/library/pyqs/${pyqId}`;
+    redirect(`/auth/login?next=${encodeURIComponent(returnTo)}`);
+  }
+
   const pyq = await getPyqById(pyqId);
 
   if (!pyq) notFound();

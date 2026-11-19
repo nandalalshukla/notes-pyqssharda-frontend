@@ -1,7 +1,4 @@
 import type { Metadata } from "next";
-import { headers } from "next/headers";
-import { redirect } from "next/navigation";
-import { getServerAuthStatus, safeReturnTo } from "@/lib/server/auth";
 
 /**
  * Metadata shared by every /library route.
@@ -27,22 +24,10 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false, googleBot: { index: false, follow: false } },
 };
 
-export default async function LibraryLayout({
+export default function LibraryLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const requestHeaders = await headers();
-  const returnTo = safeReturnTo(requestHeaders.get("x-app-pathname"));
-  const status = await getServerAuthStatus();
-
-  if (status === "unavailable") {
-    throw new Error("Authentication service is temporarily unavailable.");
-  }
-
-  if (status === "unauthenticated") {
-    redirect(`/auth/login?next=${encodeURIComponent(returnTo)}`);
-  }
-
   return <>{children}</>;
 }

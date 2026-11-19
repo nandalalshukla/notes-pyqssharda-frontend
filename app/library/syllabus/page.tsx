@@ -18,13 +18,14 @@ export default function SyllabusPage() {
     <ResourceLibraryPage
       accent="purple"
       heading={{ prefix: "Sharda University ", highlight: "Syllabus" }}
-      description="Access the Sharda University syllabus for B.Tech CS courses, organised by semester and course code so you can plan your exam preparation."
+      description="Browse and search Sharda University syllabus documents for B.Tech CS courses by semester and course code. Sign in to open a syllabus."
       items={allSyllabus}
       programOptions={["B.Tech CS"]}
       programLabel="B.Tech CS"
       noun={{ singular: "Syllabus", plural: "Syllabus" }}
       viewLabel="View Syllabus"
       codePlaceholder="e.g. CSE251"
+      resourceType="syllabus"
       seoContent={{
         heading: "Sharda University syllabus PDFs and course units",
         paragraphs: [

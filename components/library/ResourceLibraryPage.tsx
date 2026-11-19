@@ -133,6 +133,8 @@ export interface ResourceLibraryPageProps {
   viewLabel: string;
   codePlaceholder: string;
   seoContent?: LibrarySeoContentProps;
+  /** Adds an authenticated on-site viewer for static Notes/Syllabus files. */
+  resourceType?: "notes" | "syllabus";
 }
 
 export function ResourceLibraryPage({
@@ -147,6 +149,7 @@ export function ResourceLibraryPage({
   viewLabel,
   codePlaceholder,
   seoContent,
+  resourceType,
 }: ResourceLibraryPageProps) {
   const styles = accentConfig[accent];
   const staticItems = useMemo(() => items ?? [], [items]);
@@ -585,6 +588,7 @@ export function ResourceLibraryPage({
                         programLabel={programLabel}
                         viewLabel={viewLabel}
                         styles={styles}
+                        resourceType={resourceType}
                       />
                     ))}
                   </div>
@@ -623,11 +627,13 @@ function ResourceCard({
   programLabel,
   viewLabel,
   styles,
+  resourceType,
 }: {
   item: LibraryItem;
   programLabel: string;
   viewLabel: string;
   styles: (typeof accentConfig)[LibraryAccent];
+  resourceType?: "notes" | "syllabus";
 }) {
   const srcArray = Array.isArray(item.src) ? item.src : [item.src];
 
@@ -667,7 +673,7 @@ function ResourceCard({
           // An internal page exists for this item, so keep the reader on
           // this site instead of handing them off to a raw file URL.
           <Link
-            href={item.href}
+              href={item.href}
             className="flex w-full items-center justify-center gap-2 rounded-lg bg-ink py-3 font-black text-background transition-opacity hover:opacity-90 cursor-pointer"
           >
             <FileText className="h-5 w-5" />
@@ -675,9 +681,8 @@ function ResourceCard({
           </Link>
         ) : srcArray.length === 1 ? (
           <a
-            href={srcArray[0]}
-            target="_blank"
-            rel="noopener noreferrer"
+            href={resourceType ? `/library/resource?type=${resourceType}&src=${encodeURIComponent(srcArray[0])}` : srcArray[0]}
+            {...(resourceType ? {} : { target: "_blank", rel: "noopener noreferrer" })}
             className="flex w-full items-center justify-center gap-2 rounded-lg bg-ink py-3 font-black text-background transition-opacity hover:opacity-90 cursor-pointer"
           >
             <Download className="h-5 w-5" />
@@ -688,9 +693,8 @@ function ResourceCard({
             {srcArray.map((src, idx) => (
               <a
                 key={idx}
-                href={src}
-                target="_blank"
-                rel="noopener noreferrer"
+                href={resourceType ? `/library/resource?type=${resourceType}&src=${encodeURIComponent(src)}` : src}
+                {...(resourceType ? {} : { target: "_blank", rel: "noopener noreferrer" })}
                 className="flex w-full items-center justify-center gap-2 rounded-lg bg-ink py-2 text-sm font-bold text-background transition-opacity hover:opacity-90 cursor-pointer"
               >
                 <Download className="h-4 w-4" />

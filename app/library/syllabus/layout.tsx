@@ -5,12 +5,12 @@ import { breadcrumbSchema, collectionSchema } from "@/lib/seo/structuredData";
 export const metadata: Metadata = {
   title: "Sharda University Syllabus PDF — B.Tech CSE Course Units",
   description:
-    "Find Sharda University syllabus PDFs by semester and course code. Free library access for students with a Sharda account.",
+    "Browse and search Sharda University syllabus PDFs by semester and course code. Sign in to open an individual syllabus.",
   alternates: { canonical: "/library/syllabus" },
   openGraph: {
     title: "Sharda University Syllabus PDF — B.Tech CSE Course Units",
     description:
-      "Find Sharda University syllabus PDFs by semester and course code. Free access for students with a Sharda account.",
+      "Search Sharda University syllabus PDFs by semester and course code. Sign in to open an individual syllabus.",
     url: "/library/syllabus",
     type: "website",
     images: ["/shardasocial.png"],
