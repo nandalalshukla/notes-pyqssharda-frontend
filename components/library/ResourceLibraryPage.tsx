@@ -348,14 +348,26 @@ export function ResourceLibraryPage({
 
   const filteredItems = dataSource ? serverItems : clientFilteredItems;
 
-  const itemsBySemester = useMemo(() => {
-    const grouped: Record<string, LibraryItem[]> = {};
+  const semesterGroups = useMemo(() => {
+    const grouped = new Map<number | null, LibraryItem[]>();
     filteredItems.forEach((item) => {
-      const semesterKey = item.semester > 0 ? `Semester ${item.semester}` : "Semester not listed";
-      if (!grouped[semesterKey]) grouped[semesterKey] = [];
-      grouped[semesterKey].push(item);
+      const semester = Number(item.semester);
+      const semesterKey = Number.isFinite(semester) && semester > 0 ? semester : null;
+      const group = grouped.get(semesterKey) ?? [];
+      group.push(item);
+      grouped.set(semesterKey, group);
     });
-    return grouped;
+
+    return [...grouped.entries()]
+      .sort(([a], [b]) => {
+        if (a === null) return b === null ? 0 : 1;
+        if (b === null) return -1;
+        return a - b;
+      })
+      .map(([semester, items]) => ({
+        label: semester === null ? "Semester not listed" : `Semester ${semester}`,
+        items,
+      }));
   }, [filteredItems]);
 
   const handleClearFilters = () => {
@@ -566,18 +578,9 @@ export function ResourceLibraryPage({
               <Skeleton key={i} className="h-64 w-full rounded-xl" />
             ))}
           </div>
-        ) : Object.keys(itemsBySemester).length > 0 ? (
+        ) : semesterGroups.length > 0 ? (
           <div className="space-y-12">
-            {Object.entries(itemsBySemester)
-              .sort(([a], [b]) => {
-                const aUnlisted = a === "Semester not listed";
-                const bUnlisted = b === "Semester not listed";
-                if (aUnlisted || bUnlisted) {
-                  return aUnlisted === bUnlisted ? 0 : aUnlisted ? 1 : -1;
-                }
-                return a.localeCompare(b, undefined, { numeric: true });
-              })
-              .map(([semester, semesterItems]) => (
+            {semesterGroups.map(({ label: semester, items: semesterItems }) => (
                 <div key={semester}>
                   <div className="mb-8 flex items-center gap-4">
                     <h2 className="text-3xl font-black">
