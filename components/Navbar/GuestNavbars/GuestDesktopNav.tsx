@@ -26,7 +26,7 @@ const GuestDesktopNav = () => {
   };
 
   return (
-    <div className="mx-auto flex min-h-0 w-full max-w-7xl items-center justify-between gap-3 px-4 py-2 text-foreground sm:px-6 sm:py-2 lg:px-8">
+    <div className="mx-auto flex min-h-0 w-full max-w-7xl items-center justify-between gap-2 px-3 py-2 text-foreground sm:gap-3 sm:px-6 lg:px-8">
       {/* Logo */}
       <Link
         href="/"
@@ -44,7 +44,7 @@ const GuestDesktopNav = () => {
       </Link>
 
       {/* Main Navigation Links */}
-      <div className="flex items-center justify-center gap-2">
+      <div className="flex items-center justify-center gap-1.5 lg:gap-2">
         {navLinks.map((link) => {
           const active =
             link.href === "/"
@@ -59,11 +59,11 @@ const GuestDesktopNav = () => {
               aria-current={active ? "page" : undefined}
               data-active={active}
               className={cn(
-                "feed-filter-pill cursor-pointer",
+                "feed-filter-pill cursor-pointer px-3 sm:px-3.5",
                 active && "text-primary-foreground",
               )}
             >
-              <Icon className="text-base" aria-hidden="true" />
+              <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
               {link.label}
             </Link>
           );
@@ -71,21 +71,21 @@ const GuestDesktopNav = () => {
       </div>
 
       {/* Auth Buttons */}
-      <div className="flex items-center gap-2">
+      <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
         <ThemeToggle />
         <Link
           href="/auth/login"
-          className="feed-filter-pill cursor-pointer"
+          className="feed-filter-pill cursor-pointer px-3 sm:px-3.5"
         >
-          <FiLogIn className="mr-1.5 text-base" />
+          <FiLogIn className="h-4 w-4 shrink-0" aria-hidden="true" />
           Login
         </Link>
         <Link
           href="/auth/register"
           data-active="true"
-          className="feed-filter-pill cursor-pointer text-primary-foreground"
+          className="feed-filter-pill cursor-pointer px-3 sm:px-3.5 text-primary-foreground"
         >
-          <FiUserPlus className="mr-1.5 text-base" />
+          <FiUserPlus className="h-4 w-4 shrink-0" aria-hidden="true" />
           Register
         </Link>
       </div>

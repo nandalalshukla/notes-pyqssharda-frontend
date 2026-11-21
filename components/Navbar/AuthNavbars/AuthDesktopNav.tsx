@@ -17,7 +17,6 @@ import {
   FiShield,
   FiBookOpen,
   FiInfo,
-  FiUser,
 } from "react-icons/fi";
 import NotificationsDropdown from "@/components/social/NotificationsDropdown";
 import { resendOtp } from "@/lib/api/user/auth.api";
@@ -87,7 +86,7 @@ const AuthDesktopNav = () => {
   };
 
   return (
-    <div className="mx-auto flex min-h-0 w-full max-w-7xl items-center justify-between gap-3 px-4 py-2 text-foreground sm:px-6 sm:py-2 lg:px-8">
+    <div className="mx-auto flex min-h-0 w-full max-w-7xl items-center justify-between gap-2 px-3 py-2 text-foreground sm:gap-3 sm:px-6 lg:px-8">
       {/* Logo */}
       <Link
         href="/"
@@ -105,7 +104,7 @@ const AuthDesktopNav = () => {
       </Link>
 
       {/* Main Navigation Links */}
-      <div className="flex items-center justify-center gap-2">
+      <div className="flex items-center justify-center gap-1.5 lg:gap-2">
         {navLinks.map((link) => {
           const active =
             link.href === "/"
@@ -121,11 +120,11 @@ const AuthDesktopNav = () => {
               aria-current={active ? "page" : undefined}
               data-active={active}
               className={cn(
-                "feed-filter-pill cursor-pointer xl:px-4",
+                "feed-filter-pill cursor-pointer px-3 xl:px-4",
                 active && "text-primary-foreground",
               )}
             >
-              <Icon className="text-base" aria-hidden="true" />
+              <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
               <span className="hidden xl:inline">{link.label}</span>
               <span className="sr-only xl:hidden">{link.label}</span>
             </Link>
@@ -134,15 +133,18 @@ const AuthDesktopNav = () => {
       </div>
 
       {/* Right Section: Notifications & Profile */}
-      <div className="flex items-center gap-2 sm:gap-2.5">
+      <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
         <ThemeToggle />
         <NotificationsDropdown />
 
         {/* Profile Button */}
         <div className="relative" ref={wrapperRef}>
           <button
+            type="button"
             onClick={() => setIsProfileOpen(!isProfileOpen)}
-            className="feed-filter-pill cursor-pointer"
+            aria-label={`Profile menu for ${displayName}`}
+            aria-expanded={isProfileOpen}
+            className="feed-filter-pill h-11 min-h-11 cursor-pointer gap-2 px-2.5"
           >
             <span className="relative flex h-7 w-7 overflow-hidden rounded-full bg-muted sm:h-8 sm:w-8">
               {profileImage ? (
@@ -159,7 +161,6 @@ const AuthDesktopNav = () => {
                 </span>
               )}
             </span>
-            <FiUser className="h-4 w-4 text-muted-foreground" />
             <FiChevronDown
               className={cn(
                 "h-4 w-4 text-muted-foreground transition-transform duration-200",

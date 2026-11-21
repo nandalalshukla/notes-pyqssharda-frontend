@@ -95,8 +95,8 @@ const AuthMobileNav = () => {
   };
 
   return (
-    <div className="relative w-full px-3 py-2 text-foreground sm:px-5">
-      <div className="flex items-center gap-2">
+    <div className="mobile-navbar relative w-full px-2 py-1.5 text-foreground sm:px-4">
+      <div className="flex items-center gap-1 sm:gap-1.5">
         {/* Logo */}
         <Link
           href="/"
@@ -108,13 +108,13 @@ const AuthMobileNav = () => {
             alt="Sharda Social"
             width={64}
             height={64}
-            className="h-9 w-9 rounded-lg object-contain drop-shadow-sm"
+            className="h-8 w-8 rounded-lg object-contain drop-shadow-sm"
             priority
           />
         </Link>
 
         {/* Navigation Links */}
-        <div className="flex flex-1 items-center justify-center gap-1">
+        <div className="flex min-w-0 flex-1 items-center justify-start gap-1 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {navLinks.map((link) => {
             const active =
               link.href === "/"
@@ -131,11 +131,11 @@ const AuthMobileNav = () => {
                 aria-current={active ? "page" : undefined}
                 data-active={active}
                 className={cn(
-                  "feed-filter-pill icon-control h-11 w-11 shrink-0 cursor-pointer",
+                  "feed-filter-pill icon-control nav-control h-11 w-11 shrink-0 cursor-pointer",
                   active && "text-primary-foreground",
                 )}
               >
-                <Icon className="!h-6 !w-6" aria-hidden="true" />
+                <Icon className="h-5 w-5" aria-hidden="true" />
                 <span className="sr-only">{link.label}</span>
               </Link>
             );
@@ -143,15 +143,17 @@ const AuthMobileNav = () => {
         </div>
 
         {/* Right Actions: Notifications & Profile */}
-        <div className="flex shrink-0 items-center gap-1.5">
+        <div className="flex shrink-0 items-center gap-1">
           <ThemeToggle />
           <NotificationsDropdown />
 
           <button
             ref={profileButtonRef}
+            type="button"
             onClick={() => setIsProfileOpen(!isProfileOpen)}
-            className="feed-filter-pill icon-control h-11 w-11 shrink-0 cursor-pointer overflow-hidden"
+            className="feed-filter-pill icon-control nav-control h-11 w-11 shrink-0 cursor-pointer overflow-hidden"
             aria-label="Profile menu"
+            aria-expanded={isProfileOpen}
           >
             {profileImage ? (
               <Image

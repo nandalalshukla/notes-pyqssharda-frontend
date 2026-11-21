@@ -28,8 +28,8 @@ const GuestMobileNav = () => {
   };
 
   return (
-    <div className="w-full px-3 py-2 text-foreground sm:px-5">
-      <div className="flex items-center gap-2">
+    <div className="mobile-navbar w-full px-2 py-1.5 text-foreground sm:px-4">
+      <div className="flex items-center gap-1 sm:gap-1.5">
         {/* Logo */}
         <Link
           href="/"
@@ -41,12 +41,12 @@ const GuestMobileNav = () => {
             alt="Sharda Social"
             width={64}
             height={64}
-            className="h-9 w-9 rounded-lg object-contain drop-shadow-sm"
+            className="h-8 w-8 rounded-lg object-contain drop-shadow-sm"
             priority
           />
         </Link>
 
-        <div className="flex flex-1 items-center justify-center gap-1">
+        <div className="flex min-w-0 flex-1 items-center justify-start gap-1 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {navLinks.map((link) => {
             const active =
               link.href === "/"
@@ -63,26 +63,26 @@ const GuestMobileNav = () => {
                 aria-current={active ? "page" : undefined}
                 data-active={active}
                 className={cn(
-                  "feed-filter-pill icon-control h-11 w-11 shrink-0 cursor-pointer",
+                  "feed-filter-pill icon-control nav-control h-11 w-11 shrink-0 cursor-pointer",
                   active && "text-primary-foreground",
                 )}
               >
-                <Icon className="!h-6 !w-6" aria-hidden="true" />
+                <Icon className="h-5 w-5" aria-hidden="true" />
                 <span className="sr-only">{link.label}</span>
               </Link>
             );
           })}
         </div>
 
-        <div className="flex shrink-0 items-center gap-1.5">
+        <div className="flex shrink-0 items-center gap-1">
           <ThemeToggle />
           <Link
             href="/auth/login"
             aria-label="Login"
             title="Login"
-            className="feed-filter-pill icon-control h-11 w-11 cursor-pointer"
+            className="feed-filter-pill icon-control nav-control h-11 w-11 shrink-0 cursor-pointer"
           >
-            <FiLogIn className="!h-6 !w-6" />
+            <FiLogIn className="h-5 w-5" aria-hidden="true" />
             <span className="sr-only">Login</span>
           </Link>
           <Link
@@ -90,9 +90,9 @@ const GuestMobileNav = () => {
             aria-label="Register"
             title="Register"
             data-active="true"
-            className="feed-filter-pill icon-control h-11 w-11 cursor-pointer text-primary-foreground"
+            className="feed-filter-pill icon-control nav-control h-11 w-11 shrink-0 cursor-pointer text-primary-foreground"
           >
-            <FiUserPlus className="!h-6 !w-6" />
+            <FiUserPlus className="h-5 w-5" aria-hidden="true" />
             <span className="sr-only">Register</span>
           </Link>
         </div>
