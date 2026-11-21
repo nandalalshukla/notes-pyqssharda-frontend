@@ -151,7 +151,7 @@ const AuthMobileNav = () => {
             ref={profileButtonRef}
             type="button"
             onClick={() => setIsProfileOpen(!isProfileOpen)}
-            className="feed-filter-pill icon-control nav-control h-11 w-11 shrink-0 cursor-pointer overflow-hidden"
+            className="profile-avatar-control feed-filter-pill icon-control nav-control h-11 w-11 shrink-0 cursor-pointer overflow-hidden rounded-full"
             aria-label="Profile menu"
             aria-expanded={isProfileOpen}
           >
@@ -161,7 +161,7 @@ const AuthMobileNav = () => {
                 alt={displayName}
                 width={36}
                 height={36}
-                className="h-full w-full object-cover"
+                className="h-full w-full rounded-full object-cover"
               />
             ) : (
               <span className="flex h-full w-full items-center justify-center bg-primary text-xs font-bold text-primary-foreground">

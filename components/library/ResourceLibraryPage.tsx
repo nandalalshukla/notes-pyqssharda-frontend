@@ -569,7 +569,14 @@ export function ResourceLibraryPage({
         ) : Object.keys(itemsBySemester).length > 0 ? (
           <div className="space-y-12">
             {Object.entries(itemsBySemester)
-              .sort(([a], [b]) => a.localeCompare(b, undefined, { numeric: true }))
+              .sort(([a], [b]) => {
+                const aUnlisted = a === "Semester not listed";
+                const bUnlisted = b === "Semester not listed";
+                if (aUnlisted || bUnlisted) {
+                  return aUnlisted === bUnlisted ? 0 : aUnlisted ? 1 : -1;
+                }
+                return a.localeCompare(b, undefined, { numeric: true });
+              })
               .map(([semester, semesterItems]) => (
                 <div key={semester}>
                   <div className="mb-8 flex items-center gap-4">
