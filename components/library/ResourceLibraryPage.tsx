@@ -680,34 +680,57 @@ function ResourceCard({
           // An internal page exists for this item, so keep the reader on
           // this site instead of handing them off to a raw file URL.
           <Link
-              href={item.href}
+            href={item.href}
             className="flex w-full items-center justify-center gap-2 rounded-lg bg-ink py-3 font-black text-background transition-opacity hover:opacity-90 cursor-pointer"
           >
             <FileText className="h-5 w-5" />
             {viewLabel}
           </Link>
         ) : srcArray.length === 1 ? (
-          <a
-            href={resourceType ? `/library/resource?type=${resourceType}&src=${encodeURIComponent(srcArray[0])}` : srcArray[0]}
-            {...(resourceType ? {} : { target: "_blank", rel: "noopener noreferrer" })}
-            className="flex w-full items-center justify-center gap-2 rounded-lg bg-ink py-3 font-black text-background transition-opacity hover:opacity-90 cursor-pointer"
-          >
-            <Download className="h-5 w-5" />
-            {viewLabel}
-          </a>
+          resourceType ? (
+            <Link
+              href={`/library/resource?type=${resourceType}&src=${encodeURIComponent(srcArray[0])}`}
+              className="flex w-full items-center justify-center gap-2 rounded-lg bg-ink py-3 font-black text-background transition-opacity hover:opacity-90 cursor-pointer"
+            >
+              <Download className="h-5 w-5" />
+              {viewLabel}
+            </Link>
+          ) : (
+            <a
+              href={srcArray[0]}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex w-full items-center justify-center gap-2 rounded-lg bg-ink py-3 font-black text-background transition-opacity hover:opacity-90 cursor-pointer"
+            >
+              <Download className="h-5 w-5" />
+              {viewLabel}
+            </a>
+          )
         ) : (
           <div className="space-y-2">
-            {srcArray.map((src, idx) => (
-              <a
-                key={idx}
-                href={resourceType ? `/library/resource?type=${resourceType}&src=${encodeURIComponent(src)}` : src}
-                {...(resourceType ? {} : { target: "_blank", rel: "noopener noreferrer" })}
-                className="flex w-full items-center justify-center gap-2 rounded-lg bg-ink py-2 text-sm font-bold text-background transition-opacity hover:opacity-90 cursor-pointer"
-              >
-                <Download className="h-4 w-4" />
-                {extractUnitName(src)}
-              </a>
-            ))}
+            {srcArray.map((src, idx) =>
+              resourceType ? (
+                <Link
+                  key={idx}
+                  href={`/library/resource?type=${resourceType}&src=${encodeURIComponent(src)}`}
+                  className="flex w-full items-center justify-center gap-2 rounded-lg bg-ink py-2 text-sm font-bold text-background transition-opacity hover:opacity-90 cursor-pointer"
+                >
+                  <Download className="h-4 w-4" />
+                  {extractUnitName(src)}
+                </Link>
+              ) : (
+                <a
+                  key={idx}
+                  href={src}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex w-full items-center justify-center gap-2 rounded-lg bg-ink py-2 text-sm font-bold text-background transition-opacity hover:opacity-90 cursor-pointer"
+                >
+                  <Download className="h-4 w-4" />
+                  {extractUnitName(src)}
+                </a>
+              ),
+            )}
           </div>
         )}
       </div>
