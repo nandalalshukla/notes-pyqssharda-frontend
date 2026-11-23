@@ -15,6 +15,29 @@ interface MentionTextProps {
   className?: string;
 }
 
+function isShardaSocialUrl(rawUrl: string): string | null {
+  let parsed: URL;
+  try {
+    parsed = new URL(rawUrl, "https://sharda.social");
+  } catch {
+    return null;
+  }
+
+  if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+    return null;
+  }
+
+  const hostname = parsed.hostname.toLowerCase().replace(/^www\./, "");
+  if (hostname !== "sharda.social") return null;
+
+  return parsed.origin === "https://sharda.social" ||
+    parsed.origin === "http://sharda.social" ||
+    parsed.origin === "https://www.sharda.social" ||
+    parsed.origin === "http://www.sharda.social"
+    ? parsed.toString()
+    : null;
+}
+
 export default function MentionText({
   text,
   mentions = [],
@@ -28,11 +51,28 @@ export default function MentionText({
     }
   });
 
-  const parts = text.split(/(@[a-zA-Z0-9._]+)/g);
+  const parts = text.split(/(@[a-zA-Z0-9._]+|https?:\/\/[^\s<]+)/gi);
 
   return (
     <span className={className}>
       {parts.map((part, index) => {
+        if (/^https?:\/\//i.test(part)) {
+          const internalUrl = isShardaSocialUrl(part);
+          if (internalUrl) {
+            return (
+              <a
+                key={`link-${index}`}
+                href={internalUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-semibold text-primary hover:text-primary-hover hover:underline"
+                onClick={(event) => event.stopPropagation()}
+              >
+                {part}
+              </a>
+            );
+          }
+        }
         if (!part.startsWith("@")) return <React.Fragment key={index}>{part}</React.Fragment>;
         const username = part.slice(1).toLowerCase();
         const mention = byUsername.get(username);
