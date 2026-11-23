@@ -452,7 +452,11 @@ export default function CommentsModal({
                       </div>
                     ) : (
                       <p className="text-sm leading-relaxed whitespace-pre-wrap break-words text-foreground">
-                        <MentionText text={reply.text} mentions={reply.mentions} />
+                        <MentionText
+                          text={reply.text}
+                          mentions={reply.mentions}
+                          mentionEveryone={reply.mentionEveryone}
+                        />
                       </p>
                     )}
                   </div>
@@ -617,7 +621,11 @@ export default function CommentsModal({
                   </div>
                 ) : (
                   <p className="mt-0.5 text-sm break-words text-foreground">
-                    <MentionText text={comment.text} mentions={comment.mentions} />
+                    <MentionText
+                      text={comment.text}
+                      mentions={comment.mentions}
+                      mentionEveryone={comment.mentionEveryone}
+                    />
                   </p>
                 )}
               </div>

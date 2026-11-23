@@ -659,7 +659,11 @@ export default function PostCard({
         {post.content.trim().length > 0 && (
           <div className={post.files?.length ? "mt-4 pl-2 pr-8" : "pl-2 pr-8"}>
             <p className="whitespace-pre-wrap break-words text-base leading-relaxed text-foreground">
-              <MentionText text={post.content} mentions={post.mentions} />
+              <MentionText
+                text={post.content}
+                mentions={post.mentions}
+                mentionEveryone={post.mentionEveryone}
+              />
             </p>
           </div>
         )}

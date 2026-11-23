@@ -104,6 +104,7 @@ export interface Post {
   type: PostType;
   content: string;
   mentions?: Array<{ userId: string; username: string; usernameSnapshot?: string }>;
+  mentionEveryone?: boolean;
   author: PostAuthor;
   // True when the post was published anonymously. The author still sees
   // their own real profile in `author` (so edit/delete stay available);
@@ -126,6 +127,7 @@ export interface Comment {
   _id: string;
   text: string;
   mentions?: Array<{ userId: string; username: string; usernameSnapshot?: string }>;
+  mentionEveryone?: boolean;
   author: User;
   post: string;
   parentComment?: string | null;

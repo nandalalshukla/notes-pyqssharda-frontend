@@ -12,6 +12,7 @@ export interface MentionReference {
 interface MentionTextProps {
   text: string;
   mentions?: MentionReference[];
+  mentionEveryone?: boolean;
   className?: string;
 }
 
@@ -41,6 +42,7 @@ function isShardaSocialUrl(rawUrl: string): string | null {
 export default function MentionText({
   text,
   mentions = [],
+  mentionEveryone = false,
   className,
 }: MentionTextProps) {
   const byUsername = new Map<string, MentionReference>();
@@ -72,6 +74,16 @@ export default function MentionText({
               </a>
             );
           }
+        }
+        if (/^@everyone$/i.test(part) && mentionEveryone) {
+          return (
+            <span
+              key={`everyone-${index}`}
+              className="cursor-default font-bold text-primary"
+            >
+              @everyone
+            </span>
+          );
         }
         if (!part.startsWith("@")) return <React.Fragment key={index}>{part}</React.Fragment>;
         const username = part.slice(1).toLowerCase();
