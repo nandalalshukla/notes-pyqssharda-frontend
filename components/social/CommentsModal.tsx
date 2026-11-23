@@ -428,7 +428,7 @@ export default function CommentsModal({
                             setEditText(value);
                             setEditMentions(nextMentions);
                           }}
-                          className="w-full resize-none rounded-lg border border-input bg-card px-3 py-2 text-sm focus:ring-2 focus:ring-ring focus:outline-none"
+                          className="h-20 w-full resize-none overflow-y-auto rounded-lg border border-input bg-card px-3 py-2 text-sm focus:ring-2 focus:ring-ring focus:outline-none"
                           rows={2}
                         />
                         <div className="mt-3 flex gap-2">
@@ -519,7 +519,7 @@ export default function CommentsModal({
                               setReplyMentions(nextMentions);
                             }}
                             placeholder="Write a reply..."
-                            className="w-full resize-none rounded-lg border border-input bg-card p-3 text-sm focus:ring-2 focus:ring-ring focus:outline-none"
+                            className="h-20 w-full resize-none overflow-y-auto rounded-lg border border-input bg-card p-3 text-sm focus:ring-2 focus:ring-ring focus:outline-none"
                             rows={2}
                           />
                           <div className="mt-3 flex gap-2">
@@ -597,7 +597,7 @@ export default function CommentsModal({
                         setEditText(value);
                         setEditMentions(nextMentions);
                       }}
-                      className="w-full resize-none rounded-lg border border-input bg-card px-3 py-2 text-sm focus:ring-2 focus:ring-ring focus:outline-none"
+                      className="h-20 w-full resize-none overflow-y-auto rounded-lg border border-input bg-card px-3 py-2 text-sm focus:ring-2 focus:ring-ring focus:outline-none"
                       rows={2}
                     />
                     <div className="mt-2 flex gap-2">
@@ -744,7 +744,7 @@ export default function CommentsModal({
                       setReplyMentions(nextMentions);
                     }}
                     placeholder="Write a reply..."
-                    className="w-full resize-none rounded-lg border border-input bg-card p-3 text-sm focus:ring-2 focus:ring-ring focus:outline-none"
+                    className="h-20 w-full resize-none overflow-y-auto rounded-lg border border-input bg-card p-3 text-sm focus:ring-2 focus:ring-ring focus:outline-none"
                     rows={2}
                   />
                   <div className="mt-3 flex gap-2">
@@ -786,13 +786,15 @@ export default function CommentsModal({
             <MentionTextarea
               value={newCommentText}
               mentions={newCommentMentions}
+              wrapperClassName="min-w-0 flex-1"
               onChange={(value, nextMentions) => {
                 setNewCommentText(value);
                 setNewCommentMentions(nextMentions);
               }}
               placeholder={user ? "Add a comment..." : "Login to comment"}
               disabled={!user || isSubmitting}
-              className="flex-1 rounded-full bg-muted px-4 py-2.5 text-sm text-foreground outline-none transition-colors focus:bg-card focus:ring-2 focus:ring-ring disabled:opacity-50"
+              rows={1}
+              className="h-11 w-full resize-none overflow-y-auto rounded-full bg-muted px-4 py-2.5 text-sm leading-6 text-foreground outline-none transition-colors focus:bg-card focus:ring-2 focus:ring-ring disabled:opacity-50"
             />
             <button
               type="submit"

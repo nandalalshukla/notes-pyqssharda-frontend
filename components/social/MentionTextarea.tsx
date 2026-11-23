@@ -23,6 +23,7 @@ interface MentionTextareaProps
   onChange: (value: string, mentions: MentionReference[]) => void;
   mentions: MentionReference[];
   inputClassName?: string;
+  wrapperClassName?: string;
 }
 
 export default function MentionTextarea({
@@ -30,6 +31,7 @@ export default function MentionTextarea({
   onChange,
   mentions,
   className,
+  wrapperClassName,
   ...props
 }: MentionTextareaProps) {
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
@@ -138,7 +140,10 @@ export default function MentionTextarea({
   };
 
   return (
-    <div ref={containerRef} className="relative">
+    <div
+      ref={containerRef}
+      className={`relative ${wrapperClassName ?? ""}`}
+    >
       <textarea
         {...props}
         ref={textareaRef}
