@@ -67,6 +67,22 @@ export default function UsersPanel({
       ),
     },
     {
+      id: "emailVerified",
+      header: "Email",
+      accessor: (row) => (
+        <div className="flex flex-col items-start gap-1">
+          <Badge variant={row.isEmailVerified ? "success" : "warning"}>
+            {row.isEmailVerified ? "Verified" : "Not verified"}
+          </Badge>
+          {!row.isEmailVerified && (
+            <span className="text-xs text-muted-foreground">
+              Verification required
+            </span>
+          )}
+        </div>
+      ),
+    },
+    {
       id: "actions",
       header: "Actions",
       accessor: (row) => (

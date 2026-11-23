@@ -1,10 +1,16 @@
 "use client";
 
+import { useMemo } from "react";
 import SYLLABUS2_DATA_2024_25 from "@/DATA/Syllabus/BtechCS/2ndSem";
 import SYLLABUS4_DATA_2024_25 from "@/DATA/Syllabus/BtechCS/4thSem";
 import SYLLABUS5_DATA_2024_25 from "@/DATA/Syllabus/BtechCS/5thSem";
 import SYLLABUS6_DATA_2024_25 from "@/DATA/Syllabus/BtechCS/6thSem";
-import { ResourceLibraryPage, type LibraryItem } from "@/components/library/ResourceLibraryPage";
+import {
+  ResourceLibraryPage,
+  type LibraryDataSource,
+  type LibraryItem,
+} from "@/components/library/ResourceLibraryPage";
+import { browseSyllabus, getSyllabusFilterOptions } from "@/lib/api/syllabus/syllabus.api";
 
 const allSyllabus: LibraryItem[] = [
   ...SYLLABUS2_DATA_2024_25,
@@ -14,6 +20,67 @@ const allSyllabus: LibraryItem[] = [
 ];
 
 export default function SyllabusPage() {
+  const dataSource = useMemo<LibraryDataSource>(() => ({
+    fetchPage: async (q, signal) => {
+      const res = await browseSyllabus({
+        page: q.page,
+        limit: 24,
+        query: q.query || undefined,
+        program: q.program || undefined,
+        courseCode: q.courseCode || undefined,
+        year: q.year || undefined,
+        semester: q.semester || undefined,
+      }, signal);
+
+      const matchesStatic = (item: LibraryItem) => {
+        const query = q.query.toLowerCase();
+        const code = q.courseCode.toLowerCase();
+        return (
+          (!query || item.subject.toLowerCase().includes(query) || item.code.toLowerCase().includes(query)) &&
+          (!q.program || (item.program ?? "B.Tech CS").toLowerCase() === q.program.toLowerCase()) &&
+          (!code || item.code.toLowerCase().includes(code)) &&
+          (!q.year || item.year === q.year) &&
+          (!q.semester || item.semester.toString() === q.semester)
+        );
+      };
+
+      const databaseItems: LibraryItem[] = res.syllabuses.map((syllabus) => ({
+        subject: syllabus.courseName || syllabus.title,
+        code: syllabus.courseCode,
+        credits: 0,
+        semester: syllabus.semester,
+        year: syllabus.year || "Not stated",
+        src: syllabus.fileUrl,
+        program: syllabus.program,
+        href: `/library/syllabus/${syllabus._id}`,
+      }));
+      const staticMatches = q.page === 1 ? allSyllabus.filter(matchesStatic) : [];
+      const staticTotal = allSyllabus.filter(matchesStatic).length;
+      const mergedItems = [...staticMatches, ...databaseItems].filter(
+        (item, index, items) => {
+          const key = `${item.subject.toLowerCase()}|${item.code.toLowerCase()}|${item.semester}`;
+          return items.findIndex((candidate) =>
+            `${candidate.subject.toLowerCase()}|${candidate.code.toLowerCase()}|${candidate.semester}` === key
+          ) === index;
+        },
+      );
+
+      return {
+        items: mergedItems,
+        total: res.pagination.total + staticTotal,
+        hasMore: res.pagination.hasMore,
+      };
+    },
+    fetchFilterOptions: async () => {
+      const options = await getSyllabusFilterOptions();
+      return {
+        programs: [...new Set([...options.programs, "B.Tech CS"])].sort(),
+        years: [...new Set([...options.years, ...allSyllabus.map((item) => item.year)])].sort().reverse(),
+        semesters: [...new Set([...options.semesters.map(String), ...allSyllabus.map((item) => item.semester.toString())])].sort((a, b) => Number(a) - Number(b)),
+      };
+    },
+  }), []);
+
   return (
     <ResourceLibraryPage
       accent="purple"

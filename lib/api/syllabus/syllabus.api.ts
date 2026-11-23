@@ -34,6 +34,62 @@ export interface SyllabusSearchParams {
   year?: string;
 }
 
+export interface SyllabusBrowseParams {
+  page?: number;
+  limit?: number;
+  program?: string;
+  semester?: string;
+  year?: string;
+  courseCode?: string;
+  query?: string;
+}
+
+export interface SyllabusPagination {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+  hasMore: boolean;
+}
+
+export interface SyllabusFilterOptions {
+  programs: string[];
+  years: string[];
+  semesters: number[];
+}
+
+export const browseSyllabus = async (
+  params: SyllabusBrowseParams = {},
+  signal?: AbortSignal,
+) => {
+  const response = await api.get<{
+    success: boolean;
+    data: { syllabuses: Syllabus[]; pagination: SyllabusPagination };
+  }>("/syllabus/browse-syllabus", { params, signal });
+  return response.data.data;
+};
+
+export const getSyllabusFilterOptions = async () => {
+  const response = await api.get<{
+    success: boolean;
+    data: SyllabusFilterOptions;
+  }>("/syllabus/syllabus-filters");
+  return response.data.data;
+};
+
+export const getSyllabusById = async (
+  syllabusId: string,
+): Promise<Syllabus | null> => {
+  const origin = process.env.BACKEND_ORIGIN ?? "http://localhost:5000";
+  const res = await fetch(
+    `${origin}/api/v1/syllabus/document/${syllabusId}`,
+    { next: { revalidate: 300 } },
+  );
+  if (!res.ok) return null;
+  const body = (await res.json()) as { data?: { syllabus?: Syllabus } };
+  return body.data?.syllabus ?? null;
+};
+
 export const getAllSyllabus = async () => {
   const response = await api.get("/syllabus/all-syllabus");
   return response.data;

@@ -34,6 +34,58 @@ export interface NoteSearchParams {
   year?: string;
 }
 
+export interface NoteBrowseParams {
+  page?: number;
+  limit?: number;
+  program?: string;
+  semester?: string;
+  year?: string;
+  courseCode?: string;
+  query?: string;
+}
+
+export interface NotePagination {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+  hasMore: boolean;
+}
+
+export interface NoteFilterOptions {
+  programs: string[];
+  years: string[];
+  semesters: number[];
+}
+
+export const browseNotes = async (
+  params: NoteBrowseParams = {},
+  signal?: AbortSignal,
+) => {
+  const response = await api.get<{
+    success: boolean;
+    data: { notes: Note[]; pagination: NotePagination };
+  }>("/notes/browse-notes", { params, signal });
+  return response.data.data;
+};
+
+export const getNoteFilterOptions = async () => {
+  const response = await api.get<{ success: boolean; data: NoteFilterOptions }>(
+    "/notes/note-filters",
+  );
+  return response.data.data;
+};
+
+export const getNoteById = async (noteId: string): Promise<Note | null> => {
+  const origin = process.env.BACKEND_ORIGIN ?? "http://localhost:5000";
+  const res = await fetch(`${origin}/api/v1/notes/note/${noteId}`, {
+    next: { revalidate: 300 },
+  });
+  if (!res.ok) return null;
+  const body = (await res.json()) as { data?: { note?: Note } };
+  return body.data?.note ?? null;
+};
+
 export const getAllNotes = async () => {
   const response = await api.get("/notes/all-notes");
   return response.data;

@@ -3,9 +3,10 @@
 import { useMemo, useState } from "react";
 import dynamic from "next/dynamic";
 import { toast } from "react-hot-toast";
-import { CheckCircle, Clock } from "lucide-react";
+import { CheckCircle, Clock, ExternalLink } from "lucide-react";
 import { SectionCard, Toolbar } from "@/components/dashboards/SectionCard";
 import { DataTable, DataTableColumn, Button, Input } from "@/components/ui";
+import { UserProfileLink } from "@/components/shared/UserProfileLink";
 import {
   getSubmissionActionKey,
   type PendingSubmission,
@@ -60,11 +61,23 @@ export default function SubmissionsPanel({
 
   const filteredSubmissions = useMemo(
     () =>
-      submissions.filter(
-        (s) =>
-          s.title?.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
-          s.submissionType.includes(debouncedSearch.toLowerCase()),
-      ),
+      submissions.filter((s) => {
+        const haystack = [
+          s.title,
+          s.courseName,
+          s.courseCode,
+          s.program,
+          s.submissionType,
+          s.year,
+          s.userId?.name,
+          s.userId?.username,
+          s.userId?.email,
+        ]
+          .filter(Boolean)
+          .join(" ")
+          .toLowerCase();
+        return haystack.includes(debouncedSearch.toLowerCase());
+      }),
     [submissions, debouncedSearch],
   );
 
@@ -96,12 +109,59 @@ export default function SubmissionsPanel({
       id: "title",
       header: "Content",
       accessor: (row) => (
-        <div>
-          <p className="font-medium text-foreground line-clamp-1">{row.title}</p>
-          <p className="text-xs text-muted-foreground capitalize">{row.submissionType}</p>
+        <div className="min-w-52">
+          {row.fileUrl ? (
+            <a
+              href={row.fileUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 font-medium text-foreground hover:text-primary hover:underline"
+              title="Open file for review"
+            >
+              {row.title}
+              <ExternalLink size={12} />
+            </a>
+          ) : (
+            <p className="font-medium text-foreground">{row.title}</p>
+          )}
+          <p className="mt-1 text-xs text-muted-foreground">
+            {[row.courseName, row.courseCode].filter(Boolean).join(" · ") || "Subject not provided"}
+          </p>
+          <p className="text-xs text-muted-foreground capitalize">
+            {row.submissionType}
+            {row.semester ? ` · Semester ${row.semester}` : ""}
+            {row.year ? ` · ${row.year}` : ""}
+          </p>
         </div>
       ),
       sortable: true,
+    },
+    {
+      id: "program",
+      header: "Programme",
+      accessor: (row) => (
+        <span className="text-sm text-muted-foreground">
+          {row.program || "Not provided"}
+        </span>
+      ),
+    },
+    {
+      id: "author",
+      header: "Submitted by",
+      accessor: (row) => {
+        const author = row.userId;
+        const authorName =
+          typeof author === "object"
+            ? author.name || author.username || "Unknown author"
+            : "Unknown author";
+        return (
+          <UserProfileLink
+            userId={typeof author === "object" ? author._id : undefined}
+            username={authorName}
+            showAvatar={false}
+          />
+        );
+      },
     },
     {
       id: "createdAt",

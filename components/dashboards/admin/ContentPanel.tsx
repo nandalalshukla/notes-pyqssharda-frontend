@@ -29,6 +29,7 @@ import {
 } from "@/lib/api/admin/content.api";
 import { actionKey, useAdminContentStore } from "@/stores/admin/content.store";
 import { cn } from "@/lib/utils/cn";
+import { UserProfileLink } from "@/components/shared/UserProfileLink";
 
 const RejectionModal = dynamic(
   () => import("@/components/modals/RejectionModal"),
@@ -67,6 +68,9 @@ const uploaderName = (row: AdminContentItem) =>
   typeof row.userId === "object" && row.userId
     ? (row.userId.username ?? row.userId.name ?? "Unknown")
     : "Unknown";
+
+const uploaderId = (row: AdminContentItem) =>
+  typeof row.userId === "object" && row.userId ? row.userId._id : undefined;
 
 export default function ContentPanel() {
   const [type, setType] = useState<ContentType>("pyqs");
@@ -146,9 +150,23 @@ export default function ContentPanel() {
       header: "Resource",
       accessor: (row) => (
         <div className="min-w-0">
-          <p className="line-clamp-1 font-medium text-foreground">
-            {row.courseName || row.title}
-          </p>
+          <a
+            href={row.fileUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex max-w-full items-center gap-1 font-medium text-foreground hover:text-primary hover:underline"
+            title="Open file for review"
+          >
+            <span className="line-clamp-1">
+              {row.courseName || row.title}
+            </span>
+            <ExternalLink size={12} className="shrink-0" />
+          </a>
+          {row.title !== row.courseName && (
+            <p className="mt-1 line-clamp-1 text-xs text-muted-foreground">
+              Title: {row.title}
+            </p>
+          )}
           <p className="text-xs text-muted-foreground">
             {[row.courseCode, row.program, row.semester > 0 ? `Sem ${row.semester}` : "Semester not listed", row.year]
               .filter(Boolean)
@@ -162,9 +180,11 @@ export default function ContentPanel() {
       id: "uploader",
       header: "Uploaded by",
       accessor: (row) => (
-        <span className="text-sm text-muted-foreground">
-          {uploaderName(row)}
-        </span>
+        <UserProfileLink
+          userId={uploaderId(row)}
+          username={uploaderName(row)}
+          showAvatar={false}
+        />
       ),
     },
     {
