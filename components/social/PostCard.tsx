@@ -31,6 +31,7 @@ import PostModerationBanner from "./PostModerationBanner";
 import { usePostHoverHighlight } from "./PostHoverList";
 import { resolvePostTypeMeta } from "./postMeta";
 import { Avatar, Badge } from "@/components/ui";
+import MentionText from "./MentionText";
 
 // Interaction-only modals: only needed after a click, so keep them out of
 // PostCard's (list-rendered) initial bundle.
@@ -658,7 +659,7 @@ export default function PostCard({
         {post.content.trim().length > 0 && (
           <div className={post.files?.length ? "mt-4 pl-2 pr-8" : "pl-2 pr-8"}>
             <p className="whitespace-pre-wrap break-words text-base leading-relaxed text-foreground">
-              {post.content}
+              <MentionText text={post.content} mentions={post.mentions} />
             </p>
           </div>
         )}

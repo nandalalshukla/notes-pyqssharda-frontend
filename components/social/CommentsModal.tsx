@@ -24,6 +24,10 @@ import ConfirmationDialog from "@/components/shared/ConfirmationDialog";
 import VerifiedBadge from "./VerifiedBadge";
 import ReportModal from "./ReportModal";
 import { Modal, Avatar } from "@/components/ui";
+import MentionTextarea, {
+  type MentionReference,
+} from "./MentionTextarea";
+import MentionText from "./MentionText";
 
 interface CommentsModalProps {
   postId: string;
@@ -54,12 +58,15 @@ export default function CommentsModal({
   } = useSocialStore();
 
   const [newCommentText, setNewCommentText] = useState("");
+  const [newCommentMentions, setNewCommentMentions] = useState<MentionReference[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
   const [editText, setEditText] = useState("");
+  const [editMentions, setEditMentions] = useState<MentionReference[]>([]);
   const [showCommentMenu, setShowCommentMenu] = useState<string | null>(null);
   const [replyingToId, setReplyingToId] = useState<string | null>(null);
   const [replyText, setReplyText] = useState("");
+  const [replyMentions, setReplyMentions] = useState<MentionReference[]>([]);
   const [expandedReplies, setExpandedReplies] = useState<Set<string>>(
     new Set(),
   );
@@ -110,8 +117,9 @@ export default function CommentsModal({
 
       setIsSubmitting(true);
       try {
-        await addComment(postId, newCommentText);
+        await addComment(postId, newCommentText, undefined, newCommentMentions);
         setNewCommentText("");
+        setNewCommentMentions([]);
         toast.success("Comment added!", { duration: 2000 });
       } catch (error: unknown) {
         toast.error("Failed to add comment");
@@ -119,7 +127,7 @@ export default function CommentsModal({
         setIsSubmitting(false);
       }
     },
-    [postId, newCommentText, user, addComment, router],
+    [postId, newCommentText, newCommentMentions, user, addComment, router],
   );
 
   const handleAddReply = useCallback(
@@ -140,8 +148,9 @@ export default function CommentsModal({
 
       setIsSubmitting(true);
       try {
-        await addComment(postId, replyText, parentCommentId);
+        await addComment(postId, replyText, parentCommentId, replyMentions);
         setReplyText("");
+        setReplyMentions([]);
         setReplyingToId(null);
         setExpandedReplies((prev) => new Set(prev).add(parentCommentId));
         toast.success("Reply added!", { duration: 2000 });
@@ -151,7 +160,7 @@ export default function CommentsModal({
         setIsSubmitting(false);
       }
     },
-    [postId, replyText, user, addComment, router],
+    [postId, replyText, replyMentions, user, addComment, router],
   );
 
   const handleLikeComment = useCallback(
@@ -225,7 +234,7 @@ export default function CommentsModal({
       }
 
       try {
-        await updateComment(postId, commentId, editText);
+        await updateComment(postId, commentId, editText, editMentions);
         setEditingCommentId(null);
         setEditText("");
         toast.success("Comment updated", { duration: 2000 });
@@ -279,6 +288,7 @@ export default function CommentsModal({
   const toggleReplyForm = (commentId: string) => {
     setReplyingToId(commentId);
     setReplyText("");
+    setReplyMentions([]);
   };
 
   const getAuthorId = (author: Comment["author"]) =>
@@ -367,6 +377,7 @@ export default function CommentsModal({
                                     onClick={() => {
                                       setEditingCommentId(reply._id);
                                       setEditText(reply.text);
+                                      setEditMentions(reply.mentions ?? []);
                                       setShowCommentMenu(null);
                                     }}
                                     className="flex w-full items-center gap-2 px-3 py-2 text-xs font-semibold text-foreground hover:bg-secondary cursor-pointer"
@@ -410,9 +421,13 @@ export default function CommentsModal({
                     </div>
                     {editingCommentId === reply._id ? (
                       <div>
-                        <textarea
+                        <MentionTextarea
                           value={editText}
-                          onChange={(e) => setEditText(e.target.value)}
+                          mentions={editMentions}
+                          onChange={(value, nextMentions) => {
+                            setEditText(value);
+                            setEditMentions(nextMentions);
+                          }}
                           className="w-full resize-none rounded-lg border border-input bg-card px-3 py-2 text-sm focus:ring-2 focus:ring-ring focus:outline-none"
                           rows={2}
                         />
@@ -427,6 +442,7 @@ export default function CommentsModal({
                             onClick={() => {
                               setEditingCommentId(null);
                               setEditText("");
+                              setEditMentions([]);
                             }}
                             className="rounded-lg border border-border px-3 py-2 text-xs font-semibold text-foreground transition-colors hover:bg-secondary cursor-pointer"
                           >
@@ -436,7 +452,7 @@ export default function CommentsModal({
                       </div>
                     ) : (
                       <p className="text-sm leading-relaxed whitespace-pre-wrap break-words text-foreground">
-                        {reply.text}
+                        <MentionText text={reply.text} mentions={reply.mentions} />
                       </p>
                     )}
                   </div>
@@ -491,9 +507,13 @@ export default function CommentsModal({
                       <div className="flex gap-3">
                         <Avatar src={user.profilePic?.url} alt={user.name || user.username || "User"} size="xs" />
                         <div className="flex-1">
-                          <textarea
+                          <MentionTextarea
                             value={replyText}
-                            onChange={(e) => setReplyText(e.target.value)}
+                            mentions={replyMentions}
+                            onChange={(value, nextMentions) => {
+                              setReplyText(value);
+                              setReplyMentions(nextMentions);
+                            }}
                             placeholder="Write a reply..."
                             className="w-full resize-none rounded-lg border border-input bg-card p-3 text-sm focus:ring-2 focus:ring-ring focus:outline-none"
                             rows={2}
@@ -566,9 +586,13 @@ export default function CommentsModal({
                 </button>
                 {editingCommentId === comment._id ? (
                   <div className="mt-2">
-                    <textarea
+                    <MentionTextarea
                       value={editText}
-                      onChange={(e) => setEditText(e.target.value)}
+                      mentions={editMentions}
+                      onChange={(value, nextMentions) => {
+                        setEditText(value);
+                        setEditMentions(nextMentions);
+                      }}
                       className="w-full resize-none rounded-lg border border-input bg-card px-3 py-2 text-sm focus:ring-2 focus:ring-ring focus:outline-none"
                       rows={2}
                     />
@@ -583,6 +607,7 @@ export default function CommentsModal({
                         onClick={() => {
                           setEditingCommentId(null);
                           setEditText("");
+                          setEditMentions([]);
                         }}
                         className="rounded-lg border border-border px-3 py-1.5 text-xs font-semibold text-foreground transition-colors hover:bg-secondary cursor-pointer"
                       >
@@ -592,7 +617,7 @@ export default function CommentsModal({
                   </div>
                 ) : (
                   <p className="mt-0.5 text-sm break-words text-foreground">
-                    {comment.text}
+                    <MentionText text={comment.text} mentions={comment.mentions} />
                   </p>
                 )}
               </div>
@@ -616,6 +641,7 @@ export default function CommentsModal({
                             onClick={() => {
                               setEditingCommentId(comment._id);
                               setEditText(comment.text);
+                              setEditMentions(comment.mentions ?? []);
                               setShowCommentMenu(null);
                             }}
                             className="flex w-full items-center gap-2 px-3 py-2 text-xs font-semibold text-foreground hover:bg-secondary cursor-pointer"
@@ -702,9 +728,13 @@ export default function CommentsModal({
               <div className="flex gap-3">
                 <Avatar src={user.profilePic?.url} alt={user.name || user.username || "User"} size="xs" />
                 <div className="flex-1">
-                  <textarea
+                  <MentionTextarea
                     value={replyText}
-                    onChange={(e) => setReplyText(e.target.value)}
+                    mentions={replyMentions}
+                    onChange={(value, nextMentions) => {
+                      setReplyText(value);
+                      setReplyMentions(nextMentions);
+                    }}
                     placeholder="Write a reply..."
                     className="w-full resize-none rounded-lg border border-input bg-card p-3 text-sm focus:ring-2 focus:ring-ring focus:outline-none"
                     rows={2}
@@ -745,10 +775,13 @@ export default function CommentsModal({
         size="md"
         footer={
           <form onSubmit={handleAddComment} className="flex w-full gap-2">
-            <input
-              type="text"
+            <MentionTextarea
               value={newCommentText}
-              onChange={(e) => setNewCommentText(e.target.value)}
+              mentions={newCommentMentions}
+              onChange={(value, nextMentions) => {
+                setNewCommentText(value);
+                setNewCommentMentions(nextMentions);
+              }}
               placeholder={user ? "Add a comment..." : "Login to comment"}
               disabled={!user || isSubmitting}
               className="flex-1 rounded-full bg-muted px-4 py-2.5 text-sm text-foreground outline-none transition-colors focus:bg-card focus:ring-2 focus:ring-ring disabled:opacity-50"

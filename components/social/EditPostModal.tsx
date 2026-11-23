@@ -16,6 +16,7 @@ import PostComposerForm, {
   emptyLostFoundDraft,
 } from "./PostComposerForm";
 import { appendLostFoundFields } from "./composerPayload";
+import type { MentionReference } from "./MentionTextarea";
 
 interface EditPostModalProps {
   post: Post;
@@ -52,6 +53,9 @@ export default function EditPostModal({ post, onClose }: EditPostModalProps) {
   useBodyScroll(true);
 
   const [content, setContent] = useState(post.content);
+  const [mentions, setMentions] = useState<MentionReference[]>(
+    post.mentions ?? [],
+  );
   const [postType, setPostType] = useState<PostType>(post.type || "general");
   const [isAnonymous, setIsAnonymous] = useState(Boolean(post.isAnonymous));
   const [lostFound, setLostFound] = useState<LostFoundDraft>(() =>
@@ -138,6 +142,7 @@ export default function EditPostModal({ post, onClose }: EditPostModalProps) {
       formData.append("content", content);
       formData.append("type", postType);
       formData.append("isAnonymous", String(isAnonymous));
+      formData.append("mentions", JSON.stringify(mentions));
       if (isLostFound) appendLostFoundFields(formData, lostFound);
 
       const keptPublicIds = new Set(
@@ -175,6 +180,7 @@ export default function EditPostModal({ post, onClose }: EditPostModalProps) {
       lostFound,
       existingMedia,
       newFiles,
+      mentions,
       post._id,
       post.publicIds,
       updatePost,
@@ -223,6 +229,11 @@ export default function EditPostModal({ post, onClose }: EditPostModalProps) {
         }
         content={content}
         onContentChange={setContent}
+        mentions={mentions}
+        onMentionsChange={(value, nextMentions) => {
+          setContent(value);
+          setMentions(nextMentions);
+        }}
         lostFound={lostFound}
         onLostFoundChange={patchLostFound}
         isAnonymous={isAnonymous}

@@ -13,6 +13,7 @@ import PostComposerForm, {
   emptyLostFoundDraft,
 } from "./PostComposerForm";
 import { appendLostFoundFields } from "./composerPayload";
+import type { MentionReference } from "./MentionTextarea";
 
 interface CreatePostModalProps {
   isOpen: boolean;
@@ -30,6 +31,7 @@ export default function CreatePostModal({
   useBodyScroll(isOpen);
 
   const [content, setContent] = useState("");
+  const [mentions, setMentions] = useState<MentionReference[]>([]);
   const [postType, setPostType] = useState<PostType>("general");
   const [isAnonymous, setIsAnonymous] = useState(false);
   const [lostFound, setLostFound] =
@@ -85,6 +87,7 @@ export default function CreatePostModal({
 
   const resetForm = useCallback(() => {
     setContent("");
+    setMentions([]);
     setPostType("general");
     setIsAnonymous(false);
     setLostFound(emptyLostFoundDraft);
@@ -112,6 +115,7 @@ export default function CreatePostModal({
       formData.append("content", content);
       formData.append("type", postType);
       formData.append("isAnonymous", String(isAnonymous));
+      formData.append("mentions", JSON.stringify(mentions));
       if (isLostFound) appendLostFoundFields(formData, lostFound);
       files.forEach((file) => {
         formData.append("files", file);
@@ -145,6 +149,7 @@ export default function CreatePostModal({
       needsApproval,
       lostFound,
       files,
+      mentions,
       createNewPost,
       onClose,
       resetForm,
@@ -222,6 +227,11 @@ export default function CreatePostModal({
         }
         content={content}
         onContentChange={setContent}
+        mentions={mentions}
+        onMentionsChange={(value, nextMentions) => {
+          setContent(value);
+          setMentions(nextMentions);
+        }}
         autoFocusContent
         lostFound={lostFound}
         onLostFoundChange={patchLostFound}

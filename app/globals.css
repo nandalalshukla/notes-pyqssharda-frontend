@@ -299,6 +299,10 @@ body {
   padding: 0 !important;
 }
 
+.feed-filter-pill.notification-control {
+  overflow: visible;
+}
+
 .feed-filter-pill.nav-control:hover {
   color: var(--color-primary);
 }

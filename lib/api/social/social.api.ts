@@ -103,6 +103,7 @@ export interface Post {
   _id: string;
   type: PostType;
   content: string;
+  mentions?: Array<{ userId: string; username: string; usernameSnapshot?: string }>;
   author: PostAuthor;
   // True when the post was published anonymously. The author still sees
   // their own real profile in `author` (so edit/delete stay available);
@@ -124,6 +125,7 @@ export interface Post {
 export interface Comment {
   _id: string;
   text: string;
+  mentions?: Array<{ userId: string; username: string; usernameSnapshot?: string }>;
   author: User;
   post: string;
   parentComment?: string | null;
@@ -156,6 +158,8 @@ export type NotificationType =
   | "like"
   | "comment"
   | "reply"
+  | "mention_post"
+  | "mention_comment"
   | "follow"
   | "share"
   | "post_approved"
@@ -331,10 +335,11 @@ export const createComment = async (
   postId: string,
   text: string,
   parentComment?: string,
+  mentions?: Array<{ userId: string; username: string }>,
 ) => {
   const response = await api.post<ApiResponse<{ comment: Comment }>>(
     `/social/posts/${postId}/comments`,
-    { text, parentComment },
+    { text, parentComment, mentions: mentions ?? [] },
   );
   return response.data;
 };
@@ -357,10 +362,11 @@ export const editComment = async (
   postId: string,
   commentId: string,
   text: string,
+  mentions?: Array<{ userId: string; username: string }>,
 ) => {
   const response = await api.patch<ApiResponse<{ comment: Comment }>>(
     `/social/posts/${postId}/comments/${commentId}`,
-    { text },
+    { text, mentions: mentions ?? [] },
   );
   return response.data;
 };

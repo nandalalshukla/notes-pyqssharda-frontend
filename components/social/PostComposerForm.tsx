@@ -17,6 +17,9 @@ import {
 } from "@/lib/api/social/social.api";
 import { cn } from "@/lib/utils/cn";
 import { Input, Select, Textarea } from "@/components/ui";
+import MentionTextarea, {
+  type MentionReference,
+} from "./MentionTextarea";
 import {
   lostFoundCategoryOptions,
   lostFoundKindOptions,
@@ -61,6 +64,8 @@ export interface PostComposerFormProps {
   contentPlaceholder?: string;
   content: string;
   onContentChange: (value: string) => void;
+  mentions?: MentionReference[];
+  onMentionsChange?: (value: string, mentions: MentionReference[]) => void;
   autoFocusContent?: boolean;
   lostFound: LostFoundDraft;
   onLostFoundChange: (patch: Partial<LostFoundDraft>) => void;
@@ -179,6 +184,8 @@ export default function PostComposerForm({
   contentPlaceholder,
   content,
   onContentChange,
+  mentions = [],
+  onMentionsChange,
   autoFocusContent,
   lostFound,
   onLostFoundChange,
@@ -369,6 +376,19 @@ export default function PostComposerForm({
 
       <div>
         <FieldLabel htmlFor={`${formId}-content`}>{contentLabel}</FieldLabel>
+        {onMentionsChange ? (
+          <MentionTextarea
+            id={`${formId}-content`}
+            value={content}
+            mentions={mentions}
+            onChange={onMentionsChange}
+            placeholder={contentPlaceholder}
+            className="w-full resize-none rounded-xl border border-input bg-card px-4 py-3 text-base text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+            rows={5}
+            maxLength={2000}
+            autoFocus={autoFocusContent}
+          />
+        ) : (
         <Textarea
           id={`${formId}-content`}
           value={content}
@@ -379,6 +399,7 @@ export default function PostComposerForm({
           maxLength={2000}
           autoFocus={autoFocusContent}
         />
+        )}
         <p className="mt-2 text-right text-xs text-muted-foreground">
           {content.length}/2000
         </p>

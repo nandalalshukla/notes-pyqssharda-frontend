@@ -128,11 +128,13 @@ interface SocialStore
     postId: string,
     text: string,
     parentComment?: string,
+    mentions?: Array<{ userId: string; username: string }>,
   ) => Promise<void>;
   updateComment: (
     postId: string,
     commentId: string,
     text: string,
+    mentions?: Array<{ userId: string; username: string }>,
   ) => Promise<void>;
   removeComment: (postId: string, commentId: string) => Promise<void>;
   fetchCommentReplies: (postId: string, commentId: string) => Promise<void>;
@@ -1033,7 +1035,12 @@ export const useSocialStore = create<SocialStore>((set, get) => ({
     }
   },
 
-  addComment: async (postId: string, text: string, parentComment?: string) => {
+  addComment: async (
+    postId: string,
+    text: string,
+    parentComment?: string,
+    mentions?: Array<{ userId: string; username: string }>,
+  ) => {
     set({ isLoading: true, error: null });
     const optimisticComment = buildOptimisticComment(
       postId,
@@ -1082,7 +1089,7 @@ export const useSocialStore = create<SocialStore>((set, get) => ({
       };
     });
     try {
-      const res = await createComment(postId, text, parentComment);
+      const res = await createComment(postId, text, parentComment, mentions);
       const newComment = res.data?.comment;
       if (newComment) {
         set((state) => {
@@ -1145,7 +1152,12 @@ export const useSocialStore = create<SocialStore>((set, get) => ({
     }
   },
 
-  updateComment: async (postId: string, commentId: string, text: string) => {
+  updateComment: async (
+    postId: string,
+    commentId: string,
+    text: string,
+    mentions?: Array<{ userId: string; username: string }>,
+  ) => {
     set({ isLoading: true, error: null });
     let previousComment: Comment | undefined;
     for (const comments of get().comments.values()) {
@@ -1170,7 +1182,7 @@ export const useSocialStore = create<SocialStore>((set, get) => ({
       set({ comments: updated.comments, replies: updated.replies });
     }
     try {
-      const res = await editComment(postId, commentId, text);
+      const res = await editComment(postId, commentId, text, mentions);
       const updatedComment = res.data?.comment;
       if (updatedComment) {
         set((state) => {
