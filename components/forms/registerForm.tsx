@@ -57,6 +57,11 @@ const RegisterForm = () => {
       return;
     }
 
+    if (username.trim().toLowerCase() === "everyone") {
+      toast.error("This username is reserved");
+      return;
+    }
+
     if (!email.trim().toLowerCase().endsWith("@ug.sharda.ac.in")) {
       toast.error("Please use your Sharda email");
       return;
