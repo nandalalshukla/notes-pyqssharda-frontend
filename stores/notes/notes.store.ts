@@ -12,6 +12,8 @@ import {
 } from "@/lib/api/notes/notes.api";
 import { getErrorMessage } from "../../lib/utils/errorHandler";
 
+let myNotesFetchVersion = 0;
+
 interface NotesStore {
   myNotes: Note[];
   myNotesPagination: {
@@ -110,20 +112,25 @@ export const useNotesStore = create<NotesStore>((set) => ({
     ) {
       return;
     }
-    set({ isLoading: true, error: null });
+    const requestVersion = ++myNotesFetchVersion;
+    set((state) => ({
+      isLoading: true,
+      error: null,
+      lastMyNotesFetchedAt: isDefaultQuery ? state.lastMyNotesFetchedAt : null,
+    }));
     try {
       const res = await getMyNotes(params);
+      if (requestVersion !== myNotesFetchVersion) return;
       const notes = res.notes || [];
       set((state) => ({
         myNotes: notes,
         myNotesPagination: res.pagination || null,
         myNotesCounts: res.counts || null,
         isLoading: false,
-        lastMyNotesFetchedAt: isDefaultQuery
-          ? Date.now()
-          : state.lastMyNotesFetchedAt,
+        lastMyNotesFetchedAt: isDefaultQuery ? Date.now() : null,
       }));
     } catch (error: unknown) {
+      if (requestVersion !== myNotesFetchVersion) return;
       set({
         error: getErrorMessage(error) || "Failed to fetch my notes",
         isLoading: false,
@@ -213,7 +220,8 @@ export const useNotesStore = create<NotesStore>((set) => ({
 
   clearSearchResults: () => set({ searchResults: [], lastSearchParams: null }),
   clearError: () => set({ error: null }),
-  resetStore: () =>
+  resetStore: () => {
+    myNotesFetchVersion += 1;
     set({
       myNotes: [],
       allNotes: [],
@@ -222,5 +230,6 @@ export const useNotesStore = create<NotesStore>((set) => ({
       isLoading: false,
       error: null,
       lastSearchParams: null,
-    }),
+    });
+  },
 }));

@@ -12,6 +12,8 @@ import {
 } from "@/lib/api/pyqs/pyqs.api";
 import { getErrorMessage } from "../../lib/utils/errorHandler";
 
+let myPyqsFetchVersion = 0;
+
 interface PYQsStore {
   myPyqs: Pyq[];
   myPyqsPagination: {
@@ -82,20 +84,25 @@ export const usePYQsStore = create<PYQsStore>((set) => ({
     ) {
       return;
     }
-    set({ isLoading: true, error: null });
+    const requestVersion = ++myPyqsFetchVersion;
+    set((state) => ({
+      isLoading: true,
+      error: null,
+      lastMyPyqsFetchedAt: isDefaultQuery ? state.lastMyPyqsFetchedAt : null,
+    }));
     try {
       const res = await getMyPyqs(params);
+      if (requestVersion !== myPyqsFetchVersion) return;
       const pyqs = res.pyqs || [];
       set((state) => ({
         myPyqs: pyqs,
         myPyqsPagination: res.pagination || null,
         myPyqsCounts: res.counts || null,
         isLoading: false,
-        lastMyPyqsFetchedAt: isDefaultQuery
-          ? Date.now()
-          : state.lastMyPyqsFetchedAt,
+        lastMyPyqsFetchedAt: isDefaultQuery ? Date.now() : null,
       }));
     } catch (error: unknown) {
+      if (requestVersion !== myPyqsFetchVersion) return;
       set({
         error: getErrorMessage(error) || "Failed to fetch PYQs",
         isLoading: false,
@@ -211,7 +218,8 @@ export const usePYQsStore = create<PYQsStore>((set) => ({
 
   clearSearchResults: () => set({ searchResults: [], lastSearchParams: null }),
   clearError: () => set({ error: null }),
-  resetStore: () =>
+  resetStore: () => {
+    myPyqsFetchVersion += 1;
     set({
       myPyqs: [],
       allPyqs: [],
@@ -220,5 +228,6 @@ export const usePYQsStore = create<PYQsStore>((set) => ({
       isLoading: false,
       error: null,
       lastSearchParams: null,
-    }),
+    });
+  },
 }));

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { toast } from "react-hot-toast";
 import useAuthStore from "@/stores/user/authStore";
@@ -39,6 +39,7 @@ type ContentType = "note" | "pyq" | "syllabus";
 type ContentWithType = ContentItem & { type: ContentType };
 
 export default function UserDashboard() {
+  const mineRequestVersion = useRef(0);
   const searchParams = useSearchParams();
   const { user } = useAuthStore();
   const [activeNav, setActiveNav] = useState("overview");
@@ -151,6 +152,7 @@ export default function UserDashboard() {
   ];
 
   const loadCurrentResources = useCallback(async () => {
+    const requestVersion = ++mineRequestVersion.current;
     const params = {
       page: contentPage,
       limit: 25,
@@ -163,6 +165,7 @@ export default function UserDashboard() {
     if (contentFilter === "all") {
       try {
         const res = await getMineResources({ ...params, status: contentStatus });
+        if (requestVersion !== mineRequestVersion.current) return;
         setMineItems(
           (res.items || []).map((item: ContentItem & { resourceType: ContentType }) => ({
             ...item,
@@ -173,6 +176,7 @@ export default function UserDashboard() {
         setMineCounts(res.counts || null);
         setCountsByType(res.countsByType || null);
       } catch {
+        if (requestVersion !== mineRequestVersion.current) return;
         setMineItems([]);
         setMinePagination(null);
         setMineCounts(null);

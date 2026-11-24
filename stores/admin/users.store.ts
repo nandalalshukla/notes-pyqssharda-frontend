@@ -23,6 +23,7 @@ export interface AdminUser {
 }
 
 const cacheTtlMs = 60_000;
+let usersFetchVersion = 0;
 
 interface UsersState {
   entities: Record<string, AdminUser>;
@@ -75,17 +76,25 @@ export const useAdminUsersStore = create<UsersState>((set, get) => ({
 
   fetchUsers: async (options = {}) => {
     const { lastFetchedAt } = get();
+    const isDefaultQuery =
+      (options.page ?? 1) === 1 &&
+      (options.limit ?? 50) === 50 &&
+      !options.query &&
+      options.isActive === undefined;
     const shouldUseCache =
       !options?.force &&
-      (options.page ?? 1) === 1 &&
-      !options.query &&
-      options.isActive === undefined &&
+      isDefaultQuery &&
       lastFetchedAt !== null &&
       Date.now() - lastFetchedAt < cacheTtlMs;
 
     if (shouldUseCache) return;
 
-    set({ isLoading: true, error: null });
+    const requestVersion = ++usersFetchVersion;
+    set((state) => ({
+      isLoading: true,
+      error: null,
+      lastFetchedAt: isDefaultQuery ? state.lastFetchedAt : null,
+    }));
     try {
       const res = await getAllUsers({
         page: options.page ?? 1,
@@ -93,15 +102,17 @@ export const useAdminUsersStore = create<UsersState>((set, get) => ({
         query: options.query,
         isActive: options.isActive,
       });
+      if (requestVersion !== usersFetchVersion) return;
       const normalized = normalizeUsers(res.users || []);
       set({
         ...normalized,
         pagination: res.pagination || null,
         counts: res.counts || null,
         isLoading: false,
-        lastFetchedAt: Date.now(),
+        lastFetchedAt: isDefaultQuery ? Date.now() : null,
       });
     } catch (error) {
+      if (requestVersion !== usersFetchVersion) return;
       set({ isLoading: false, error: getErrorMessage(error) });
     }
   },
@@ -110,13 +121,17 @@ export const useAdminUsersStore = create<UsersState>((set, get) => ({
     if (get().pendingActions[userId]) return;
 
     const previous = get().entities[userId];
-    if (!previous) return;
+    if (!previous || !previous.isActive) return;
 
     set((state) => ({
       entities: {
         ...state.entities,
         [userId]: { ...previous, isActive: false },
       },
+      counts: state.counts
+        ? { active: Math.max(0, state.counts.active - 1), inactive: state.counts.inactive + 1 }
+        : null,
+      lastFetchedAt: null,
       pendingActions: { ...state.pendingActions, [userId]: "deactivate" },
     }));
 
@@ -124,11 +139,15 @@ export const useAdminUsersStore = create<UsersState>((set, get) => ({
       await deactivateUser(userId);
       set((state) => {
         const { [userId]: _, ...rest } = state.pendingActions;
-        return { pendingActions: rest };
+        return { pendingActions: rest, lastFetchedAt: null };
       });
     } catch (error) {
       set((state) => ({
         entities: { ...state.entities, [userId]: previous },
+        counts: get().counts
+          ? { active: get().counts!.active + 1, inactive: Math.max(0, get().counts!.inactive - 1) }
+          : null,
+        lastFetchedAt: null,
         error: getErrorMessage(error),
         pendingActions: Object.fromEntries(
           Object.entries(state.pendingActions).filter(([id]) => id !== userId),
@@ -142,13 +161,17 @@ export const useAdminUsersStore = create<UsersState>((set, get) => ({
     if (get().pendingActions[userId]) return;
 
     const previous = get().entities[userId];
-    if (!previous) return;
+    if (!previous || previous.isActive) return;
 
     set((state) => ({
       entities: {
         ...state.entities,
         [userId]: { ...previous, isActive: true },
       },
+      counts: state.counts
+        ? { active: state.counts.active + 1, inactive: Math.max(0, state.counts.inactive - 1) }
+        : null,
+      lastFetchedAt: null,
       pendingActions: { ...state.pendingActions, [userId]: "activate" },
     }));
 
@@ -156,11 +179,15 @@ export const useAdminUsersStore = create<UsersState>((set, get) => ({
       await activateUser(userId);
       set((state) => {
         const { [userId]: _, ...rest } = state.pendingActions;
-        return { pendingActions: rest };
+        return { pendingActions: rest, lastFetchedAt: null };
       });
     } catch (error) {
       set((state) => ({
         entities: { ...state.entities, [userId]: previous },
+        counts: get().counts
+          ? { active: Math.max(0, get().counts!.active - 1), inactive: get().counts!.inactive + 1 }
+          : null,
+        lastFetchedAt: null,
         error: getErrorMessage(error),
         pendingActions: Object.fromEntries(
           Object.entries(state.pendingActions).filter(([id]) => id !== userId),
@@ -178,13 +205,22 @@ export const useAdminUsersStore = create<UsersState>((set, get) => ({
     const previousIds = ids;
     if (!previous) return;
 
-    set({
+    set((state) => ({
       entities: Object.fromEntries(
-        Object.entries(entities).filter(([id]) => id !== userId),
+        Object.entries(state.entities).filter(([id]) => id !== userId),
       ),
-      ids: ids.filter((id) => id !== userId),
-      pendingActions: { ...get().pendingActions, [userId]: "delete" },
-    });
+      ids: state.ids.filter((id) => id !== userId),
+      counts: state.counts
+        ? previous.isActive
+          ? { ...state.counts, active: Math.max(0, state.counts.active - 1) }
+          : { ...state.counts, inactive: Math.max(0, state.counts.inactive - 1) }
+        : null,
+      pagination: state.pagination
+        ? { ...state.pagination, total: Math.max(0, state.pagination.total - 1) }
+        : null,
+      lastFetchedAt: null,
+      pendingActions: { ...state.pendingActions, [userId]: "delete" },
+    }));
 
     try {
       await deleteUser(userId);
@@ -192,9 +228,6 @@ export const useAdminUsersStore = create<UsersState>((set, get) => ({
         const { [userId]: _, ...rest } = state.pendingActions;
         return {
           pendingActions: rest,
-          pagination: state.pagination
-            ? { ...state.pagination, total: Math.max(0, state.pagination.total - 1) }
-            : null,
           lastFetchedAt: null,
         };
       });
@@ -202,6 +235,14 @@ export const useAdminUsersStore = create<UsersState>((set, get) => ({
       set((state) => ({
         entities: { ...state.entities, [userId]: previous },
         ids: previousIds,
+        counts: state.counts
+          ? previous.isActive
+            ? { ...state.counts, active: state.counts.active + 1 }
+            : { ...state.counts, inactive: state.counts.inactive + 1 }
+          : null,
+        pagination: state.pagination
+          ? { ...state.pagination, total: state.pagination.total + 1 }
+          : null,
         error: getErrorMessage(error),
         pendingActions: Object.fromEntries(
           Object.entries(state.pendingActions).filter(([id]) => id !== userId),

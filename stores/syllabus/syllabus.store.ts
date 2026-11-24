@@ -12,6 +12,8 @@ import {
 } from "@/lib/api/syllabus/syllabus.api";
 import { getErrorMessage } from "@/lib/utils/errorHandler";
 
+let mySyllabusFetchVersion = 0;
+
 interface SyllabusStore {
   mySyllabus: Syllabus[];
   mySyllabusPagination: {
@@ -82,20 +84,25 @@ export const useSyllabusStore = create<SyllabusStore>((set) => ({
     ) {
       return;
     }
-    set({ isLoading: true, error: null });
+    const requestVersion = ++mySyllabusFetchVersion;
+    set((state) => ({
+      isLoading: true,
+      error: null,
+      lastMySyllabusFetchedAt: isDefaultQuery ? state.lastMySyllabusFetchedAt : null,
+    }));
     try {
       const res = await getMySyllabus(params);
+      if (requestVersion !== mySyllabusFetchVersion) return;
       const syllabus = res.syllabus || res.syllabuses || [];
       set((state) => ({
         mySyllabus: syllabus,
         mySyllabusPagination: res.pagination || null,
         mySyllabusCounts: res.counts || null,
         isLoading: false,
-        lastMySyllabusFetchedAt: isDefaultQuery
-          ? Date.now()
-          : state.lastMySyllabusFetchedAt,
+        lastMySyllabusFetchedAt: isDefaultQuery ? Date.now() : null,
       }));
     } catch (error: unknown) {
+      if (requestVersion !== mySyllabusFetchVersion) return;
       set({
         error: getErrorMessage(error) || "Failed to fetch syllabus",
         isLoading: false,
@@ -218,7 +225,8 @@ export const useSyllabusStore = create<SyllabusStore>((set) => ({
 
   clearSearchResults: () => set({ searchResults: [], lastSearchParams: null }),
   clearError: () => set({ error: null }),
-  resetStore: () =>
+  resetStore: () => {
+    mySyllabusFetchVersion += 1;
     set({
       mySyllabus: [],
       allSyllabus: [],
@@ -227,5 +235,6 @@ export const useSyllabusStore = create<SyllabusStore>((set) => ({
       isLoading: false,
       error: null,
       lastSearchParams: null,
-    }),
+    });
+  },
 }));
