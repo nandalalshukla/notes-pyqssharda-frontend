@@ -139,7 +139,7 @@ export default function Feed() {
       {/* Page Header — just the section pills + new-post action. No
           solid background prevents posts from showing through while they
           scroll underneath. The sticky offset clears the navbar height. */}
-      <div className="sticky top-[57px] z-20 border-b border-border/70 bg-background md:top-[61px]">
+      <div className="sticky top-[56px] z-20 border-b border-border/70 bg-background md:top-[60px]">
         <div className="mx-auto flex max-w-4xl items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8">
           <div className="flex min-w-0 flex-1 items-center gap-2">
             <button
