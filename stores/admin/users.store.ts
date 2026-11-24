@@ -27,6 +27,13 @@ const cacheTtlMs = 60_000;
 interface UsersState {
   entities: Record<string, AdminUser>;
   ids: string[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+    hasMore: boolean;
+  } | null;
   isLoading: boolean;
   error: string | null;
   lastFetchedAt: number | null;
@@ -52,6 +59,7 @@ const normalizeUsers = (users: AdminUser[]) => {
 export const useAdminUsersStore = create<UsersState>((set, get) => ({
   entities: {},
   ids: [],
+  pagination: null,
   isLoading: false,
   error: null,
   lastFetchedAt: null,
@@ -68,10 +76,11 @@ export const useAdminUsersStore = create<UsersState>((set, get) => ({
 
     set({ isLoading: true, error: null });
     try {
-      const res = await getAllUsers();
+      const res = await getAllUsers({ page: 1, limit: 50 });
       const normalized = normalizeUsers(res.users || []);
       set({
         ...normalized,
+        pagination: res.pagination || null,
         isLoading: false,
         lastFetchedAt: Date.now(),
       });

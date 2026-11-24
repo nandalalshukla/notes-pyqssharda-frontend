@@ -128,8 +128,23 @@ export const getRecentPyqs = async (limit: number = 10) => {
   return response.data;
 };
 
-export const getMyPyqs = async () => {
-  const response = await api.get("/pyqs/my-pyqs");
+export interface MyResourceParams {
+  page?: number;
+  limit?: number;
+  status?: "pending" | "approved" | "rejected";
+  query?: string;
+}
+
+export interface ResourcePagination {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+  hasMore: boolean;
+}
+
+export const getMyPyqs = async (params: MyResourceParams = {}) => {
+  const response = await api.get("/pyqs/my-pyqs", { params });
   return response.data;
 };
 

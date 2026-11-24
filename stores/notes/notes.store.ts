@@ -14,6 +14,19 @@ import { getErrorMessage } from "../../lib/utils/errorHandler";
 
 interface NotesStore {
   myNotes: Note[];
+  myNotesPagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+    hasMore: boolean;
+  } | null;
+  myNotesCounts: {
+    pending: number;
+    approved: number;
+    rejected: number;
+    all: number;
+  } | null;
   allNotes: Note[];
   recentNotes: Note[];
   searchResults: Note[];
@@ -24,7 +37,12 @@ interface NotesStore {
 
   fetchAllNotes: () => Promise<void>;
   fetchRecentNotes: (limit?: number) => Promise<void>;
-  fetchMyNotes: () => Promise<void>;
+  fetchMyNotes: (params?: {
+    page?: number;
+    limit?: number;
+    status?: "pending" | "approved" | "rejected";
+    query?: string;
+  }) => Promise<void>;
   searchNotes: (params: NoteSearchParams) => Promise<void>;
   addNote: (data: FormData) => Promise<void>;
   editNote: (id: string, data: FormData) => Promise<void>;
@@ -36,6 +54,8 @@ interface NotesStore {
 
 export const useNotesStore = create<NotesStore>((set) => ({
   myNotes: [],
+  myNotesPagination: null,
+  myNotesCounts: null,
   allNotes: [],
   recentNotes: [],
   searchResults: [],
@@ -72,9 +92,15 @@ export const useNotesStore = create<NotesStore>((set) => ({
     }
   },
 
-  fetchMyNotes: async () => {
+  fetchMyNotes: async (params = {}) => {
+    const isDefaultQuery =
+      (!params.page || params.page === 1) &&
+      (!params.limit || params.limit === 25) &&
+      !params.status &&
+      !params.query;
     const { lastMyNotesFetchedAt } = useNotesStore.getState();
     if (
+      isDefaultQuery &&
       lastMyNotesFetchedAt !== null &&
       Date.now() - lastMyNotesFetchedAt < 60_000
     ) {
@@ -82,9 +108,17 @@ export const useNotesStore = create<NotesStore>((set) => ({
     }
     set({ isLoading: true, error: null });
     try {
-      const res = await getMyNotes();
+      const res = await getMyNotes(params);
       const notes = res.notes || [];
-      set({ myNotes: notes, isLoading: false, lastMyNotesFetchedAt: Date.now() });
+      set((state) => ({
+        myNotes: notes,
+        myNotesPagination: res.pagination || null,
+        myNotesCounts: res.counts || null,
+        isLoading: false,
+        lastMyNotesFetchedAt: isDefaultQuery
+          ? Date.now()
+          : state.lastMyNotesFetchedAt,
+      }));
     } catch (error: unknown) {
       set({
         error: getErrorMessage(error) || "Failed to fetch my notes",

@@ -98,8 +98,23 @@ export const getRecentNotes = async (limit: number = 10) => {
   return response.data;
 };
 
-export const getMyNotes = async () => {
-  const response = await api.get("/notes/my-notes");
+export interface MyResourceParams {
+  page?: number;
+  limit?: number;
+  status?: "pending" | "approved" | "rejected";
+  query?: string;
+}
+
+export interface ResourcePagination {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+  hasMore: boolean;
+}
+
+export const getMyNotes = async (params: MyResourceParams = {}) => {
+  const response = await api.get("/notes/my-notes", { params });
   return response.data;
 };
 

@@ -19,6 +19,13 @@ const cacheTtlMs = 60_000;
 interface ModRequestsState {
   entities: Record<string, ModRequest>;
   ids: string[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+    hasMore: boolean;
+  } | null;
   isLoading: boolean;
   error: string | null;
   lastFetchedAt: number | null;
@@ -46,6 +53,7 @@ export const useAdminModRequestsStore = create<ModRequestsState>(
   (set, get) => ({
     entities: {},
     ids: [],
+    pagination: null,
     isLoading: false,
     error: null,
     lastFetchedAt: null,
@@ -62,10 +70,11 @@ export const useAdminModRequestsStore = create<ModRequestsState>(
 
       set({ isLoading: true, error: null });
       try {
-        const res = await getModRequests();
+        const res = await getModRequests({ page: 1, limit: 50 });
         const normalized = normalizeRequests(res.mods || []);
         set({
           ...normalized,
+          pagination: res.pagination || null,
           isLoading: false,
           lastFetchedAt: Date.now(),
         });

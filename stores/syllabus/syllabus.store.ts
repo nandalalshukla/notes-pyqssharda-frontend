@@ -14,6 +14,19 @@ import { getErrorMessage } from "@/lib/utils/errorHandler";
 
 interface SyllabusStore {
   mySyllabus: Syllabus[];
+  mySyllabusPagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+    hasMore: boolean;
+  } | null;
+  mySyllabusCounts: {
+    pending: number;
+    approved: number;
+    rejected: number;
+    all: number;
+  } | null;
   allSyllabus: Syllabus[];
   recentSyllabus: Syllabus[];
   searchResults: Syllabus[];
@@ -22,7 +35,12 @@ interface SyllabusStore {
   lastSearchParams: SyllabusSearchParams | null;
   lastMySyllabusFetchedAt: number | null;
 
-  fetchSyllabus: () => Promise<void>;
+  fetchSyllabus: (params?: {
+    page?: number;
+    limit?: number;
+    status?: "pending" | "approved" | "rejected";
+    query?: string;
+  }) => Promise<void>;
   fetchAllSyllabus: () => Promise<void>;
   fetchRecentSyllabus: (limit?: number) => Promise<void>;
   searchSyllabus: (params: SyllabusSearchParams) => Promise<void>;
@@ -36,6 +54,8 @@ interface SyllabusStore {
 
 export const useSyllabusStore = create<SyllabusStore>((set) => ({
   mySyllabus: [],
+  mySyllabusPagination: null,
+  mySyllabusCounts: null,
   allSyllabus: [],
   recentSyllabus: [],
   searchResults: [],
@@ -44,9 +64,15 @@ export const useSyllabusStore = create<SyllabusStore>((set) => ({
   lastSearchParams: null,
   lastMySyllabusFetchedAt: null,
 
-  fetchSyllabus: async () => {
+  fetchSyllabus: async (params = {}) => {
+    const isDefaultQuery =
+      (!params.page || params.page === 1) &&
+      (!params.limit || params.limit === 25) &&
+      !params.status &&
+      !params.query;
     const { lastMySyllabusFetchedAt } = useSyllabusStore.getState();
     if (
+      isDefaultQuery &&
       lastMySyllabusFetchedAt !== null &&
       Date.now() - lastMySyllabusFetchedAt < 60_000
     ) {
@@ -54,9 +80,17 @@ export const useSyllabusStore = create<SyllabusStore>((set) => ({
     }
     set({ isLoading: true, error: null });
     try {
-      const res = await getMySyllabus();
+      const res = await getMySyllabus(params);
       const syllabus = res.syllabus || res.syllabuses || [];
-      set({ mySyllabus: syllabus, isLoading: false, lastMySyllabusFetchedAt: Date.now() });
+      set((state) => ({
+        mySyllabus: syllabus,
+        mySyllabusPagination: res.pagination || null,
+        mySyllabusCounts: res.counts || null,
+        isLoading: false,
+        lastMySyllabusFetchedAt: isDefaultQuery
+          ? Date.now()
+          : state.lastMySyllabusFetchedAt,
+      }));
     } catch (error: unknown) {
       set({
         error: getErrorMessage(error) || "Failed to fetch syllabus",

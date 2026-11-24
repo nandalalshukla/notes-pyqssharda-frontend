@@ -1,8 +1,8 @@
 import api from "../axios";
 
 // --- Users Management ---
-export const getAllUsers = async () => {
-  const response = await api.get("/admin/users");
+export const getAllUsers = async (params: { page?: number; limit?: number; query?: string; isActive?: boolean } = {}) => {
+  const response = await api.get("/admin/users", { params });
   return response.data;
 };
 
@@ -31,13 +31,13 @@ export const activateUser = async (userId: string) => {
 };
 
 // --- Mods Management ---
-export const getAllMods = async () => {
-  const response = await api.get("/admin/mods");
+export const getAllMods = async (params: { page?: number; limit?: number } = {}) => {
+  const response = await api.get("/admin/mods", { params });
   return response.data;
 };
 
-export const getModRequests = async () => {
-  const response = await api.get("/admin/mods/requests");
+export const getModRequests = async (params: { page?: number; limit?: number } = {}) => {
+  const response = await api.get("/admin/mods/requests", { params });
   return response.data;
 };
 

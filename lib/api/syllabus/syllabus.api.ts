@@ -102,8 +102,23 @@ export const getRecentSyllabus = async (limit: number = 10) => {
   return response.data;
 };
 
-export const getMySyllabus = async () => {
-  const response = await api.get("/syllabus/my-syllabus");
+export interface MyResourceParams {
+  page?: number;
+  limit?: number;
+  status?: "pending" | "approved" | "rejected";
+  query?: string;
+}
+
+export interface ResourcePagination {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+  hasMore: boolean;
+}
+
+export const getMySyllabus = async (params: MyResourceParams = {}) => {
+  const response = await api.get("/syllabus/my-syllabus", { params });
   return response.data;
 };
 

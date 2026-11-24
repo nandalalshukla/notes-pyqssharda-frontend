@@ -14,6 +14,19 @@ import { getErrorMessage } from "../../lib/utils/errorHandler";
 
 interface PYQsStore {
   myPyqs: Pyq[];
+  myPyqsPagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+    hasMore: boolean;
+  } | null;
+  myPyqsCounts: {
+    pending: number;
+    approved: number;
+    rejected: number;
+    all: number;
+  } | null;
   allPyqs: Pyq[];
   recentPyqs: Pyq[];
   searchResults: Pyq[];
@@ -22,7 +35,12 @@ interface PYQsStore {
   lastSearchParams: PyqSearchParams | null;
   lastMyPyqsFetchedAt: number | null;
 
-  fetchPYQs: () => Promise<void>;
+  fetchPYQs: (params?: {
+    page?: number;
+    limit?: number;
+    status?: "pending" | "approved" | "rejected";
+    query?: string;
+  }) => Promise<void>;
   fetchAllPyqs: () => Promise<void>;
   fetchRecentPyqs: (limit?: number) => Promise<void>;
   searchPyqs: (params: PyqSearchParams) => Promise<void>;
@@ -36,6 +54,8 @@ interface PYQsStore {
 
 export const usePYQsStore = create<PYQsStore>((set) => ({
   myPyqs: [],
+  myPyqsPagination: null,
+  myPyqsCounts: null,
   allPyqs: [],
   recentPyqs: [],
   searchResults: [],
@@ -44,9 +64,15 @@ export const usePYQsStore = create<PYQsStore>((set) => ({
   lastSearchParams: null,
   lastMyPyqsFetchedAt: null,
 
-  fetchPYQs: async () => {
+  fetchPYQs: async (params = {}) => {
+    const isDefaultQuery =
+      (!params.page || params.page === 1) &&
+      (!params.limit || params.limit === 25) &&
+      !params.status &&
+      !params.query;
     const { lastMyPyqsFetchedAt } = usePYQsStore.getState();
     if (
+      isDefaultQuery &&
       lastMyPyqsFetchedAt !== null &&
       Date.now() - lastMyPyqsFetchedAt < 60_000
     ) {
@@ -54,9 +80,17 @@ export const usePYQsStore = create<PYQsStore>((set) => ({
     }
     set({ isLoading: true, error: null });
     try {
-      const res = await getMyPyqs();
+      const res = await getMyPyqs(params);
       const pyqs = res.pyqs || [];
-      set({ myPyqs: pyqs, isLoading: false, lastMyPyqsFetchedAt: Date.now() });
+      set((state) => ({
+        myPyqs: pyqs,
+        myPyqsPagination: res.pagination || null,
+        myPyqsCounts: res.counts || null,
+        isLoading: false,
+        lastMyPyqsFetchedAt: isDefaultQuery
+          ? Date.now()
+          : state.lastMyPyqsFetchedAt,
+      }));
     } catch (error: unknown) {
       set({
         error: getErrorMessage(error) || "Failed to fetch PYQs",

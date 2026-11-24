@@ -17,6 +17,7 @@ import { DataTable, DataTableColumn, Badge, Button, Input, Select } from "@/comp
 import { Note } from "@/lib/api/notes/notes.api";
 import { Pyq } from "@/lib/api/pyqs/pyqs.api";
 import { Syllabus } from "@/lib/api/syllabus/syllabus.api";
+import { getMineResources } from "@/lib/api/user/resources.api";
 import {
   BookOpen,
   FileText,
@@ -45,11 +46,41 @@ export default function UserDashboard() {
   const [editingItem, setEditingItem] = useState<ContentWithType | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [contentFilter, setContentFilter] = useState<ContentType | "all">("all");
+  const [contentPage, setContentPage] = useState(1);
+  const [mineItems, setMineItems] = useState<ContentWithType[]>([]);
+  const [minePagination, setMinePagination] = useState<{
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+    hasMore: boolean;
+  } | null>(null);
 
   // Store state
-  const { myNotes, fetchMyNotes, removeNote, isLoading: isNotesLoading } = useNotesStore();
-  const { myPyqs, fetchPYQs, removePYQ, isLoading: isPYQsLoading } = usePYQsStore();
-  const { mySyllabus, fetchSyllabus, removeSyllabus, isLoading: isSyllabusLoading } = useSyllabusStore();
+  const {
+    myNotes,
+    myNotesPagination,
+    myNotesCounts,
+    fetchMyNotes,
+    removeNote,
+    isLoading: isNotesLoading,
+  } = useNotesStore();
+  const {
+    myPyqs,
+    myPyqsPagination,
+    myPyqsCounts,
+    fetchPYQs,
+    removePYQ,
+    isLoading: isPYQsLoading,
+  } = usePYQsStore();
+  const {
+    mySyllabus,
+    mySyllabusPagination,
+    mySyllabusCounts,
+    fetchSyllabus,
+    removeSyllabus,
+    isLoading: isSyllabusLoading,
+  } = useSyllabusStore();
 
   // Data computation
   const allContent = useMemo(
@@ -60,48 +91,53 @@ export default function UserDashboard() {
     ],
     [myNotes, myPyqs, mySyllabus],
   );
+  const filteredContent = useMemo(() => {
+    if (contentFilter === "note") {
+      return myNotes.map((note) => ({ ...note, type: "note" as const }));
+    }
+    if (contentFilter === "pyq") {
+      return myPyqs.map((pyq) => ({ ...pyq, type: "pyq" as const }));
+    }
+    if (contentFilter === "syllabus") {
+      return mySyllabus.map((syll) => ({ ...syll, type: "syllabus" as const }));
+    }
+    return mineItems;
+  }, [contentFilter, mineItems, myNotes, myPyqs, mySyllabus]);
 
-  // Filtered content
-  const filteredContent = useMemo(
-    () =>
-      allContent.filter((item) => {
-        const descValue =
-          "description" in item && typeof item.description === "string" ? item.description : "";
-        const matchesSearch =
-          item.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          descValue.toLowerCase().includes(searchTerm.toLowerCase());
-        const matchesFilter = contentFilter === "all" || item.type === contentFilter;
-        return matchesSearch && matchesFilter;
-      }),
-    [allContent, searchTerm, contentFilter],
-  );
+  const totalContributions =
+    (myNotesCounts?.all ?? myNotes.length) +
+    (myPyqsCounts?.all ?? myPyqs.length) +
+    (mySyllabusCounts?.all ?? mySyllabus.length);
+  const notesTotal = myNotesCounts?.all ?? myNotes.length;
+  const pyqsTotal = myPyqsCounts?.all ?? myPyqs.length;
+  const syllabusTotal = mySyllabusCounts?.all ?? mySyllabus.length;
 
   // Stats
   const stats = [
     {
       label: "Total Contributions",
-      value: allContent.length,
+      value: totalContributions,
       icon: <TrendingUp size={24} />,
       variant: "primary" as const,
       description: "Content shared",
     },
     {
       label: "Notes",
-      value: myNotes.length,
+      value: notesTotal,
       icon: <BookOpen size={24} />,
       variant: "success" as const,
       description: "Study notes",
     },
     {
       label: "PYQs",
-      value: myPyqs.length,
+      value: pyqsTotal,
       icon: <FileText size={24} />,
       variant: "warning" as const,
       description: "Question papers",
     },
     {
       label: "Syllabus",
-      value: mySyllabus.length,
+      value: syllabusTotal,
       icon: <ListChecks size={24} />,
       variant: "danger" as const,
       description: "Course syllabus",
@@ -110,10 +146,39 @@ export default function UserDashboard() {
 
   // Effects
   useEffect(() => {
-    fetchMyNotes();
-    fetchPYQs();
-    fetchSyllabus();
-  }, []);
+    const timeout = window.setTimeout(() => {
+      const params = {
+        page: contentPage,
+        limit: 25,
+        query: searchTerm.trim() || undefined,
+      };
+
+      if (contentFilter === "all") {
+        getMineResources(params)
+          .then((res) => {
+            setMineItems(
+              (res.items || []).map((item: ContentItem & { resourceType: ContentType }) => ({
+                ...item,
+                type: item.resourceType,
+              })),
+            );
+            setMinePagination(res.pagination || null);
+          })
+          .catch(() => {
+            setMineItems([]);
+            setMinePagination(null);
+          });
+      } else if (contentFilter === "note") {
+        fetchMyNotes(params);
+      } else if (contentFilter === "pyq") {
+        fetchPYQs(params);
+      } else {
+        fetchSyllabus(params);
+      }
+    }, 250);
+
+    return () => window.clearTimeout(timeout);
+  }, [contentPage, contentFilter, searchTerm, fetchMyNotes, fetchPYQs, fetchSyllabus]);
 
   useEffect(() => {
     const uploadType = searchParams.get("upload") as ContentType | null;
@@ -222,7 +287,7 @@ export default function UserDashboard() {
       id: "content",
       label: "My Content",
       icon: <BookOpen size={20} />,
-      badge: allContent.length,
+      badge: totalContributions,
     },
     {
       id: "upload",
@@ -251,22 +316,28 @@ export default function UserDashboard() {
               <div className="rounded-xl border border-border p-4">
                 <p className="text-sm text-muted-foreground">Approved Content</p>
                 <p className="text-2xl font-bold text-foreground">
-                  {allContent.filter((c) => c.status === "approved").length}
+                  {(myNotesCounts?.approved ?? 0) +
+                    (myPyqsCounts?.approved ?? 0) +
+                    (mySyllabusCounts?.approved ?? 0)}
                 </p>
               </div>
               <div className="rounded-xl border border-border p-4">
                 <p className="text-sm text-muted-foreground">Pending Review</p>
                 <p className="text-2xl font-bold text-foreground">
-                  {allContent.filter((c) => c.status === "pending").length}
+                  {(myNotesCounts?.pending ?? 0) +
+                    (myPyqsCounts?.pending ?? 0) +
+                    (mySyllabusCounts?.pending ?? 0)}
                 </p>
               </div>
               <div className="rounded-xl border border-border p-4">
                 <p className="text-sm text-muted-foreground">Rejection Rate</p>
                 <p className="text-2xl font-bold text-foreground">
-                  {allContent.length > 0
+                  {totalContributions > 0
                     ? Math.round(
-                        (allContent.filter((c) => c.status === "rejected").length /
-                          allContent.length) *
+                        (((myNotesCounts?.rejected ?? 0) +
+                          (myPyqsCounts?.rejected ?? 0) +
+                          (mySyllabusCounts?.rejected ?? 0)) /
+                          totalContributions) *
                           100,
                       )
                     : 0}
@@ -276,8 +347,10 @@ export default function UserDashboard() {
               <div className="rounded-xl border border-border p-4">
                 <p className="text-sm text-muted-foreground">Last Contribution</p>
                 <p className="text-2xl font-bold text-foreground">
-                  {allContent.length > 0
-                    ? new Date(allContent[0].createdAt).toLocaleDateString()
+                  {totalContributions > 0
+                    ? allContent[0]
+                      ? new Date(allContent[0].createdAt).toLocaleDateString()
+                      : "—"
                     : "—"}
                 </p>
               </div>
@@ -297,12 +370,18 @@ export default function UserDashboard() {
               icon={<Search size={16} />}
               placeholder="Search content..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={(e) => {
+                setContentPage(1);
+                setSearchTerm(e.target.value);
+              }}
               className="flex-1"
             />
             <Select
               value={contentFilter}
-              onChange={(e) => setContentFilter(e.target.value as ContentType | "all")}
+              onChange={(e) => {
+                setContentPage(1);
+                setContentFilter(e.target.value as ContentType | "all");
+              }}
               className="w-auto"
             >
               <option value="all">All Types</option>
@@ -324,6 +403,16 @@ export default function UserDashboard() {
               searchable={false}
               paginated
               pageSize={15}
+              serverPagination={
+                contentFilter === "note"
+                  ? myNotesPagination ?? undefined
+                  : contentFilter === "pyq"
+                    ? myPyqsPagination ?? undefined
+                    : contentFilter === "syllabus"
+                      ? mySyllabusPagination ?? undefined
+                      : minePagination ?? undefined
+              }
+              onServerPageChange={setContentPage}
               emptyTitle="No content yet. Upload your first note, PYQ, or syllabus!"
             />
           </SectionCard>
@@ -346,7 +435,7 @@ export default function UserDashboard() {
                   <BookOpen size={24} className="text-accent-mint-foreground dark:text-accent-mint" />
                 </div>
                 <h3 className="mb-1 font-semibold text-foreground">Share Notes</h3>
-                <p className="mb-4 text-sm text-muted-foreground">{myNotes.length} uploaded</p>
+                <p className="mb-4 text-sm text-muted-foreground">{notesTotal} uploaded</p>
                 <button className="flex w-full items-center justify-center gap-2 rounded-lg bg-accent-mint/20 px-4 py-2 text-sm font-medium text-accent-mint-foreground transition-colors hover:bg-accent-mint/30 dark:text-accent-mint cursor-pointer">
                   <Plus size={16} />
                   Add Notes
@@ -361,7 +450,7 @@ export default function UserDashboard() {
                   <FileText size={24} className="text-accent-coral-foreground dark:text-accent-coral" />
                 </div>
                 <h3 className="mb-1 font-semibold text-foreground">Share PYQs</h3>
-                <p className="mb-4 text-sm text-muted-foreground">{myPyqs.length} uploaded</p>
+                <p className="mb-4 text-sm text-muted-foreground">{pyqsTotal} uploaded</p>
                 <button className="flex w-full items-center justify-center gap-2 rounded-lg bg-accent-coral/20 px-4 py-2 text-sm font-medium text-accent-coral-foreground transition-colors hover:bg-accent-coral/30 dark:text-accent-coral cursor-pointer">
                   <Plus size={16} />
                   Add PYQ
@@ -376,7 +465,7 @@ export default function UserDashboard() {
                   <ListChecks size={24} className="text-accent-purple-foreground dark:text-accent-purple" />
                 </div>
                 <h3 className="mb-1 font-semibold text-foreground">Share Syllabus</h3>
-                <p className="mb-4 text-sm text-muted-foreground">{mySyllabus.length} uploaded</p>
+                <p className="mb-4 text-sm text-muted-foreground">{syllabusTotal} uploaded</p>
                 <button className="flex w-full items-center justify-center gap-2 rounded-lg bg-accent-purple/20 px-4 py-2 text-sm font-medium text-accent-purple-foreground transition-colors hover:bg-accent-purple/30 dark:text-accent-purple cursor-pointer">
                   <Plus size={16} />
                   Add Syllabus

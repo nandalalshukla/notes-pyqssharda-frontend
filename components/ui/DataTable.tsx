@@ -39,6 +39,14 @@ export interface DataTableProps<T> {
   searchFields?: (keyof T)[];
   actions?: (row: T) => React.ReactNode;
   className?: string;
+  serverPagination?: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+    hasMore: boolean;
+  };
+  onServerPageChange?: (page: number) => void;
 }
 
 type SortDirection = "asc" | "desc" | null;
@@ -58,6 +66,8 @@ export function DataTable<T>({
   searchFields = [],
   actions,
   className,
+  serverPagination,
+  onServerPageChange,
 }: DataTableProps<T>) {
   const [page, setPage] = useState(1);
   const [sort, setSort] = useState<{ key: string; direction: SortDirection }>({
@@ -96,8 +106,11 @@ export function DataTable<T>({
     });
   }, [filtered, sort]);
 
-  const totalPages = Math.max(1, Math.ceil(sorted.length / pageSize));
+  const totalPages = serverPagination?.totalPages
+    ? Math.max(1, serverPagination.totalPages)
+    : Math.max(1, Math.ceil(sorted.length / pageSize));
   const pageData = useMemo(() => {
+    if (serverPagination) return sorted;
     if (!paginated) return sorted;
     const start = (page - 1) * pageSize;
     return sorted.slice(start, start + pageSize);
@@ -295,14 +308,21 @@ export function DataTable<T>({
       {paginated && totalPages > 1 && (
         <div className="mt-6 flex flex-col gap-3 border-t border-border pt-5 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-sm text-muted-foreground">
-            Showing <span className="font-semibold text-foreground">{(page - 1) * pageSize + 1}</span>{" "}
+            Showing <span className="font-semibold text-foreground">{serverPagination ? ((serverPagination.page - 1) * serverPagination.limit + 1) : (page - 1) * pageSize + 1}</span>{" "}
             to{" "}
             <span className="font-semibold text-foreground">
-              {Math.min(page * pageSize, sorted.length)}
+              {serverPagination
+                ? Math.min(serverPagination.page * serverPagination.limit, serverPagination.total)
+                : Math.min(page * pageSize, sorted.length)}
             </span>{" "}
-            of <span className="font-semibold text-foreground">{sorted.length}</span> results
+            of <span className="font-semibold text-foreground">{serverPagination?.total ?? sorted.length}</span> results
           </p>
-          <Pagination page={page} totalPages={totalPages} onPageChange={setPage} className="sm:justify-end" />
+          <Pagination
+            page={serverPagination?.page ?? page}
+            totalPages={totalPages}
+            onPageChange={onServerPageChange ?? setPage}
+            className="sm:justify-end"
+          />
         </div>
       )}
     </div>
