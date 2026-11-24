@@ -319,6 +319,22 @@ body {
     --mobile-navbar-control: 40px;
   }
 
+  /* Mobile controls are rendered before theme/auth hydration finishes.
+     Do not leave their icon color solely inherited from the pill: theme
+     classes can switch after the initial paint and make Fi/Lucide icons
+     look absent for that first frame. */
+  .mobile-navbar .icon-control {
+    color: #62636b !important;
+  }
+
+  .dark .mobile-navbar .icon-control {
+    color: #b8b8b8 !important;
+  }
+
+  .mobile-navbar .icon-control[data-active="true"] {
+    color: #ffffff !important;
+  }
+
   .mobile-navbar .icon-control {
     width: var(--mobile-navbar-control) !important;
     min-width: var(--mobile-navbar-control);
