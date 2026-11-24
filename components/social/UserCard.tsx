@@ -10,6 +10,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import VerifiedBadge from "./VerifiedBadge";
 import { Avatar, Button } from "@/components/ui";
+import { getLoginUrl } from "@/lib/authRedirect";
 
 interface UserCardProps {
   user: User;
@@ -35,7 +36,7 @@ export default function UserCard({
   const handleToggleFollow = useCallback(async () => {
     if (!isAuthenticated) {
       toast.error("Please sign in to follow");
-      router.push("/auth/login");
+      router.push(getLoginUrl());
       return;
     }
 

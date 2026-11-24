@@ -28,6 +28,7 @@ import MentionTextarea, {
   type MentionReference,
 } from "./MentionTextarea";
 import MentionText from "./MentionText";
+import { getLoginUrl } from "@/lib/authRedirect";
 
 interface CommentsModalProps {
   postId: string;
@@ -106,7 +107,7 @@ export default function CommentsModal({
 
       if (!user) {
         toast.error("Please login to comment");
-        router.push("/auth/login");
+        router.push(getLoginUrl());
         return;
       }
 
@@ -137,7 +138,7 @@ export default function CommentsModal({
 
       if (!user) {
         toast.error("Please login to reply");
-        router.push("/auth/login");
+        router.push(getLoginUrl());
         return;
       }
 
@@ -169,7 +170,7 @@ export default function CommentsModal({
         toast.error("Please login to like", {
           icon: <FiLogIn className="mr-2" />,
         });
-        router.push("/auth/login");
+        router.push(getLoginUrl());
         return;
       }
 
@@ -191,7 +192,7 @@ export default function CommentsModal({
         toast.error("Please login to report content", {
           icon: <FiLogIn className="mr-2" />,
         });
-        router.push("/auth/login");
+        router.push(getLoginUrl());
         return;
       }
 

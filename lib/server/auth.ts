@@ -4,14 +4,14 @@ const backendOrigin = (process.env.BACKEND_ORIGIN || "http://localhost:5000").re
 
 export function safeReturnTo(value: string | null | undefined): string {
   if (!value || !value.startsWith("/") || value.startsWith("//") || value.startsWith("/\\")) {
-    return "/library";
+    return "/";
   }
 
   try {
     const url = new URL(value, "https://sharda.social");
-    return url.origin === "https://sharda.social" ? `${url.pathname}${url.search}${url.hash}` : "/library";
+    return url.origin === "https://sharda.social" ? `${url.pathname}${url.search}${url.hash}` : "/";
   } catch {
-    return "/library";
+    return "/";
   }
 }
 

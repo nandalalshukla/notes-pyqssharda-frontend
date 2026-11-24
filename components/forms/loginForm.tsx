@@ -17,7 +17,7 @@ import { getErrorMessage } from "@/lib/utils/errorHandler";
 const isDeactivatedAccountError = (error: unknown) =>
   getErrorMessage(error).toLowerCase().includes("deactivated");
 
-const LoginForm = ({ nextPath = "/library/dashboard" }: { nextPath?: string }) => {
+const LoginForm = ({ nextPath = "/" }: { nextPath?: string }) => {
   const router = useRouter();
   const login = useAuthStore((s) => s.login);
 

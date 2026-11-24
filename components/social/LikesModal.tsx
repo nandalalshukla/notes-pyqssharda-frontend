@@ -11,6 +11,7 @@ import { useRouter } from "next/navigation";
 import VerifiedBadge from "./VerifiedBadge";
 import { Modal, Avatar } from "@/components/ui";
 import { cn } from "@/lib/utils/cn";
+import { getLoginUrl } from "@/lib/authRedirect";
 
 interface LikesModalProps {
   postId: string;
@@ -146,7 +147,7 @@ export default function LikesModal({
     async (userId: string, currentFollowing: boolean) => {
       if (!user) {
         toast.error("Please login to follow users");
-        router.push("/auth/login");
+        router.push(getLoginUrl());
         return;
       }
 

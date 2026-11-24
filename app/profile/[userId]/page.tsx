@@ -12,6 +12,7 @@ import toast from "react-hot-toast";
 import { FiArrowLeft } from "react-icons/fi";
 import Link from "next/link";
 import { Button, EmptyState } from "@/components/ui";
+import { getLoginUrl } from "@/lib/authRedirect";
 
 export default function UserProfilePage() {
   const params = useParams();
@@ -85,7 +86,7 @@ export default function UserProfilePage() {
   const handleFollowToggle = async () => {
     if (!currentUser) {
       toast.error("Please login to follow users");
-      router.push("/auth/login");
+      router.push(getLoginUrl());
       return;
     }
 

@@ -32,6 +32,7 @@ import { usePostHoverHighlight } from "./PostHoverList";
 import { resolvePostTypeMeta } from "./postMeta";
 import { Avatar, Badge } from "@/components/ui";
 import MentionText from "./MentionText";
+import { getLoginUrl } from "@/lib/authRedirect";
 
 // Interaction-only modals: only needed after a click, so keep them out of
 // PostCard's (list-rendered) initial bundle.
@@ -230,7 +231,7 @@ export default function PostCard({
   const handleLike = useCallback(() => {
     if (!user) {
       toast.error("Please login to like posts");
-      router.push("/auth/login");
+      router.push(getLoginUrl());
       return;
     }
 
@@ -294,7 +295,7 @@ export default function PostCard({
     (targetType: "post" | "comment" | "user", targetId: string) => {
       if (!user) {
         toast.error("Please login to report content");
-        router.push("/auth/login");
+        router.push(getLoginUrl());
         return;
       }
 
@@ -318,7 +319,7 @@ export default function PostCard({
   const handleFollow = useCallback(async () => {
     if (!user) {
       toast.error("Please login to follow users");
-      router.push("/auth/login");
+      router.push(getLoginUrl());
       return;
     }
 

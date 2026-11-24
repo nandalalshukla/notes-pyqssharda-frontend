@@ -16,7 +16,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
   }
   if (status !== "authenticated") {
     const requestHeaders = await headers();
-    const returnTo = safeReturnTo(requestHeaders.get("x-app-pathname") || "/library/dashboard");
+    const returnTo = safeReturnTo(requestHeaders.get("x-app-pathname") || "/");
     redirect(`/auth/login?next=${encodeURIComponent(returnTo)}`);
   }
   return <>{children}</>;

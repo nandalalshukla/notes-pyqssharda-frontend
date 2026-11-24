@@ -5,12 +5,12 @@ import { redirect } from "next/navigation";
 
 const LoginPage = async ({ searchParams }: { searchParams: Promise<{ next?: string }> }) => {
   const { next } = await searchParams;
-  const nextPath = next ? safeReturnTo(next) : "/library/dashboard";
+  const nextPath = next ? safeReturnTo(next) : "/";
   const status = await getServerAuthStatus();
   if (status === "authenticated") redirect(nextPath);
 
   return (
-    <GuestOnlyGuard>
+    <GuestOnlyGuard nextPath={nextPath}>
       <LoginForm nextPath={nextPath} />
     </GuestOnlyGuard>
   );

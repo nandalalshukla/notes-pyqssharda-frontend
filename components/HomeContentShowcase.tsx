@@ -7,6 +7,7 @@ import { getAllNotes, Note } from "@/lib/api/notes/notes.api";
 import { getAllPyqs, Pyq } from "@/lib/api/pyqs/pyqs.api";
 import { getAllSyllabus, Syllabus } from "@/lib/api/syllabus/syllabus.api";
 import { Badge, Skeleton } from "@/components/ui";
+import { getLoginUrl } from "@/lib/authRedirect";
 
 type ContentItem = Note | Pyq | Syllabus;
 
@@ -61,7 +62,7 @@ export default function HomeContentShowcase() {
 
   const handleAddNew = (type: "notes" | "pyqs" | "syllabus") => {
     if (!isAuthenticated) {
-      router.push("/auth/login");
+      router.push(getLoginUrl());
     } else {
       router.push(`/library/dashboard?upload=${type}`);
     }

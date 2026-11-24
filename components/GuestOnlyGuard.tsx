@@ -6,8 +6,10 @@ import useAuthStore from "@/stores/user/authStore";
 
 export default function GuestOnlyGuard({
   children,
+  nextPath = "/",
 }: {
   children: React.ReactNode;
+  nextPath?: string;
 }) {
   const router = useRouter();
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
@@ -23,9 +25,9 @@ export default function GuestOnlyGuard({
       !hasRedirected.current
     ) {
       hasRedirected.current = true;
-      router.replace("/library/dashboard");
+      router.replace(nextPath);
     }
-  }, [authInitialized, authLoading, isAuthenticated, router]);
+  }, [authInitialized, authLoading, isAuthenticated, nextPath, router]);
 
   if (!authInitialized || authLoading) {
     return (

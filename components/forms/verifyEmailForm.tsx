@@ -70,7 +70,7 @@ const VerifyEmailForm = () => {
         sessionStorage.removeItem("authReturnTo");
         const safeReturnTo = returnTo?.startsWith("/") && !returnTo.startsWith("//")
           ? returnTo
-          : "/library/dashboard";
+          : "/";
         router.replace(safeReturnTo);
       } else {
         // No user in the payload means the session didn't come back for

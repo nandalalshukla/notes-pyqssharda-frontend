@@ -3,6 +3,7 @@ import toast from "react-hot-toast";
 import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import useAuthStore from "@/stores/user/authStore";
+import { getLoginUrl } from "@/lib/authRedirect";
 
 export default function AuthGuard({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -22,7 +23,7 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
     ) {
       hasRedirected.current = true;
       toast.error("Please log in to access this page");
-      router.replace("/auth/login");
+      router.replace(getLoginUrl());
     }
   }, [authInitialized, isAuthenticated, authLoading, router]);
 
