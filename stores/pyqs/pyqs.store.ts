@@ -40,6 +40,8 @@ interface PYQsStore {
     limit?: number;
     status?: "pending" | "approved" | "rejected";
     query?: string;
+    sort?: "createdAt" | "updatedAt" | "title" | "courseCode" | "year";
+    direction?: "asc" | "desc";
   }) => Promise<void>;
   fetchAllPyqs: () => Promise<void>;
   fetchRecentPyqs: (limit?: number) => Promise<void>;
@@ -69,7 +71,9 @@ export const usePYQsStore = create<PYQsStore>((set) => ({
       (!params.page || params.page === 1) &&
       (!params.limit || params.limit === 25) &&
       !params.status &&
-      !params.query;
+      !params.query &&
+      (!params.sort || params.sort === "createdAt") &&
+      (!params.direction || params.direction === "desc");
     const { lastMyPyqsFetchedAt } = usePYQsStore.getState();
     if (
       isDefaultQuery &&
@@ -148,7 +152,7 @@ export const usePYQsStore = create<PYQsStore>((set) => ({
     try {
       const res = await createPyq(data);
       const newPyq = res.pyq;
-      set((state) => ({ myPyqs: [newPyq, ...state.myPyqs], isLoading: false }));
+      set((state) => ({ myPyqs: [newPyq, ...state.myPyqs], lastMyPyqsFetchedAt: null, isLoading: false }));
     } catch (error: unknown) {
       set({
         error: getErrorMessage(error) || "Failed to add PYQ",
@@ -165,6 +169,7 @@ export const usePYQsStore = create<PYQsStore>((set) => ({
       const updatedPyq = res.pyq;
       set((state) => ({
         myPyqs: state.myPyqs.map((p) => (p._id === id ? updatedPyq : p)),
+        lastMyPyqsFetchedAt: null,
         allPyqs: state.allPyqs.map((p) => (p._id === id ? updatedPyq : p)),
         recentPyqs: state.recentPyqs.map((p) =>
           p._id === id ? updatedPyq : p,
@@ -189,6 +194,7 @@ export const usePYQsStore = create<PYQsStore>((set) => ({
       await deletePyq(id);
       set((state) => ({
         myPyqs: state.myPyqs.filter((p) => p._id !== id),
+        lastMyPyqsFetchedAt: null,
         allPyqs: state.allPyqs.filter((p) => p._id !== id),
         recentPyqs: state.recentPyqs.filter((p) => p._id !== id),
         searchResults: state.searchResults.filter((p) => p._id !== id),

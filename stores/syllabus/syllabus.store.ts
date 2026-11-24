@@ -40,6 +40,8 @@ interface SyllabusStore {
     limit?: number;
     status?: "pending" | "approved" | "rejected";
     query?: string;
+    sort?: "createdAt" | "updatedAt" | "title" | "courseCode" | "year";
+    direction?: "asc" | "desc";
   }) => Promise<void>;
   fetchAllSyllabus: () => Promise<void>;
   fetchRecentSyllabus: (limit?: number) => Promise<void>;
@@ -69,7 +71,9 @@ export const useSyllabusStore = create<SyllabusStore>((set) => ({
       (!params.page || params.page === 1) &&
       (!params.limit || params.limit === 25) &&
       !params.status &&
-      !params.query;
+      !params.query &&
+      (!params.sort || params.sort === "createdAt") &&
+      (!params.direction || params.direction === "desc");
     const { lastMySyllabusFetchedAt } = useSyllabusStore.getState();
     if (
       isDefaultQuery &&
@@ -149,6 +153,7 @@ export const useSyllabusStore = create<SyllabusStore>((set) => ({
       const newSyllabus = res.syllabus;
       set((state) => ({
         mySyllabus: [newSyllabus, ...state.mySyllabus],
+        lastMySyllabusFetchedAt: null,
         isLoading: false,
       }));
     } catch (error: unknown) {
@@ -169,6 +174,7 @@ export const useSyllabusStore = create<SyllabusStore>((set) => ({
         mySyllabus: state.mySyllabus.map((s) =>
           s._id === id ? updatedSyllabus : s,
         ),
+        lastMySyllabusFetchedAt: null,
         allSyllabus: state.allSyllabus.map((s) =>
           s._id === id ? updatedSyllabus : s,
         ),
@@ -195,6 +201,7 @@ export const useSyllabusStore = create<SyllabusStore>((set) => ({
       await deleteSyllabus(id);
       set((state) => ({
         mySyllabus: state.mySyllabus.filter((s) => s._id !== id),
+        lastMySyllabusFetchedAt: null,
         allSyllabus: state.allSyllabus.filter((s) => s._id !== id),
         recentSyllabus: state.recentSyllabus.filter((s) => s._id !== id),
         searchResults: state.searchResults.filter((s) => s._id !== id),

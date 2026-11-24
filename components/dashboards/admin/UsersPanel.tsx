@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Users } from "lucide-react";
 import { SectionCard, Toolbar } from "@/components/dashboards/SectionCard";
 import { DataTable, DataTableColumn, Badge, Button, Input } from "@/components/ui";
@@ -11,6 +11,8 @@ interface UsersPanelProps {
   users: AdminUser[];
   isLoading: boolean;
   pendingActions: Record<string, "activate" | "deactivate" | "delete">;
+  pagination: { page: number; limit: number; total: number; totalPages: number; hasMore: boolean } | null;
+  onFetchUsers: (params: { page?: number; query?: string }) => void;
   onToggleStatus: (id: string, isActive: boolean) => void;
   onDelete: (id: string) => void;
 }
@@ -19,25 +21,18 @@ export default function UsersPanel({
   users,
   isLoading,
   pendingActions,
+  pagination,
+  onFetchUsers,
   onToggleStatus,
   onDelete,
 }: UsersPanelProps) {
   const [search, setSearch] = useState("");
-  // The table below re-filters and re-renders every row on each
-  // change; with a few thousand rows loaded that is enough work per
-  // keystroke to make typing feel sticky. The input stays bound to
-  // `search` so it still updates instantly.
   const debouncedSearch = useDebouncedValue(search, 250);
+  const page = pagination?.page ?? 1;
 
-  const filteredUsers = useMemo(
-    () =>
-      users.filter(
-        (u) =>
-          u.name.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
-          u.email.toLowerCase().includes(debouncedSearch.toLowerCase()),
-      ),
-    [users, debouncedSearch],
-  );
+  useEffect(() => {
+    onFetchUsers({ page: 1, query: debouncedSearch || undefined });
+  }, [debouncedSearch, onFetchUsers]);
 
   const columns: DataTableColumn<AdminUser>[] = [
     {
@@ -110,7 +105,7 @@ export default function UsersPanel({
 
   return (
     <div className="mt-8 space-y-6">
-      <Toolbar title="User Management" description={`Total: ${filteredUsers.length} users`}>
+      <Toolbar title="User Management" description={`Total: ${(pagination?.total ?? 0).toLocaleString()} users`}>
         <Input
           type="text"
           placeholder="Search by name or email..."
@@ -122,13 +117,19 @@ export default function UsersPanel({
       <SectionCard title="All Users" icon={<Users size={20} />}>
         <DataTable
           columns={columns}
-          data={filteredUsers}
+          data={users}
           isLoading={isLoading}
           searchable={false}
-          paginated
-          pageSize={15}
+          paginated={false}
           emptyTitle="No users found"
         />
+        {pagination && pagination.totalPages > 1 && (
+          <div className="mt-5 flex items-center justify-center gap-3">
+            <Button variant="outline" size="sm" disabled={page <= 1 || isLoading} onClick={() => onFetchUsers({ page: page - 1, query: debouncedSearch || undefined })}>Previous</Button>
+            <span className="text-sm font-semibold text-muted-foreground">Page {page} of {pagination.totalPages}</span>
+            <Button variant="outline" size="sm" disabled={!pagination.hasMore || isLoading} onClick={() => onFetchUsers({ page: page + 1, query: debouncedSearch || undefined })}>Next</Button>
+          </div>
+        )}
       </SectionCard>
     </div>
   );

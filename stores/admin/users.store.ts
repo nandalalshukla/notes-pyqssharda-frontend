@@ -34,11 +34,18 @@ interface UsersState {
     totalPages: number;
     hasMore: boolean;
   } | null;
+  counts: { active: number; inactive: number } | null;
   isLoading: boolean;
   error: string | null;
   lastFetchedAt: number | null;
   pendingActions: Record<string, "activate" | "deactivate" | "delete">;
-  fetchUsers: (options?: { force?: boolean }) => Promise<void>;
+  fetchUsers: (options?: {
+    force?: boolean;
+    page?: number;
+    limit?: number;
+    query?: string;
+    isActive?: boolean;
+  }) => Promise<void>;
   deactivateUser: (userId: string) => Promise<void>;
   activateUser: (userId: string) => Promise<void>;
   deleteUser: (userId: string) => Promise<void>;
@@ -60,15 +67,19 @@ export const useAdminUsersStore = create<UsersState>((set, get) => ({
   entities: {},
   ids: [],
   pagination: null,
+  counts: null,
   isLoading: false,
   error: null,
   lastFetchedAt: null,
   pendingActions: {},
 
-  fetchUsers: async (options) => {
-    const { lastFetchedAt, ids } = get();
+  fetchUsers: async (options = {}) => {
+    const { lastFetchedAt } = get();
     const shouldUseCache =
       !options?.force &&
+      (options.page ?? 1) === 1 &&
+      !options.query &&
+      options.isActive === undefined &&
       lastFetchedAt !== null &&
       Date.now() - lastFetchedAt < cacheTtlMs;
 
@@ -76,11 +87,17 @@ export const useAdminUsersStore = create<UsersState>((set, get) => ({
 
     set({ isLoading: true, error: null });
     try {
-      const res = await getAllUsers({ page: 1, limit: 50 });
+      const res = await getAllUsers({
+        page: options.page ?? 1,
+        limit: options.limit ?? 50,
+        query: options.query,
+        isActive: options.isActive,
+      });
       const normalized = normalizeUsers(res.users || []);
       set({
         ...normalized,
         pagination: res.pagination || null,
+        counts: res.counts || null,
         isLoading: false,
         lastFetchedAt: Date.now(),
       });
@@ -173,7 +190,13 @@ export const useAdminUsersStore = create<UsersState>((set, get) => ({
       await deleteUser(userId);
       set((state) => {
         const { [userId]: _, ...rest } = state.pendingActions;
-        return { pendingActions: rest };
+        return {
+          pendingActions: rest,
+          pagination: state.pagination
+            ? { ...state.pagination, total: Math.max(0, state.pagination.total - 1) }
+            : null,
+          lastFetchedAt: null,
+        };
       });
     } catch (error) {
       set((state) => ({

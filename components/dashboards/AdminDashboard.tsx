@@ -35,6 +35,8 @@ export default function AdminDashboard() {
     usersLoading,
     usersError,
     userPendingActions,
+    usersPagination,
+    userCounts,
     fetchUsers,
     deactivateUser,
     activateUser,
@@ -46,6 +48,8 @@ export default function AdminDashboard() {
       usersLoading: state.isLoading,
       usersError: state.error,
       userPendingActions: state.pendingActions,
+      usersPagination: state.pagination,
+      userCounts: state.counts,
       fetchUsers: state.fetchUsers,
       deactivateUser: state.deactivateUser,
       activateUser: state.activateUser,
@@ -59,6 +63,8 @@ export default function AdminDashboard() {
     modsLoading,
     modsError,
     modPendingActions,
+    modsPagination,
+    modsCounts,
     fetchMods,
     removeModRole,
   } = useAdminModsStore(
@@ -68,6 +74,8 @@ export default function AdminDashboard() {
       modsLoading: state.isLoading,
       modsError: state.error,
       modPendingActions: state.pendingActions,
+      modsPagination: state.pagination,
+      modsCounts: state.counts,
       fetchMods: state.fetchMods,
       removeModRole: state.removeModRole,
     })),
@@ -79,6 +87,7 @@ export default function AdminDashboard() {
     requestsLoading,
     requestsError,
     requestPendingActions,
+    requestsPagination,
     fetchModRequests,
     processModRequest,
   } = useAdminModRequestsStore(
@@ -88,6 +97,7 @@ export default function AdminDashboard() {
       requestsLoading: state.isLoading,
       requestsError: state.error,
       requestPendingActions: state.pendingActions,
+      requestsPagination: state.pagination,
       fetchModRequests: state.fetchModRequests,
       processModRequest: state.processModRequest,
     })),
@@ -113,28 +123,28 @@ export default function AdminDashboard() {
   const stats = [
     {
       label: "Total Users",
-      value: users.length,
+      value: usersPagination?.total ?? 0,
       icon: <Users size={24} />,
       variant: "primary" as const,
       description: "Active and inactive",
     },
     {
       label: "Active Moderators",
-      value: mods.filter((m) => m.isActive).length,
+      value: modsCounts?.active ?? 0,
       icon: <UserCheck size={24} />,
       variant: "success" as const,
-      description: `Out of ${mods.length}`,
+      description: "All moderators",
     },
     {
       label: "Pending Requests",
-      value: modRequests.length,
+      value: requestsPagination?.total ?? 0,
       icon: <Clock size={24} />,
       variant: "warning" as const,
       description: "Awaiting review",
     },
     {
       label: "Inactive Users",
-      value: users.filter((u) => !u.isActive).length,
+      value: userCounts?.inactive ?? 0,
       icon: <UserX size={24} />,
       variant: "danger" as const,
       description: "Attention needed",
@@ -214,13 +224,13 @@ export default function AdminDashboard() {
       id: "users",
       label: "Users",
       icon: <Users size={20} />,
-      badge: users.filter((u) => !u.isActive).length,
+      badge: userCounts?.inactive ?? 0,
     },
     {
       id: "mods",
       label: "Moderators",
       icon: <UserCheck size={20} />,
-      badge: mods.length,
+      badge: modsPagination?.total ?? 0,
     },
     {
       id: "content",
@@ -231,7 +241,7 @@ export default function AdminDashboard() {
       id: "requests",
       label: "Mod Requests",
       icon: <FileText size={20} />,
-      badge: modRequests.length,
+      badge: requestsPagination?.total ?? 0,
     },
   ];
 
@@ -256,6 +266,8 @@ export default function AdminDashboard() {
           users={users}
           isLoading={usersLoading}
           pendingActions={userPendingActions}
+          pagination={usersPagination}
+          onFetchUsers={fetchUsers}
           onToggleStatus={handleToggleUserStatus}
           onDelete={handleDeleteUser}
         />

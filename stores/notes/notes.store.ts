@@ -42,6 +42,8 @@ interface NotesStore {
     limit?: number;
     status?: "pending" | "approved" | "rejected";
     query?: string;
+    sort?: "createdAt" | "updatedAt" | "title" | "courseCode" | "year";
+    direction?: "asc" | "desc";
   }) => Promise<void>;
   searchNotes: (params: NoteSearchParams) => Promise<void>;
   addNote: (data: FormData) => Promise<void>;
@@ -97,7 +99,9 @@ export const useNotesStore = create<NotesStore>((set) => ({
       (!params.page || params.page === 1) &&
       (!params.limit || params.limit === 25) &&
       !params.status &&
-      !params.query;
+      !params.query &&
+      (!params.sort || params.sort === "createdAt") &&
+      (!params.direction || params.direction === "desc");
     const { lastMyNotesFetchedAt } = useNotesStore.getState();
     if (
       isDefaultQuery &&
@@ -148,6 +152,7 @@ export const useNotesStore = create<NotesStore>((set) => ({
       const newNote = res.note;
       set((state) => ({
         myNotes: [newNote, ...state.myNotes],
+        lastMyNotesFetchedAt: null,
         isLoading: false,
       }));
     } catch (error: unknown) {
@@ -166,6 +171,7 @@ export const useNotesStore = create<NotesStore>((set) => ({
       const updatedNote = res.note;
       set((state) => ({
         myNotes: state.myNotes.map((n) => (n._id === id ? updatedNote : n)),
+        lastMyNotesFetchedAt: null,
         allNotes: state.allNotes.map((n) => (n._id === id ? updatedNote : n)),
         recentNotes: state.recentNotes.map((n) =>
           n._id === id ? updatedNote : n,
@@ -190,6 +196,7 @@ export const useNotesStore = create<NotesStore>((set) => ({
       await deleteNote(id);
       set((state) => ({
         myNotes: state.myNotes.filter((n) => n._id !== id),
+        lastMyNotesFetchedAt: null,
         allNotes: state.allNotes.filter((n) => n._id !== id),
         recentNotes: state.recentNotes.filter((n) => n._id !== id),
         searchResults: state.searchResults.filter((n) => n._id !== id),

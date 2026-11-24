@@ -15,6 +15,7 @@ interface ModsState {
     totalPages: number;
     hasMore: boolean;
   } | null;
+  counts: { active: number } | null;
   isLoading: boolean;
   error: string | null;
   lastFetchedAt: number | null;
@@ -39,6 +40,7 @@ export const useAdminModsStore = create<ModsState>((set, get) => ({
   entities: {},
   ids: [],
   pagination: null,
+  counts: null,
   isLoading: false,
   error: null,
   lastFetchedAt: null,
@@ -60,6 +62,7 @@ export const useAdminModsStore = create<ModsState>((set, get) => ({
       set({
         ...normalized,
         pagination: res.pagination || null,
+        counts: res.counts || null,
         isLoading: false,
         lastFetchedAt: Date.now(),
       });

@@ -133,6 +133,8 @@ export interface MyResourceParams {
   limit?: number;
   status?: "pending" | "approved" | "rejected";
   query?: string;
+  sort?: "createdAt" | "updatedAt" | "title" | "courseCode" | "year";
+  direction?: "asc" | "desc";
 }
 
 export interface ResourcePagination {

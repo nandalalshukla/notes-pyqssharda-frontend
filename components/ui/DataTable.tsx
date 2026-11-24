@@ -47,6 +47,8 @@ export interface DataTableProps<T> {
     hasMore: boolean;
   };
   onServerPageChange?: (page: number) => void;
+  serverSort?: { key: string; direction: "asc" | "desc" } | null;
+  onServerSortChange?: (sort: { key: string; direction: "asc" | "desc" } | null) => void;
 }
 
 type SortDirection = "asc" | "desc" | null;
@@ -68,6 +70,8 @@ export function DataTable<T>({
   className,
   serverPagination,
   onServerPageChange,
+  serverSort,
+  onServerSortChange,
 }: DataTableProps<T>) {
   const [page, setPage] = useState(1);
   const [sort, setSort] = useState<{ key: string; direction: SortDirection }>({
@@ -91,6 +95,7 @@ export function DataTable<T>({
   }, [data, search, searchFields]);
 
   const sorted = useMemo(() => {
+    if (serverSort !== undefined) return filtered;
     if (!sort.direction || !sort.key) return filtered;
     const normalize = (value: unknown) => {
       if (typeof value === "number" || typeof value === "string") return value;
@@ -104,7 +109,7 @@ export function DataTable<T>({
       if (av > bv) return sort.direction === "asc" ? 1 : -1;
       return 0;
     });
-  }, [filtered, sort]);
+  }, [filtered, sort, serverSort]);
 
   const totalPages = serverPagination?.totalPages
     ? Math.max(1, serverPagination.totalPages)
@@ -117,20 +122,30 @@ export function DataTable<T>({
   }, [sorted, page, pageSize, paginated]);
 
   const handleSort = (key: string) => {
-    setSort((prev) => {
+    const nextSort = (
+      prev: { key: string; direction: SortDirection },
+    ): { key: string; direction: SortDirection } => {
       if (prev.key === key) {
         if (prev.direction === "asc") return { key, direction: "desc" };
         if (prev.direction === "desc") return { key: "", direction: null };
       }
       return { key, direction: "asc" };
-    });
+    };
+    const current = serverSort !== undefined ? serverSort : sort;
+    const next = nextSort(current ?? { key: "", direction: null });
+    if (onServerSortChange) {
+      onServerSortChange(next.direction ? { key: next.key, direction: next.direction as "asc" | "desc" } : null);
+    } else {
+      setSort(next);
+    }
     setPage(1);
   };
 
   const sortIcon = (columnId: string) => {
-    if (sort.key !== columnId)
+    const activeSort = serverSort !== undefined ? serverSort : sort.direction ? sort : null;
+    if (activeSort?.key !== columnId)
       return <ChevronsUpDown size={14} className="text-muted-foreground" />;
-    return sort.direction === "asc" ? (
+    return activeSort.direction === "asc" ? (
       <ChevronUp size={14} className="text-primary" />
     ) : (
       <ChevronDown size={14} className="text-primary" />

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { toast } from "react-hot-toast";
 import useAuthStore from "@/stores/user/authStore";
@@ -46,7 +46,12 @@ export default function UserDashboard() {
   const [editingItem, setEditingItem] = useState<ContentWithType | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [contentFilter, setContentFilter] = useState<ContentType | "all">("all");
+  const [contentStatus, setContentStatus] = useState<"all" | "pending" | "approved" | "rejected">("all");
   const [contentPage, setContentPage] = useState(1);
+  const [contentSort, setContentSort] = useState<{ key: string; direction: "asc" | "desc" }>({
+    key: "createdAt",
+    direction: "desc",
+  });
   const [mineItems, setMineItems] = useState<ContentWithType[]>([]);
   const [minePagination, setMinePagination] = useState<{
     page: number;
@@ -55,6 +60,15 @@ export default function UserDashboard() {
     totalPages: number;
     hasMore: boolean;
   } | null>(null);
+  const [mineCounts, setMineCounts] = useState<{
+    pending: number;
+    approved: number;
+    rejected: number;
+    all: number;
+  } | null>(null);
+  const [countsByType, setCountsByType] = useState<Record<ContentType, {
+    pending: number; approved: number; rejected: number; all: number;
+  }> | null>(null);
 
   // Store state
   const {
@@ -83,14 +97,6 @@ export default function UserDashboard() {
   } = useSyllabusStore();
 
   // Data computation
-  const allContent = useMemo(
-    () => [
-      ...myNotes.map((note) => ({ ...note, type: "note" as const })),
-      ...myPyqs.map((pyq) => ({ ...pyq, type: "pyq" as const })),
-      ...mySyllabus.map((syll) => ({ ...syll, type: "syllabus" as const })),
-    ],
-    [myNotes, myPyqs, mySyllabus],
-  );
   const filteredContent = useMemo(() => {
     if (contentFilter === "note") {
       return myNotes.map((note) => ({ ...note, type: "note" as const }));
@@ -104,13 +110,13 @@ export default function UserDashboard() {
     return mineItems;
   }, [contentFilter, mineItems, myNotes, myPyqs, mySyllabus]);
 
-  const totalContributions =
-    (myNotesCounts?.all ?? myNotes.length) +
-    (myPyqsCounts?.all ?? myPyqs.length) +
-    (mySyllabusCounts?.all ?? mySyllabus.length);
-  const notesTotal = myNotesCounts?.all ?? myNotes.length;
-  const pyqsTotal = myPyqsCounts?.all ?? myPyqs.length;
-  const syllabusTotal = mySyllabusCounts?.all ?? mySyllabus.length;
+  const totalContributions = mineCounts?.all ??
+    (myNotesCounts?.all ?? 0) +
+    (myPyqsCounts?.all ?? 0) +
+    (mySyllabusCounts?.all ?? 0);
+  const notesTotal = countsByType?.note.all ?? myNotesCounts?.all ?? 0;
+  const pyqsTotal = countsByType?.pyq.all ?? myPyqsCounts?.all ?? 0;
+  const syllabusTotal = countsByType?.syllabus.all ?? mySyllabusCounts?.all ?? 0;
 
   // Stats
   const stats = [
@@ -144,41 +150,48 @@ export default function UserDashboard() {
     },
   ];
 
+  const loadCurrentResources = useCallback(async () => {
+    const params = {
+      page: contentPage,
+      limit: 25,
+      query: searchTerm.trim() || undefined,
+      status: contentStatus === "all" ? undefined : contentStatus,
+      sort: contentSort.key as "createdAt" | "updatedAt" | "title" | "courseCode",
+      direction: contentSort.direction,
+    };
+
+    if (contentFilter === "all") {
+      try {
+        const res = await getMineResources({ ...params, status: contentStatus });
+        setMineItems(
+          (res.items || []).map((item: ContentItem & { resourceType: ContentType }) => ({
+            ...item,
+            type: item.resourceType,
+          })),
+        );
+        setMinePagination(res.pagination || null);
+        setMineCounts(res.counts || null);
+        setCountsByType(res.countsByType || null);
+      } catch {
+        setMineItems([]);
+        setMinePagination(null);
+        setMineCounts(null);
+        setCountsByType(null);
+      }
+    } else if (contentFilter === "note") {
+      await fetchMyNotes(params);
+    } else if (contentFilter === "pyq") {
+      await fetchPYQs(params);
+    } else {
+      await fetchSyllabus(params);
+    }
+  }, [contentFilter, contentPage, contentSort, contentStatus, fetchMyNotes, fetchPYQs, fetchSyllabus, searchTerm]);
+
   // Effects
   useEffect(() => {
-    const timeout = window.setTimeout(() => {
-      const params = {
-        page: contentPage,
-        limit: 25,
-        query: searchTerm.trim() || undefined,
-      };
-
-      if (contentFilter === "all") {
-        getMineResources(params)
-          .then((res) => {
-            setMineItems(
-              (res.items || []).map((item: ContentItem & { resourceType: ContentType }) => ({
-                ...item,
-                type: item.resourceType,
-              })),
-            );
-            setMinePagination(res.pagination || null);
-          })
-          .catch(() => {
-            setMineItems([]);
-            setMinePagination(null);
-          });
-      } else if (contentFilter === "note") {
-        fetchMyNotes(params);
-      } else if (contentFilter === "pyq") {
-        fetchPYQs(params);
-      } else {
-        fetchSyllabus(params);
-      }
-    }, 250);
-
+    const timeout = window.setTimeout(() => void loadCurrentResources(), 250);
     return () => window.clearTimeout(timeout);
-  }, [contentPage, contentFilter, searchTerm, fetchMyNotes, fetchPYQs, fetchSyllabus]);
+  }, [loadCurrentResources]);
 
   useEffect(() => {
     const uploadType = searchParams.get("upload") as ContentType | null;
@@ -194,6 +207,7 @@ export default function UserDashboard() {
       if (type === "note") await removeNote(id);
       else if (type === "pyq") await removePYQ(id);
       else if (type === "syllabus") await removeSyllabus(id);
+      await loadCurrentResources();
       toast.success("Item deleted successfully");
     } catch (error) {
       toast.error("Failed to delete item");
@@ -316,17 +330,17 @@ export default function UserDashboard() {
               <div className="rounded-xl border border-border p-4">
                 <p className="text-sm text-muted-foreground">Approved Content</p>
                 <p className="text-2xl font-bold text-foreground">
-                  {(myNotesCounts?.approved ?? 0) +
-                    (myPyqsCounts?.approved ?? 0) +
-                    (mySyllabusCounts?.approved ?? 0)}
+                  {(countsByType?.note.approved ?? myNotesCounts?.approved ?? 0) +
+                    (countsByType?.pyq.approved ?? myPyqsCounts?.approved ?? 0) +
+                    (countsByType?.syllabus.approved ?? mySyllabusCounts?.approved ?? 0)}
                 </p>
               </div>
               <div className="rounded-xl border border-border p-4">
                 <p className="text-sm text-muted-foreground">Pending Review</p>
                 <p className="text-2xl font-bold text-foreground">
-                  {(myNotesCounts?.pending ?? 0) +
-                    (myPyqsCounts?.pending ?? 0) +
-                    (mySyllabusCounts?.pending ?? 0)}
+                  {(countsByType?.note.pending ?? myNotesCounts?.pending ?? 0) +
+                    (countsByType?.pyq.pending ?? myPyqsCounts?.pending ?? 0) +
+                    (countsByType?.syllabus.pending ?? mySyllabusCounts?.pending ?? 0)}
                 </p>
               </div>
               <div className="rounded-xl border border-border p-4">
@@ -334,9 +348,9 @@ export default function UserDashboard() {
                 <p className="text-2xl font-bold text-foreground">
                   {totalContributions > 0
                     ? Math.round(
-                        (((myNotesCounts?.rejected ?? 0) +
-                          (myPyqsCounts?.rejected ?? 0) +
-                          (mySyllabusCounts?.rejected ?? 0)) /
+                        (((countsByType?.note.rejected ?? myNotesCounts?.rejected ?? 0) +
+                          (countsByType?.pyq.rejected ?? myPyqsCounts?.rejected ?? 0) +
+                          (countsByType?.syllabus.rejected ?? mySyllabusCounts?.rejected ?? 0)) /
                           totalContributions) *
                           100,
                       )
@@ -348,8 +362,8 @@ export default function UserDashboard() {
                 <p className="text-sm text-muted-foreground">Last Contribution</p>
                 <p className="text-2xl font-bold text-foreground">
                   {totalContributions > 0
-                    ? allContent[0]
-                      ? new Date(allContent[0].createdAt).toLocaleDateString()
+                    ? mineItems[0]
+                      ? new Date(mineItems[0].createdAt).toLocaleDateString()
                       : "—"
                     : "—"}
                 </p>
@@ -364,7 +378,7 @@ export default function UserDashboard() {
         <div className="mt-8 space-y-6">
           <Toolbar
             title="My Content Library"
-            description={`Manage ${filteredContent.length} ${contentFilter === "all" ? "items" : contentFilter + "s"}`}
+            description={`Manage ${contentFilter === "all" ? minePagination?.total ?? 0 : contentFilter === "note" ? myNotesPagination?.total ?? 0 : contentFilter === "pyq" ? myPyqsPagination?.total ?? 0 : mySyllabusPagination?.total ?? 0} ${contentFilter === "all" ? "items" : contentFilter + "s"}`}
           >
             <Input
               icon={<Search size={16} />}
@@ -389,11 +403,25 @@ export default function UserDashboard() {
               <option value="pyq">PYQs Only</option>
               <option value="syllabus">Syllabus Only</option>
             </Select>
+            <Select
+              value={contentStatus}
+              onChange={(e) => {
+                setContentPage(1);
+                setContentStatus(e.target.value as typeof contentStatus);
+              }}
+              className="w-auto"
+              aria-label="Filter by status"
+            >
+              <option value="all">All Statuses</option>
+              <option value="pending">Pending</option>
+              <option value="approved">Approved</option>
+              <option value="rejected">Rejected</option>
+            </Select>
           </Toolbar>
 
           <SectionCard
             title="Content Overview"
-            description={`${filteredContent.length} item${filteredContent.length !== 1 ? "s" : ""}`}
+            description={`${contentFilter === "all" ? minePagination?.total ?? 0 : contentFilter === "note" ? myNotesPagination?.total ?? 0 : contentFilter === "pyq" ? myPyqsPagination?.total ?? 0 : mySyllabusPagination?.total ?? 0} matching items`}
             icon={<BookOpen size={20} />}
             isLoading={isLoading}
           >
@@ -413,6 +441,11 @@ export default function UserDashboard() {
                       : minePagination ?? undefined
               }
               onServerPageChange={setContentPage}
+              serverSort={contentSort}
+              onServerSortChange={(next) => {
+                setContentPage(1);
+                setContentSort(next ?? { key: "createdAt", direction: "desc" });
+              }}
               emptyTitle="No content yet. Upload your first note, PYQ, or syllabus!"
             />
           </SectionCard>
@@ -487,9 +520,9 @@ export default function UserDashboard() {
             onClick={(e) => e.stopPropagation()}
           >
             <NotesForm
-              onSuccess={() => {
+              onSuccess={async () => {
                 closeModal();
-                fetchMyNotes();
+                await loadCurrentResources();
               }}
               onClose={closeModal}
               initialData={editingItem && editingItem.type === "note" ? (editingItem as Note) : undefined}
@@ -508,9 +541,9 @@ export default function UserDashboard() {
             onClick={(e) => e.stopPropagation()}
           >
             <PyqsForm
-              onSuccess={() => {
+              onSuccess={async () => {
                 closeModal();
-                fetchPYQs();
+                await loadCurrentResources();
               }}
               onClose={closeModal}
               initialData={editingItem && editingItem.type === "pyq" ? (editingItem as Pyq) : undefined}
@@ -529,9 +562,9 @@ export default function UserDashboard() {
             onClick={(e) => e.stopPropagation()}
           >
             <SyllabusForm
-              onSuccess={() => {
+              onSuccess={async () => {
                 closeModal();
-                fetchSyllabus();
+                await loadCurrentResources();
               }}
               onClose={closeModal}
               initialData={editingItem && editingItem.type === "syllabus" ? (editingItem as Syllabus) : undefined}
