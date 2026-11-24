@@ -9,6 +9,7 @@ import {
 } from "@/components/dashboards";
 import AuthGuard from "@/components/AuthGuard";
 import { Shield, CheckCircle, BookOpen } from "lucide-react";
+import { useServerAuth } from "@/components/ServerAuthProvider";
 
 const readSavedDashboard = () => {
   if (typeof window === "undefined") return null;
@@ -21,7 +22,9 @@ const readSavedDashboard = () => {
 };
 
 export default function Dashboard() {
-  const { user } = useAuthStore();
+  const { user: serverUser } = useServerAuth();
+  const storeUser = useAuthStore((state) => state.user);
+  const user = serverUser ?? storeUser;
 
   // Get initial dashboard based on user role
   const getInitialDashboard = (): string => {

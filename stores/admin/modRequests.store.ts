@@ -56,8 +56,7 @@ export const useAdminModRequestsStore = create<ModRequestsState>(
       const shouldUseCache =
         !options?.force &&
         lastFetchedAt !== null &&
-        Date.now() - lastFetchedAt < cacheTtlMs &&
-        ids.length > 0;
+        Date.now() - lastFetchedAt < cacheTtlMs;
 
       if (shouldUseCache) return;
 

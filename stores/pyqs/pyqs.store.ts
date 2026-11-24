@@ -20,6 +20,7 @@ interface PYQsStore {
   isLoading: boolean;
   error: string | null;
   lastSearchParams: PyqSearchParams | null;
+  lastMyPyqsFetchedAt: number | null;
 
   fetchPYQs: () => Promise<void>;
   fetchAllPyqs: () => Promise<void>;
@@ -41,13 +42,21 @@ export const usePYQsStore = create<PYQsStore>((set) => ({
   isLoading: false,
   error: null,
   lastSearchParams: null,
+  lastMyPyqsFetchedAt: null,
 
   fetchPYQs: async () => {
+    const { lastMyPyqsFetchedAt } = usePYQsStore.getState();
+    if (
+      lastMyPyqsFetchedAt !== null &&
+      Date.now() - lastMyPyqsFetchedAt < 60_000
+    ) {
+      return;
+    }
     set({ isLoading: true, error: null });
     try {
       const res = await getMyPyqs();
       const pyqs = res.pyqs || [];
-      set({ myPyqs: pyqs, isLoading: false });
+      set({ myPyqs: pyqs, isLoading: false, lastMyPyqsFetchedAt: Date.now() });
     } catch (error: unknown) {
       set({
         error: getErrorMessage(error) || "Failed to fetch PYQs",

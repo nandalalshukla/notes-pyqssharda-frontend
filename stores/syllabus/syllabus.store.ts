@@ -20,6 +20,7 @@ interface SyllabusStore {
   isLoading: boolean;
   error: string | null;
   lastSearchParams: SyllabusSearchParams | null;
+  lastMySyllabusFetchedAt: number | null;
 
   fetchSyllabus: () => Promise<void>;
   fetchAllSyllabus: () => Promise<void>;
@@ -41,13 +42,21 @@ export const useSyllabusStore = create<SyllabusStore>((set) => ({
   isLoading: false,
   error: null,
   lastSearchParams: null,
+  lastMySyllabusFetchedAt: null,
 
   fetchSyllabus: async () => {
+    const { lastMySyllabusFetchedAt } = useSyllabusStore.getState();
+    if (
+      lastMySyllabusFetchedAt !== null &&
+      Date.now() - lastMySyllabusFetchedAt < 60_000
+    ) {
+      return;
+    }
     set({ isLoading: true, error: null });
     try {
       const res = await getMySyllabus();
       const syllabus = res.syllabus || res.syllabuses || [];
-      set({ mySyllabus: syllabus, isLoading: false });
+      set({ mySyllabus: syllabus, isLoading: false, lastMySyllabusFetchedAt: Date.now() });
     } catch (error: unknown) {
       set({
         error: getErrorMessage(error) || "Failed to fetch syllabus",

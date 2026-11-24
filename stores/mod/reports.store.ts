@@ -66,13 +66,12 @@ export const useModReportsStore = create<ReportsState>((set, get) => ({
 
   fetchReports: async (filters, options) => {
     const queryKey = buildQueryKey(filters);
-    const { lastFetchedAt, lastQueryKey, ids } = get();
+    const { lastFetchedAt, lastQueryKey } = get();
     const shouldUseCache =
       !options?.force &&
       lastFetchedAt !== null &&
       lastQueryKey === queryKey &&
-      Date.now() - lastFetchedAt < cacheTtlMs &&
-      ids.length > 0;
+      Date.now() - lastFetchedAt < cacheTtlMs;
 
     if (shouldUseCache) return;
 

@@ -20,6 +20,7 @@ interface NotesStore {
   isLoading: boolean;
   error: string | null;
   lastSearchParams: NoteSearchParams | null;
+  lastMyNotesFetchedAt: number | null;
 
   fetchAllNotes: () => Promise<void>;
   fetchRecentNotes: (limit?: number) => Promise<void>;
@@ -41,6 +42,7 @@ export const useNotesStore = create<NotesStore>((set) => ({
   isLoading: false,
   error: null,
   lastSearchParams: null,
+  lastMyNotesFetchedAt: null,
 
   fetchAllNotes: async () => {
     set({ isLoading: true, error: null });
@@ -71,11 +73,18 @@ export const useNotesStore = create<NotesStore>((set) => ({
   },
 
   fetchMyNotes: async () => {
+    const { lastMyNotesFetchedAt } = useNotesStore.getState();
+    if (
+      lastMyNotesFetchedAt !== null &&
+      Date.now() - lastMyNotesFetchedAt < 60_000
+    ) {
+      return;
+    }
     set({ isLoading: true, error: null });
     try {
       const res = await getMyNotes();
       const notes = res.notes || [];
-      set({ myNotes: notes, isLoading: false });
+      set({ myNotes: notes, isLoading: false, lastMyNotesFetchedAt: Date.now() });
     } catch (error: unknown) {
       set({
         error: getErrorMessage(error) || "Failed to fetch my notes",
