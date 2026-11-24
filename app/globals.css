@@ -292,7 +292,6 @@ body {
   height: 44px !important;
   min-height: 44px;
   padding: 0;
-  color: var(--color-foreground);
 }
 
 .feed-filter-pill.icon-control {
@@ -310,6 +309,7 @@ body {
 .feed-filter-pill.nav-control svg {
   width: 1.25rem !important;
   height: 1.25rem !important;
+  color: inherit;
   stroke-width: 2;
   opacity: 1;
 }
