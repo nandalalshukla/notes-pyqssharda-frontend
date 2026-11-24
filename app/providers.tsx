@@ -45,6 +45,17 @@ export default function AuthProviders() {
     let cancelled = false;
 
     const initAuth = async () => {
+      // Dashboard routes already receive the authoritative user from the
+      // server layout. Skip the second browser-side /auth/me request.
+      if (
+        typeof window !== "undefined" &&
+        window.location.pathname.startsWith("/library/dashboard")
+      ) {
+        setAuthLoading(false);
+        setAuthInitialized(true);
+        return;
+      }
+
       const { isAuthenticated, user } = useAuthStore.getState();
       if (!isAuthenticated && !user) {
         setAuthInitialized(true);
