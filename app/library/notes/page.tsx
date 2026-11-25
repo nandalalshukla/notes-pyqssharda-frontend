@@ -8,6 +8,7 @@ import NOTES6_DATA_2024_25 from "@/DATA/Notes/BtechCS/6thSem";
 import NOTES8_DATA_2024_25 from "@/DATA/Notes/BtechCS/8thSem";
 import {
   ResourceLibraryPage,
+  matchesLibrarySearch,
   type LibraryDataSource,
   type LibraryItem,
 } from "@/components/library/ResourceLibraryPage";
@@ -35,15 +36,14 @@ export default function NotesPage() {
       }, signal);
 
       const matchesStatic = (item: LibraryItem) => {
-        const query = q.query.toLowerCase();
-        const code = q.courseCode.toLowerCase();
-        return (
-          (!query || item.subject.toLowerCase().includes(query) || item.code.toLowerCase().includes(query)) &&
-          (!q.program || (item.program ?? "B.Tech CS").toLowerCase() === q.program.toLowerCase()) &&
-          (!code || item.code.toLowerCase().includes(code)) &&
-          (!q.year || item.year === q.year) &&
-          (!q.semester || item.semester.toString() === q.semester)
-        );
+        const criteria = [
+          { active: Boolean(q.query.trim()), matches: matchesLibrarySearch(q.query, [item.subject, item.code]) },
+          { active: Boolean(q.program), matches: (item.program ?? "B.Tech CS").toLowerCase() === q.program?.toLowerCase() },
+          { active: Boolean(q.courseCode.trim()), matches: item.code.toLowerCase().includes(q.courseCode.trim().toLowerCase()) },
+          { active: Boolean(q.year), matches: item.year === q.year },
+          { active: Boolean(q.semester), matches: item.semester.toString() === q.semester },
+        ].filter((criterion) => criterion.active);
+        return criteria.length === 0 || criteria.some((criterion) => criterion.matches);
       };
 
       const databaseItems: LibraryItem[] = res.notes.map((note) => ({

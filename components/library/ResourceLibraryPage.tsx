@@ -119,6 +119,49 @@ function extractUnitName(filePath: string): string {
   return filename;
 }
 
+function normalizeSearchText(value: string): string {
+  return value
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLocaleLowerCase()
+    .replace(/[^\p{L}\p{N}]+/gu, " ")
+    .trim();
+}
+
+function isCloseSearchWord(queryWord: string, valueWord: string): boolean {
+  if (valueWord.includes(queryWord)) return true;
+  if (queryWord.length < 5 || Math.abs(queryWord.length - valueWord.length) > 1) return false;
+
+  // One edit (insertion, deletion, or substitution) handles common typing
+  // mistakes without turning short words into noisy matches.
+  let queryIndex = 0;
+  let valueIndex = 0;
+  let edits = 0;
+  while (queryIndex < queryWord.length && valueIndex < valueWord.length) {
+    if (queryWord[queryIndex] === valueWord[valueIndex]) {
+      queryIndex += 1;
+      valueIndex += 1;
+      continue;
+    }
+    edits += 1;
+    if (edits > 1) return false;
+    if (queryWord.length > valueWord.length) queryIndex += 1;
+    else if (valueWord.length > queryWord.length) valueIndex += 1;
+    else {
+      queryIndex += 1;
+      valueIndex += 1;
+    }
+  }
+  return edits + (queryIndex < queryWord.length || valueIndex < valueWord.length ? 1 : 0) <= 1;
+}
+
+export function matchesLibrarySearch(query: string, values: string[]): boolean {
+  const words = normalizeSearchText(query).split(/\s+/).filter((word) => word.length >= 2);
+  if (words.length === 0) return true;
+  const candidates = values.flatMap((value) => normalizeSearchText(value).split(/\s+/));
+  return words.every((word) => candidates.some((candidate) => isCloseSearchWord(word, candidate)));
+}
+
 export interface ResourceLibraryPageProps {
   accent: LibraryAccent;
   heading: { prefix?: string; highlight: string; suffix?: string };
@@ -317,32 +360,18 @@ export function ResourceLibraryPage({
 
   const clientFilteredItems = useMemo(() => {
     return staticItems.filter((item) => {
-      const searchLower = searchQuery.toLowerCase();
-      const codeLower = courseCode.toLowerCase();
-
-      const matchesQuery =
-        !searchQuery ||
-        item.subject.toLowerCase().includes(searchLower) ||
-        item.code.toLowerCase().includes(searchLower);
       // Prefer the item's own programme; fall back to the page-level label
       // for the static lists, whose items are all one programme.
       const itemProgram = item.program ?? programLabel;
-      const matchesProgram =
-        !selectedProgram ||
-        itemProgram.toLowerCase() === selectedProgram.toLowerCase();
-      const matchesCode =
-        !courseCode || item.code.toLowerCase().includes(codeLower);
-      const matchesYear = !selectedYear || item.year === selectedYear;
-      const matchesSemester =
-        !selectedSemester || item.semester.toString() === selectedSemester;
+      const criteria = [
+        { active: Boolean(searchQuery.trim()), matches: matchesLibrarySearch(searchQuery, [item.subject, item.code]) },
+        { active: Boolean(selectedProgram), matches: itemProgram.toLocaleLowerCase() === selectedProgram?.toLocaleLowerCase() },
+        { active: Boolean(courseCode.trim()), matches: normalizeSearchText(item.code).includes(normalizeSearchText(courseCode)) },
+        { active: Boolean(selectedYear), matches: item.year === selectedYear },
+        { active: Boolean(selectedSemester), matches: item.semester.toString() === selectedSemester },
+      ].filter((criterion) => criterion.active);
 
-      return (
-        matchesQuery &&
-        matchesProgram &&
-        matchesCode &&
-        matchesYear &&
-        matchesSemester
-      );
+      return criteria.length === 0 || criteria.some((criterion) => criterion.matches);
     });
   }, [staticItems, searchQuery, selectedProgram, programLabel, courseCode, selectedYear, selectedSemester]);
 
@@ -433,10 +462,11 @@ export function ResourceLibraryPage({
             <div className="flex items-center border-b-2 border-dashed border-border px-6 py-4">
               <Search className="mr-4 h-6 w-6 text-muted-foreground" />
               <input
-                type="text"
+                type="search"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search by subject name..."
+                aria-label="Search by subject name or course code"
+                placeholder="Search subjects or course codes..."
                 className="w-full bg-transparent text-lg text-foreground placeholder-muted-foreground outline-none"
               />
             </div>
@@ -447,21 +477,26 @@ export function ResourceLibraryPage({
                 <button
                   type="button"
                   onClick={() => toggleDropdown("program")}
+                  aria-expanded={activeDropdown === "program"}
+                  aria-haspopup="listbox"
                   className={dropdownButtonClass(!!selectedProgram)}
                 >
                   {selectedProgram || "Program"}
                   <ChevronDown className="h-4 w-4" />
                 </button>
                 {activeDropdown === "program" && (
-                  <div className={cn(dropdownPanelClass, "w-48")}>
+                  <div role="listbox" aria-label="Programs" className={cn(dropdownPanelClass, "w-48")}>
                     {resolvedProgramOptions.map((opt) => (
-                      <div
+                      <button
+                        type="button"
+                        role="option"
+                        aria-selected={selectedProgram === opt}
                         key={opt}
                         onClick={() => handleSelect("program", opt)}
-                        className={dropdownOptionClass}
+                        className={cn(dropdownOptionClass, "block w-full text-left")}
                       >
                         {opt}
-                      </div>
+                      </button>
                     ))}
                   </div>
                 )}
@@ -476,9 +511,10 @@ export function ResourceLibraryPage({
               >
                 <span className="text-muted-foreground">Code:</span>
                 <input
-                  type="text"
+                  type="search"
                   value={courseCode}
                   onChange={(e) => setCourseCode(e.target.value)}
+                  aria-label="Filter by course code"
                   placeholder={codePlaceholder}
                   className="w-24 bg-transparent font-bold text-foreground uppercase outline-none placeholder:normal-case"
                 />
@@ -489,21 +525,26 @@ export function ResourceLibraryPage({
                 <button
                   type="button"
                   onClick={() => toggleDropdown("year")}
+                  aria-expanded={activeDropdown === "year"}
+                  aria-haspopup="listbox"
                   className={dropdownButtonClass(!!selectedYear)}
                 >
                   {selectedYear || "Year"}
                   <ChevronDown className="h-4 w-4" />
                 </button>
                 {activeDropdown === "year" && (
-                  <div className={cn(dropdownPanelClass, "w-40")}>
+                  <div role="listbox" aria-label="Years" className={cn(dropdownPanelClass, "w-40")}>
                     {yearOptions.map((opt) => (
-                      <div
+                      <button
+                        type="button"
+                        role="option"
+                        aria-selected={selectedYear === opt}
                         key={opt}
                         onClick={() => handleSelect("year", opt)}
-                        className={cn(dropdownOptionClass, "border-b border-dashed border-border last:border-0")}
+                        className={cn(dropdownOptionClass, "block w-full text-left border-b border-dashed border-border last:border-0")}
                       >
                         {opt}
-                      </div>
+                      </button>
                     ))}
                   </div>
                 )}
@@ -514,21 +555,26 @@ export function ResourceLibraryPage({
                 <button
                   type="button"
                   onClick={() => toggleDropdown("semester")}
+                  aria-expanded={activeDropdown === "semester"}
+                  aria-haspopup="listbox"
                   className={dropdownButtonClass(!!selectedSemester)}
                 >
                   {selectedSemester ? `Sem ${selectedSemester}` : "Semester"}
                   <ChevronDown className="h-4 w-4" />
                 </button>
                 {activeDropdown === "semester" && (
-                  <div className={cn(dropdownPanelClass, "w-32")}>
+                  <div role="listbox" aria-label="Semesters" className={cn(dropdownPanelClass, "w-32")}>
                     {semesterOptions.map((opt) => (
-                      <div
+                      <button
+                        type="button"
+                        role="option"
+                        aria-selected={selectedSemester === opt}
                         key={opt}
                         onClick={() => handleSelect("semester", opt)}
-                        className={dropdownOptionClass}
+                        className={cn(dropdownOptionClass, "block w-full text-left")}
                       >
                         Semester {opt}
-                      </div>
+                      </button>
                     ))}
                   </div>
                 )}
