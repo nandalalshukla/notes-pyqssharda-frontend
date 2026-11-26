@@ -11,6 +11,7 @@ import {
   type LibraryItem,
   type LibraryQuery,
 } from "./libraryFilters";
+import { withLibraryFilters } from "./libraryFilterUrl";
 import { useLibraryFilters } from "./useLibraryFilters";
 import { cn } from "@/lib/utils/cn";
 import {
@@ -144,16 +145,16 @@ export function ResourceLibraryPage({
     [serverOptions, programOptions],
   );
 
-  const { filters: savedFilters, setFilters } = useLibraryFilters(resourceType ?? "pyqs");
-  const filters = savedFilters ?? emptyFilters;
+  const { filters, setFilters } = useLibraryFilters();
   const { query: searchQuery, program: selectedProgram, courseCode, year: selectedYear, semester: selectedSemester } = filters;
-  const [cursor, setCursor] = useState({ page: 1, delay: 0 });
+  const [cursor, setCursor] = useState({ filters, page: 1, delay: 0 });
   const request = useMemo<LibraryQuery>(() => ({
-    ...filters, query: filters.query.trim(), courseCode: filters.courseCode.trim(), page: cursor.page,
+    ...filters, query: filters.query.trim(), courseCode: filters.courseCode.trim(),
+    page: cursor.filters === filters ? cursor.page : 1,
   }), [filters, cursor]);
 
   function changeFilters(change: Partial<LibraryFilters>, delay = 0) {
-    setCursor({ page: 1, delay });
+    setCursor({ filters, page: 1, delay });
     setFilters({ ...filters, ...change });
   }
 
@@ -165,7 +166,7 @@ export function ResourceLibraryPage({
   const isLoading = Boolean(dataSource) && !loadError && currentResults?.page !== request.page;
 
   useEffect(() => {
-    if (!dataSource || !savedFilters) return;
+    if (!dataSource) return;
     const controller = new AbortController();
     const cacheKey = JSON.stringify(request);
     const load = async () => {
@@ -194,7 +195,7 @@ export function ResourceLibraryPage({
       window.clearTimeout(timer);
       controller.abort();
     };
-  }, [dataSource, savedFilters, filters, request, cursor.delay]);
+  }, [dataSource, filters, request, cursor.delay]);
 
   // Filter options are the same for every visitor and change only when new
   // papers are imported, so they're fetched once per mount.
@@ -336,7 +337,7 @@ export function ResourceLibraryPage({
         {loadError && (
           <div role="alert" className="mb-8 rounded-xl border border-destructive/20 bg-destructive/5 p-4 text-center text-sm font-bold text-destructive">
             Could not load these results.{" "}
-            <button type="button" className="underline" onClick={() => setCursor({ page: request.page, delay: 0 })}>
+            <button type="button" className="underline" onClick={() => setCursor({ filters, page: request.page, delay: 0 })}>
               Try again
             </button>
           </div>
@@ -369,6 +370,7 @@ export function ResourceLibraryPage({
                         programLabel={programLabel}
                         viewLabel={viewLabel}
                         styles={styles}
+                        filters={filters}
                         resourceType={resourceType}
                       />
                     ))}
@@ -380,7 +382,7 @@ export function ResourceLibraryPage({
               <div className="flex justify-center pt-4">
                 <button
                   type="button"
-                  onClick={() => setCursor({ page: request.page + 1, delay: 0 })}
+                  onClick={() => setCursor({ filters, page: request.page + 1, delay: 0 })}
                   disabled={isLoading}
                   className="cursor-pointer rounded-lg bg-ink px-8 py-3 font-black text-background transition-opacity hover:opacity-90 disabled:opacity-60"
                 >
@@ -445,7 +447,9 @@ function ResourceCard({
   viewLabel,
   styles,
   resourceType,
+  filters,
 }: {
+  filters: LibraryFilters;
   item: LibraryItem;
   programLabel: string;
   viewLabel: string;
@@ -490,7 +494,7 @@ function ResourceCard({
           // An internal page exists for this item, so keep the reader on
           // this site instead of handing them off to a raw file URL.
           <Link
-            href={item.href}
+            href={withLibraryFilters(item.href, filters)}
             className="flex w-full items-center justify-center gap-2 rounded-lg bg-ink py-3 font-black text-background transition-opacity hover:opacity-90 cursor-pointer"
           >
             <FileText className="h-5 w-5" />
@@ -499,7 +503,7 @@ function ResourceCard({
         ) : srcArray.length === 1 ? (
           resourceType ? (
             <Link
-              href={`/library/resource?type=${resourceType}&src=${encodeURIComponent(srcArray[0])}`}
+              href={withLibraryFilters(`/library/resource?type=${resourceType}&src=${encodeURIComponent(srcArray[0])}`, filters)}
               className="flex w-full items-center justify-center gap-2 rounded-lg bg-ink py-3 font-black text-background transition-opacity hover:opacity-90 cursor-pointer"
             >
               <Download className="h-5 w-5" />
@@ -522,7 +526,7 @@ function ResourceCard({
               resourceType ? (
                 <Link
                   key={idx}
-                  href={`/library/resource?type=${resourceType}&src=${encodeURIComponent(src)}`}
+                  href={withLibraryFilters(`/library/resource?type=${resourceType}&src=${encodeURIComponent(src)}`, filters)}
                   className="flex w-full items-center justify-center gap-2 rounded-lg bg-ink py-2 text-sm font-bold text-background transition-opacity hover:opacity-90 cursor-pointer"
                 >
                   <Download className="h-4 w-4" />

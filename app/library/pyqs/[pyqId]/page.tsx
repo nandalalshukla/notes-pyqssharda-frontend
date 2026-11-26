@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { readLibraryFilters, withLibraryFilters, type PageSearchParams } from "@/components/library/libraryFilterUrl";
 import { notFound } from "next/navigation";
 import { Download, ChevronLeft, ExternalLink } from "lucide-react";
 import { getPyqById, type Pyq } from "@/lib/api/pyqs/pyqs.api";
@@ -23,6 +24,7 @@ import { redirect } from "next/navigation";
  */
 
 interface PageProps {
+  searchParams: Promise<PageSearchParams>;
   params: Promise<{ pyqId: string }>;
 }
 
@@ -63,14 +65,15 @@ export async function generateMetadata({
   };
 }
 
-export default async function PyqPaperPage({ params }: PageProps) {
+export default async function PyqPaperPage({ params, searchParams }: PageProps) {
   const { pyqId } = await params;
+  const filters = readLibraryFilters(await searchParams);
   const authStatus = await getServerAuthStatus();
   if (authStatus === "unavailable") {
     throw new Error("Authentication service is temporarily unavailable.");
   }
   if (authStatus !== "authenticated") {
-    const returnTo = `/library/pyqs/${pyqId}`;
+    const returnTo = withLibraryFilters(`/library/pyqs/${pyqId}`, filters);
     redirect(`/auth/login?next=${encodeURIComponent(returnTo)}`);
   }
 
@@ -124,7 +127,7 @@ export default async function PyqPaperPage({ params }: PageProps) {
 
       <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
         <Link
-          href="/library/pyqs"
+          href={withLibraryFilters("/library/pyqs", filters)}
           className="mb-6 inline-flex items-center gap-1.5 text-sm font-bold text-muted-foreground transition-colors hover:text-primary"
         >
           <ChevronLeft className="h-4 w-4" />

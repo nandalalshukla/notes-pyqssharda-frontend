@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { readLibraryFilters, withLibraryFilters, type PageSearchParams } from "@/components/library/libraryFilterUrl";
 import { redirect, notFound } from "next/navigation";
 import { ChevronLeft, Download, ExternalLink } from "lucide-react";
 import { getSyllabusById, type Syllabus } from "@/lib/api/syllabus/syllabus.api";
 import { getServerAuthStatus } from "@/lib/server/auth";
 
 interface PageProps {
+  searchParams: Promise<PageSearchParams>;
   params: Promise<{ syllabusId: string }>;
 }
 
@@ -25,12 +27,13 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
-export default async function SyllabusPage({ params }: PageProps) {
+export default async function SyllabusPage({ params, searchParams }: PageProps) {
   const { syllabusId } = await params;
+  const filters = readLibraryFilters(await searchParams);
   const authStatus = await getServerAuthStatus();
   if (authStatus === "unavailable") throw new Error("Authentication service is temporarily unavailable.");
   if (authStatus !== "authenticated") {
-    redirect(`/auth/login?next=${encodeURIComponent(`/library/syllabus/${syllabusId}`)}`);
+    redirect(`/auth/login?next=${encodeURIComponent(withLibraryFilters(`/library/syllabus/${syllabusId}`, filters))}`);
   }
 
   const syllabus = await getSyllabusById(syllabusId);
@@ -41,7 +44,7 @@ export default async function SyllabusPage({ params }: PageProps) {
   return (
     <div className="min-h-screen bg-background">
       <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
-        <Link href="/library/syllabus" className="mb-6 inline-flex items-center gap-1.5 text-sm font-bold text-muted-foreground hover:text-primary">
+        <Link href={withLibraryFilters("/library/syllabus", filters)} className="mb-6 inline-flex items-center gap-1.5 text-sm font-bold text-muted-foreground hover:text-primary">
           <ChevronLeft className="h-4 w-4" />
           All syllabus
         </Link>

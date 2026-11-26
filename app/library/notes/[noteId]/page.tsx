@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { readLibraryFilters, withLibraryFilters, type PageSearchParams } from "@/components/library/libraryFilterUrl";
 import { redirect, notFound } from "next/navigation";
 import { ChevronLeft, Download, ExternalLink } from "lucide-react";
 import { getNoteById, type Note } from "@/lib/api/notes/notes.api";
 import { getServerAuthStatus } from "@/lib/server/auth";
 
 interface PageProps {
+  searchParams: Promise<PageSearchParams>;
   params: Promise<{ noteId: string }>;
 }
 
@@ -25,12 +27,13 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
-export default async function NotePage({ params }: PageProps) {
+export default async function NotePage({ params, searchParams }: PageProps) {
   const { noteId } = await params;
+  const filters = readLibraryFilters(await searchParams);
   const authStatus = await getServerAuthStatus();
   if (authStatus === "unavailable") throw new Error("Authentication service is temporarily unavailable.");
   if (authStatus !== "authenticated") {
-    redirect(`/auth/login?next=${encodeURIComponent(`/library/notes/${noteId}`)}`);
+    redirect(`/auth/login?next=${encodeURIComponent(withLibraryFilters(`/library/notes/${noteId}`, filters))}`);
   }
 
   const note = await getNoteById(noteId);
@@ -41,7 +44,7 @@ export default async function NotePage({ params }: PageProps) {
   return (
     <div className="min-h-screen bg-background">
       <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
-        <Link href="/library/notes" className="mb-6 inline-flex items-center gap-1.5 text-sm font-bold text-muted-foreground hover:text-primary">
+        <Link href={withLibraryFilters("/library/notes", filters)} className="mb-6 inline-flex items-center gap-1.5 text-sm font-bold text-muted-foreground hover:text-primary">
           <ChevronLeft className="h-4 w-4" />
           All notes
         </Link>

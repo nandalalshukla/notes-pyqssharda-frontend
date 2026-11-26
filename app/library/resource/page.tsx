@@ -1,16 +1,19 @@
 import Link from "next/link";
+import { readLibraryFilters, withLibraryFilters, type PageSearchParams } from "@/components/library/libraryFilterUrl";
 import { Download, ExternalLink } from "lucide-react";
 import { notFound, redirect } from "next/navigation";
 import { getServerAuthStatus } from "@/lib/server/auth";
 
 interface PageProps {
-  searchParams: Promise<{ type?: string; src?: string }>;
+  searchParams: Promise<PageSearchParams>;
 }
 
 export default async function LibraryResourcePage({ searchParams }: PageProps) {
-  const { type, src } = await searchParams;
+  const params = await searchParams;
+  const { type, src } = params;
+  const filters = readLibraryFilters(params);
   const root = type === "notes" ? "/Notes/" : type === "syllabus" ? "/Syllabus/" : null;
-  if (!root || !src || !src.startsWith(root) || src.includes("\\") || src.split("/").includes("..")) {
+  if (!root || typeof src !== "string" || !src.startsWith(root) || src.includes("\\") || src.split("/").includes("..")) {
     notFound();
   }
 
@@ -19,7 +22,7 @@ export default async function LibraryResourcePage({ searchParams }: PageProps) {
     throw new Error("Authentication service is temporarily unavailable.");
   }
   if (authStatus !== "authenticated") {
-    const returnTo = `/library/resource?type=${type}&src=${encodeURIComponent(src)}`;
+    const returnTo = withLibraryFilters(`/library/resource?type=${type}&src=${encodeURIComponent(src)}`, filters);
     redirect(`/auth/login?next=${encodeURIComponent(returnTo)}`);
   }
 
@@ -29,7 +32,7 @@ export default async function LibraryResourcePage({ searchParams }: PageProps) {
     <main className="min-h-screen bg-background px-4 py-8 text-foreground sm:px-8">
       <div className="mx-auto max-w-6xl">
         <Link
-          href={`/library/${type}`}
+          href={withLibraryFilters(`/library/${type}`, filters)}
           className="mb-5 inline-flex font-bold text-muted-foreground hover:text-primary"
         >
           Back to {type}
