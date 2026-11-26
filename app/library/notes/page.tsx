@@ -8,10 +8,10 @@ import NOTES6_DATA_2024_25 from "@/DATA/Notes/BtechCS/6thSem";
 import NOTES8_DATA_2024_25 from "@/DATA/Notes/BtechCS/8thSem";
 import {
   ResourceLibraryPage,
-  matchesLibrarySearch,
   type LibraryDataSource,
   type LibraryItem,
 } from "@/components/library/ResourceLibraryPage";
+import { matchesLibraryFilters } from "@/components/library/libraryFilters";
 import { browseNotes, getNoteFilterOptions } from "@/lib/api/notes/notes.api";
 
 const allNotes: LibraryItem[] = [
@@ -35,17 +35,6 @@ export default function NotesPage() {
         semester: q.semester || undefined,
       }, signal);
 
-      const matchesStatic = (item: LibraryItem) => {
-        const criteria = [
-          { active: Boolean(q.query.trim()), matches: matchesLibrarySearch(q.query, [item.subject, item.code]) },
-          { active: Boolean(q.program), matches: (item.program ?? "B.Tech CS").toLowerCase() === q.program?.toLowerCase() },
-          { active: Boolean(q.courseCode.trim()), matches: item.code.toLowerCase().includes(q.courseCode.trim().toLowerCase()) },
-          { active: Boolean(q.year), matches: item.year === q.year },
-          { active: Boolean(q.semester), matches: item.semester.toString() === q.semester },
-        ].filter((criterion) => criterion.active);
-        return criteria.length === 0 || criteria.some((criterion) => criterion.matches);
-      };
-
       const databaseItems: LibraryItem[] = res.notes.map((note) => ({
         subject: note.courseName || note.title,
         code: note.courseCode,
@@ -56,20 +45,10 @@ export default function NotesPage() {
         program: note.program,
         href: `/library/notes/${note._id}`,
       }));
-      const staticMatches = q.page === 1 ? allNotes.filter(matchesStatic) : [];
-      const staticTotal = allNotes.filter(matchesStatic).length;
-      const mergedItems = [...staticMatches, ...databaseItems].filter(
-        (item, index, items) => {
-          const key = `${item.subject.toLowerCase()}|${item.code.toLowerCase()}|${item.semester}`;
-          return items.findIndex((candidate) =>
-            `${candidate.subject.toLowerCase()}|${candidate.code.toLowerCase()}|${candidate.semester}` === key
-          ) === index;
-        },
-      );
-
+      const staticMatches = allNotes.filter((item) => matchesLibraryFilters(item, q, "B.Tech CS"));
       return {
-        items: mergedItems,
-        total: res.pagination.total + staticTotal,
+        items: q.page === 1 ? [...staticMatches, ...databaseItems] : databaseItems,
+        total: res.pagination.total + staticMatches.length,
         hasMore: res.pagination.hasMore,
       };
     },
