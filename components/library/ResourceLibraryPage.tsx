@@ -86,6 +86,8 @@ function extractUnitName(filePath: string): string {
 }
 
 export interface ResourceLibraryPageProps {
+  /** The server page owns the heading and explanatory copy on public listings. */
+  hideIntro?: boolean;
   accent: LibraryAccent;
   heading: { prefix?: string; highlight: string; suffix?: string };
   description: string;
@@ -104,6 +106,7 @@ export interface ResourceLibraryPageProps {
 }
 
 export function ResourceLibraryPage({
+  hideIntro = false,
   accent,
   heading,
   description,
@@ -249,7 +252,7 @@ export function ResourceLibraryPage({
   return (
     <div className="min-h-screen bg-background p-4 pb-20 text-foreground sm:p-8">
       <div className="mx-auto max-w-7xl">
-        <div className="mt-8 mb-12 text-center">
+        {!hideIntro && <div className="mt-8 mb-12 text-center">
           <h1 className="mb-4 text-4xl font-black md:text-6xl">
             {heading.prefix}
             <span className={styles.heading}>{heading.highlight}</span>
@@ -258,7 +261,7 @@ export function ResourceLibraryPage({
           <p className="mx-auto max-w-2xl text-xl font-medium text-muted-foreground">
             {description}
           </p>
-        </div>
+        </div>}
 
         {/* Search & Filter Section */}
         <div className="mb-16 flex justify-center">
@@ -335,7 +338,7 @@ export function ResourceLibraryPage({
         </div>
 
         {loadError && (
-          <div role="alert" className="mb-8 rounded-xl border border-destructive/20 bg-destructive/5 p-4 text-center text-sm font-bold text-destructive">
+          <div role="alert" className="mb-8 rounded-xl border border-destructive/20 bg-destructive/5 p-4 text-center text-sm font-bold text-rose-700 dark:text-destructive">
             Could not load these results.{" "}
             <button type="button" className="underline" onClick={() => setCursor({ filters, page: request.page, delay: 0 })}>
               Try again

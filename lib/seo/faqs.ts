@@ -27,17 +27,17 @@ export const HOME_FAQS: Faq[] = [
     question:
       "Where can I find Sharda University previous year question papers?",
     answer:
-      "Every past paper is in the PYQs section of the library. You can filter by programme, semester, academic year or course code, or search by subject name — for example 'operating systems' or 'CSE252'. The collection covers all nine schools, including engineering, law, pharmacy, nursing, medical, dental, allied health, humanities and education.",
+      "Available past papers are in the PYQs section of the library. You can filter by programme, semester, academic year or course code, or search by subject name — for example 'operating systems' or 'CSE252'. Availability varies by subject, school and year.",
   },
   {
     question: "Are Sharda University notes and syllabus available too?",
     answer:
-      "Yes. The Notes section holds unit-wise study notes shared by students, and the Syllabus section holds the official unit breakdown for each course, so you can see exactly what is examinable before you start revising.",
+      "Yes. The Notes section holds student-shared revision material, and the Syllabus section holds available course-unit documents. Confirm your admission batch and current department instructions before planning revision.",
   },
   {
     question: "Do I need an account to use the Sharda online library?",
     answer:
-      "Yes. Sign in with a free Sharda account using your @ug.sharda.ac.in email to browse, search and download the library's study material.",
+      "Browsing and searching are public. Sign in with your Sharda account when you open an individual paper, note or syllabus document.",
   },
   {
     question: "Is Sharda Social free to use?",

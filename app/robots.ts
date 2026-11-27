@@ -1,14 +1,8 @@
 import type { MetadataRoute } from "next";
 import { DISALLOWED_ROUTES, SITE_URL } from "@/lib/seo/site";
 
-/**
- * robots.txt
- *
- * Private and duplicated areas are excluded rather than merely
- * noindex'd: keeping crawlers out of auth screens, dashboards and settings
- * spends the site's crawl budget on the library pages that can actually
- * rank, instead of on hundreds of variations nobody searches for.
- */
+// Keep HTML crawlable so crawlers can read page-level noindex directives.
+// API responses are not search landing pages.
 export default function robots(): MetadataRoute.Robots {
   return {
     rules: [

@@ -7,34 +7,11 @@
  * kind of inconsistency that makes a crawler distrust a site.
  */
 
-/**
- * The public origin, with no trailing slash.
- *
- * The apex `sharda.social` is canonical, not `www`. Both resolve, so one
- * has to be chosen and stuck to — serving identical pages on two hostnames
- * splits ranking signal between them. Every canonical, OG url, sitemap
- * entry and schema @id here uses the apex; the www host should 301 to it
- * at the hosting layer.
- *
- * The Vercel fallback keeps preview deployments self-consistent rather than
- * pointing their canonicals at production, which would ask Google to index
- * a preview build.
- */
-const PRODUCTION_URL = "https://sharda.social";
-
-export const SITE_URL = (
-  process.env.NEXT_PUBLIC_SITE_URL ||
-  // Only a *preview* deployment should describe itself by its generated
-  // hostname. On Vercel, NEXT_PUBLIC_VERCEL_URL is the per-deployment URL
-  // even in production — using it unconditionally would quietly point every
-  // canonical, sitemap entry and OG tag at something like
-  // "sharda-social-abc123.vercel.app" instead of the real domain, and ask
-  // Google to index that instead.
-  (process.env.NEXT_PUBLIC_VERCEL_ENV === "preview" &&
-  process.env.NEXT_PUBLIC_VERCEL_URL
-    ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`
-    : PRODUCTION_URL)
-).replace(/\/+$/, "");
+// Match the existing live hosting redirect. Preview URLs never become canonicals.
+export const SITE_URL = "https://www.sharda.social";
+export const IS_PREVIEW =
+  process.env.VERCEL_ENV === "preview" ||
+  process.env.NEXT_PUBLIC_VERCEL_ENV === "preview";
 
 export const SITE_NAME = "Sharda Social";
 
@@ -47,14 +24,13 @@ export const SITE_TAGLINE =
  * page, but a human decides whether to click it.
  */
 export const SITE_DESCRIPTION =
-  "Sharda Social is a student social media community and free online library for Sharda University — find previous year question papers, semester notes and syllabus PDFs, and follow campus announcements, events, opportunities and lost & found.";
+  "Find Sharda University previous year question papers, notes and syllabus PDFs. Browse the student library, read study guides and follow the Sharda campus community.";
 
 /**
  * Terms this site is genuinely about. Kept honest: the `keywords` meta tag
  * carries no ranking weight with Google any more, and stuffing it with
  * terms the pages don't actually serve is a quality signal in the wrong
- * direction. These exist to guide the copy, and are emitted because other
- * engines (Bing, DuckDuckGo) still read them.
+ * direction. These exist primarily as an editorial reference for the copy.
  */
 export const SITE_KEYWORDS = [
   "Sharda Social",
@@ -109,7 +85,7 @@ export const PUBLIC_ROUTES: {
   { path: "/library/pyqs", priority: 0.9, changeFrequency: "weekly" },
   { path: "/library/notes", priority: 0.8, changeFrequency: "weekly" },
   { path: "/library/syllabus", priority: 0.8, changeFrequency: "weekly" },
-  { path: "/library/explore", priority: 0.7, changeFrequency: "weekly" },
+  { path: "/blogs", priority: 0.8, changeFrequency: "weekly" },
   { path: "/about-us", priority: 0.5, changeFrequency: "monthly" },
 ];
 

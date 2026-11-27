@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { breadcrumbSchema, collectionSchema } from "@/lib/seo/structuredData";
+import { privateRobots } from "@/lib/seo/metadata";
 
 export const metadata: Metadata = {
+  robots: privateRobots,
   title: "Search the Sharda Online Library",
   description:
     "Search Sharda University past papers, notes and syllabus documents by subject, course code, semester or programme. Free access for students with a Sharda account.",

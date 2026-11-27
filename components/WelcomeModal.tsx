@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { X } from "lucide-react";
 import { Modal } from "@/components/ui";
 import useAuthStore from "@/stores/user/authStore";
@@ -9,6 +10,8 @@ import useAuthStore from "@/stores/user/authStore";
 const WELCOME_MODAL_STORAGE_KEY = "sharda-social-welcome-seen";
 
 export default function WelcomeModal() {
+  const pathname = usePathname();
+  const showWelcome = pathname === "/";
   const [isOpen, setIsOpen] = useState(false);
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const authInitialized = useAuthStore((state) => state.authInitialized);
@@ -18,7 +21,7 @@ export default function WelcomeModal() {
     // Wait until persisted auth state and the server session are resolved.
     // Otherwise an authenticated user could briefly see guest actions while
     // the store is still restoring after a full page load.
-    if (!authInitialized || authLoading) return;
+    if (!showWelcome || !authInitialized || authLoading) return;
 
     try {
       if (window.localStorage.getItem(WELCOME_MODAL_STORAGE_KEY) !== "true") {
@@ -28,7 +31,7 @@ export default function WelcomeModal() {
       // If storage is unavailable, the modal still works for this visit.
       queueMicrotask(() => setIsOpen(true));
     }
-  }, [authInitialized, authLoading]);
+  }, [authInitialized, authLoading, showWelcome]);
 
   const dismiss = () => {
     try {
@@ -41,7 +44,8 @@ export default function WelcomeModal() {
 
   return (
     <Modal
-      isOpen={isOpen}
+      ariaLabel="Welcome to Sharda Social"
+      isOpen={isOpen && showWelcome}
       onClose={dismiss}
       size="lg"
       hideCloseButton

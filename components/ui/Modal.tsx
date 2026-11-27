@@ -15,6 +15,7 @@ export interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
   title?: React.ReactNode;
+  ariaLabel?: string;
   description?: React.ReactNode;
   children: React.ReactNode;
   size?: "sm" | "md" | "lg" | "xl" | "full";
@@ -35,6 +36,7 @@ export function Modal({
   isOpen,
   onClose,
   title,
+  ariaLabel,
   description,
   children,
   size = "md",
@@ -44,7 +46,7 @@ export function Modal({
 }: ModalProps) {
   return (
     <Transition show={isOpen} as={React.Fragment}>
-      <Dialog onClose={onClose} className="relative z-50">
+      <Dialog onClose={onClose} aria-label={!title ? ariaLabel : undefined} className="relative z-50">
         <TransitionChild
           as={React.Fragment}
           enter="ease-out duration-200"

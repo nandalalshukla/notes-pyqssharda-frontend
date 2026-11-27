@@ -20,7 +20,7 @@ export function LibrarySeoContent({
       aria-labelledby="library-help"
       className="mt-20 border-t border-border pt-12"
     >
-      <JsonLd data={faqSchema(faqs)} />
+      {faqs.length > 0 && <JsonLd data={faqSchema(faqs)} />}
       <div className="mx-auto max-w-4xl">
         <h2 id="library-help" className="text-3xl font-black">
           {heading}
@@ -51,7 +51,7 @@ export function LibrarySeoContent({
           </div>
         </nav>
 
-        <div className="mt-10">
+        {faqs.length > 0 && <div className="mt-10">
           <h3 className="text-xl font-black text-foreground">
             Frequently asked questions
           </h3>
@@ -67,7 +67,7 @@ export function LibrarySeoContent({
               </details>
             ))}
           </div>
-        </div>
+        </div>}
       </div>
     </section>
   );

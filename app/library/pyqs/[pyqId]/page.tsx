@@ -1,3 +1,4 @@
+import { privateRobots } from "@/lib/seo/metadata";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { readLibraryFilters, withLibraryFilters, type PageSearchParams } from "@/components/library/libraryFilterUrl";
@@ -38,10 +39,13 @@ export async function generateMetadata({
   params,
 }: PageProps): Promise<Metadata> {
   const { pyqId } = await params;
+  if (await getServerAuthStatus() !== "authenticated") {
+    return { title: "Sign in to view this resource", robots: privateRobots, alternates: { canonical: `/library/pyqs/${pyqId}` } };
+  }
   const pyq = await getPyqById(pyqId);
 
   if (!pyq) {
-    return { title: "Paper not found", robots: { index: false } };
+    return { title: "Paper not found", robots: privateRobots };
   }
 
   const title = `${paperTitle(pyq)} — Sharda University Question Paper ${pyq.year}`;
@@ -52,6 +56,7 @@ export async function generateMetadata({
   }. Free previous year paper from the Sharda online library.`;
 
   return {
+    robots: privateRobots,
     title,
     description,
     alternates: { canonical: `/library/pyqs/${pyqId}` },

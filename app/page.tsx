@@ -27,7 +27,7 @@ export const metadata: Metadata = {
   // title that has to win the query "sharda social".
   title: {
     absolute:
-      "Sharda Social — Sharda University Notes, PYQs, Syllabus & Student Community",
+      "Sharda Social | University PYQs, Notes & Student Community",
   },
   description: SITE_DESCRIPTION,
   alternates: { canonical: "/" },

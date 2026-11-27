@@ -3,6 +3,9 @@ import { readLibraryFilters, withLibraryFilters, type PageSearchParams } from "@
 import { Download, ExternalLink } from "lucide-react";
 import { notFound, redirect } from "next/navigation";
 import { getServerAuthStatus } from "@/lib/server/auth";
+import { privateRobots } from "@/lib/seo/metadata";
+
+export const metadata = { title: "Study resource", robots: privateRobots };
 
 interface PageProps {
   searchParams: Promise<PageSearchParams>;

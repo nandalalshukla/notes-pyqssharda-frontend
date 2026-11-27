@@ -1,3 +1,4 @@
+import { privateRobots } from "@/lib/seo/metadata";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { readLibraryFilters, withLibraryFilters, type PageSearchParams } from "@/components/library/libraryFilterUrl";
@@ -19,9 +20,14 @@ function titleFor(note: Note): string {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { noteId } = await params;
+  if (await getServerAuthStatus() !== "authenticated") {
+    return { title: "Sign in to view this resource", robots: privateRobots, alternates: { canonical: `/library/notes/${noteId}` } };
+  }
   const note = await getNoteById(noteId);
-  if (!note) return { title: "Note not found", robots: { index: false } };
+  if (!note) return { title: "Note not found", robots: privateRobots };
   return {
+    robots: privateRobots,
+    alternates: { canonical: `/library/notes/${noteId}` },
     title: `${titleFor(note)} — Sharda University Notes`,
     description: `Download Sharda University notes for ${note.courseName || note.title}${note.courseCode ? ` (${note.courseCode})` : ""}, semester ${note.semester}.`,
   };

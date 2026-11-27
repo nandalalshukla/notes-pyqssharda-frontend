@@ -1,0 +1,227 @@
+{
+  "note": "Single-run Lighthouse lab measurements. Local API service was not running; these are not deployed field Core Web Vitals or directly comparable ranking evidence. INP not measured.",
+  "results": [
+    {
+      "file": "live-mobile.report.json",
+      "url": "https://www.sharda.social/library",
+      "fetchTime": "2026-11-27T14:43:12.351Z",
+      "lighthouseVersion": "13.6.0",
+      "performance": 64,
+      "accessibility": 93,
+      "seo": 69,
+      "lcpMs": 18343.617,
+      "tbtMs": 425,
+      "cls": 0,
+      "transferBytes": 3596482,
+      "audioRequests": 1,
+      "environment": {
+        "networkUserAgent": "Mozilla/5.0 (Linux; Android 11; moto g power (2022)) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/158.0.0.0 Mobile Safari/537.36",
+        "hostUserAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/158.0.0.0 Safari/537.36 Edg/158.0.0.0",
+        "benchmarkIndex": 2626,
+        "credits": {
+          "axe-core": "4.14.0"
+        }
+      },
+      "screenEmulation": {
+        "mobile": true,
+        "width": 412,
+        "height": 823,
+        "deviceScaleFactor": 1.75,
+        "disabled": false
+      },
+      "throttling": {
+        "rttMs": 150,
+        "throughputKbps": 1638.4,
+        "requestLatencyMs": 562.5,
+        "downloadThroughputKbps": 1474.5600000000002,
+        "uploadThroughputKbps": 675,
+        "cpuSlowdownMultiplier": 4
+      }
+    },
+    {
+      "file": "local-blog-mobile.report.json",
+      "url": "http://127.0.0.1:4317/blogs/sharda-e-library-login",
+      "fetchTime": "2026-11-27T14:57:25.383Z",
+      "lighthouseVersion": "13.6.0",
+      "performance": 97,
+      "accessibility": 100,
+      "seo": 100,
+      "lcpMs": 946.8620000000001,
+      "tbtMs": 192.56899999999905,
+      "cls": 0,
+      "transferBytes": 482212,
+      "audioRequests": 0,
+      "environment": {
+        "networkUserAgent": "Mozilla/5.0 (Linux; Android 11; moto g power (2022)) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/158.0.0.0 Mobile Safari/537.36",
+        "hostUserAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/158.0.0.0 Safari/537.36 Edg/158.0.0.0",
+        "benchmarkIndex": 2502,
+        "credits": {
+          "axe-core": "4.14.0"
+        }
+      },
+      "screenEmulation": {
+        "mobile": true,
+        "width": 412,
+        "height": 823,
+        "deviceScaleFactor": 1.75,
+        "disabled": false
+      },
+      "throttling": {
+        "rttMs": 150,
+        "throughputKbps": 1638.4,
+        "requestLatencyMs": 562.5,
+        "downloadThroughputKbps": 1474.5600000000002,
+        "uploadThroughputKbps": 675,
+        "cpuSlowdownMultiplier": 4
+      }
+    },
+    {
+      "file": "local-blogs-mobile.json",
+      "url": "http://127.0.0.1:4317/blogs",
+      "fetchTime": "2026-11-27T15:00:43.651Z",
+      "lighthouseVersion": "13.6.0",
+      "performance": 98,
+      "accessibility": 100,
+      "seo": 100,
+      "lcpMs": 925.3752,
+      "tbtMs": 172.99999999999886,
+      "cls": 0,
+      "transferBytes": 483960,
+      "audioRequests": 0,
+      "environment": {
+        "networkUserAgent": "Mozilla/5.0 (Linux; Android 11; moto g power (2022)) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/158.0.0.0 Mobile Safari/537.36",
+        "hostUserAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/158.0.0.0 Safari/537.36 Edg/158.0.0.0",
+        "benchmarkIndex": 2424,
+        "credits": {
+          "axe-core": "4.14.0"
+        }
+      },
+      "screenEmulation": {
+        "mobile": true,
+        "width": 412,
+        "height": 823,
+        "deviceScaleFactor": 1.75,
+        "disabled": false
+      },
+      "throttling": {
+        "rttMs": 150,
+        "throughputKbps": 1638.4,
+        "requestLatencyMs": 562.5,
+        "downloadThroughputKbps": 1474.5600000000002,
+        "uploadThroughputKbps": 675,
+        "cpuSlowdownMultiplier": 4
+      }
+    },
+    {
+      "file": "local-library-mobile.report.json",
+      "url": "http://127.0.0.1:4317/library",
+      "fetchTime": "2026-11-27T14:56:17.206Z",
+      "lighthouseVersion": "13.6.0",
+      "performance": 99,
+      "accessibility": 100,
+      "seo": 100,
+      "lcpMs": 943.0165,
+      "tbtMs": 113.00000000000045,
+      "cls": 0,
+      "transferBytes": 517423,
+      "audioRequests": 0,
+      "environment": {
+        "networkUserAgent": "Mozilla/5.0 (Linux; Android 11; moto g power (2022)) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/158.0.0.0 Mobile Safari/537.36",
+        "hostUserAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/158.0.0.0 Safari/537.36 Edg/158.0.0.0",
+        "benchmarkIndex": 1362,
+        "credits": {
+          "axe-core": "4.14.0"
+        }
+      },
+      "screenEmulation": {
+        "mobile": true,
+        "width": 412,
+        "height": 823,
+        "deviceScaleFactor": 1.75,
+        "disabled": false
+      },
+      "throttling": {
+        "rttMs": 150,
+        "throughputKbps": 1638.4,
+        "requestLatencyMs": 562.5,
+        "downloadThroughputKbps": 1474.5600000000002,
+        "uploadThroughputKbps": 675,
+        "cpuSlowdownMultiplier": 4
+      }
+    },
+    {
+      "file": "local-pyqs-mobile.json",
+      "url": "http://127.0.0.1:4317/library/pyqs",
+      "fetchTime": "2026-11-27T15:06:56.829Z",
+      "lighthouseVersion": "13.6.0",
+      "performance": 100,
+      "accessibility": 100,
+      "seo": 100,
+      "lcpMs": 934.9543000000001,
+      "tbtMs": 40.500000000000455,
+      "cls": 0,
+      "transferBytes": 479445,
+      "audioRequests": 0,
+      "environment": {
+        "networkUserAgent": "Mozilla/5.0 (Linux; Android 11; moto g power (2022)) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/158.0.0.0 Mobile Safari/537.36",
+        "hostUserAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/158.0.0.0 Safari/537.36 Edg/158.0.0.0",
+        "benchmarkIndex": 2603,
+        "credits": {
+          "axe-core": "4.14.0"
+        }
+      },
+      "screenEmulation": {
+        "mobile": true,
+        "width": 412,
+        "height": 823,
+        "deviceScaleFactor": 1.75,
+        "disabled": false
+      },
+      "throttling": {
+        "rttMs": 150,
+        "throughputKbps": 1638.4,
+        "requestLatencyMs": 562.5,
+        "downloadThroughputKbps": 1474.5600000000002,
+        "uploadThroughputKbps": 675,
+        "cpuSlowdownMultiplier": 4
+      }
+    },
+    {
+      "file": "local-syllabus-mobile.json",
+      "url": "http://127.0.0.1:4317/library/syllabus",
+      "fetchTime": "2026-11-27T15:00:21.933Z",
+      "lighthouseVersion": "13.6.0",
+      "performance": 91,
+      "accessibility": 100,
+      "seo": 100,
+      "lcpMs": 943.0799,
+      "tbtMs": 370.4600499999999,
+      "cls": 0,
+      "transferBytes": 506067,
+      "audioRequests": 0,
+      "environment": {
+        "networkUserAgent": "Mozilla/5.0 (Linux; Android 11; moto g power (2022)) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/158.0.0.0 Mobile Safari/537.36",
+        "hostUserAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/158.0.0.0 Safari/537.36 Edg/158.0.0.0",
+        "benchmarkIndex": 2628,
+        "credits": {
+          "axe-core": "4.14.0"
+        }
+      },
+      "screenEmulation": {
+        "mobile": true,
+        "width": 412,
+        "height": 823,
+        "deviceScaleFactor": 1.75,
+        "disabled": false
+      },
+      "throttling": {
+        "rttMs": 150,
+        "throughputKbps": 1638.4,
+        "requestLatencyMs": 562.5,
+        "downloadThroughputKbps": 1474.5600000000002,
+        "uploadThroughputKbps": 675,
+        "cpuSlowdownMultiplier": 4
+      }
+    }
+  ]
+}

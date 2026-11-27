@@ -2,6 +2,14 @@ import Link from "next/link";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { breadcrumbSchema, collectionSchema, faqSchema } from "@/lib/seo/structuredData";
 import HomeContentShowcase from "@/components/HomeContentShowcase";
+import { pageMetadata } from "@/lib/seo/metadata";
+import { RelatedGuides } from "@/components/blog/RelatedGuides";
+
+export const metadata = pageMetadata(
+  "Sharda Library: PYQs, Notes & Syllabus | Sharda Social",
+  "Browse the Sharda student library for PYQs, notes and syllabus PDFs. Find study material and official e-library access guidance; sign in to open documents.",
+  "/library",
+);
 
 export default function HomePage() {
   return (
@@ -51,18 +59,18 @@ export default function HomePage() {
 
       {/* Main Headline */}
       <h1 className="mb-6 animate-fade-in-up text-5xl leading-tight font-black tracking-tight text-foreground delay-100 md:text-7xl">
-        Ace your exams at <br className="hidden md:block" />
         <span className="mt-2 inline-block bg-linear-to-r from-primary to-accent-purple bg-clip-text px-1 text-transparent">
-          Sharda Online Library
+          Sharda Library
         </span>
+        <span className="mt-3 block text-2xl text-foreground md:text-4xl">PYQs, Notes &amp; Syllabus</span>
       </h1>
 
       {/* Subheadline */}
       <p className="mb-10 max-w-2xl animate-fade-in-up text-lg leading-relaxed text-muted-foreground delay-200 md:text-xl">
-        Everything you need for <strong className="font-semibold text-foreground">Sharda
-        University</strong> semester exams in one place — previous year question
-        papers, unit-wise notes and the official syllabus for every school at
-        Greater Noida. Browse and search freely; sign in when you open a resource.
+        The independent student library for <strong className="font-semibold text-foreground">Sharda
+        University</strong>: find available previous year question papers,
+        unit-wise notes and syllabus PDFs. Browse and search freely;
+        sign in when you open a resource.
       </p>
 
       {/* CTA Buttons */}
@@ -104,8 +112,8 @@ export default function HomePage() {
               </Link>
             </h3>
             <p className="text-sm leading-relaxed text-muted-foreground">
-              Thousands of Sharda University past exam papers across all nine
-              schools, filed by programme, semester and academic year.
+              Available Sharda University past exam papers, filed by programme,
+              semester and academic year. Coverage varies by subject.
             </p>
           </article>
 
@@ -128,8 +136,8 @@ export default function HomePage() {
               </Link>
             </h3>
             <p className="text-sm leading-relaxed text-muted-foreground">
-              The official unit breakdown for each course, so you know what is
-              examinable before you start revising.
+              Available course-unit documents. Confirm the admission batch and
+              department instructions before planning revision.
             </p>
           </article>
         </div>
@@ -161,6 +169,13 @@ export default function HomePage() {
         </h2>
         <div className="space-y-4 text-base leading-7 text-muted-foreground">
           <p>
+            Looking for the university&apos;s official library or Sharda e library login?
+            Visit the <a className="font-bold text-primary underline" href="https://sharda.ac.in/library">Sharda University Learning Resource Centre</a>{" "}
+            or its <a className="font-bold text-primary underline" href="https://sharda.ac.in/library/e_sources">official e-resources page</a>.
+            Sharda Social is a separate student project; university subscriptions and
+            library accounts are managed by the university.
+          </p>
+          <p>
             Sharda Social is a free online library for Sharda University
             students. It brings together previous year question papers, notes
             and syllabus documents so you can move from finding the right
@@ -186,6 +201,7 @@ export default function HomePage() {
       </section>
 
       {/* Content Showcase Section */}
+      <div className="mb-12 w-full max-w-4xl text-left"><RelatedGuides target="/library" /></div>
       <HomeContentShowcase />
     </div>
   );

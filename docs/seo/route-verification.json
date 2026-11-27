@@ -1,0 +1,360 @@
+{
+  "checkedAt": "2026-11-27T15:06:47.638Z",
+  "base": "http://127.0.0.1:4317",
+  "publicRoutes": 27,
+  "articleCount": 20,
+  "checks": "metadata, SSR copy, JSON-LD, internal links, sitemap, robots, filters, auth, 404, image, host redirect",
+  "routes": [
+    {
+      "path": "/",
+      "status": 200,
+      "title": "Sharda Social | University PYQs, Notes &amp; Student Community",
+      "description": "Find Sharda University previous year question papers, notes and syllabus PDFs. Browse the student library, read study guides and follow the Sharda campus community.",
+      "canonical": "https://www.sharda.social",
+      "schemaTypes": [
+        "Organization",
+        "WebSite"
+      ]
+    },
+    {
+      "path": "/library",
+      "status": 200,
+      "title": "Sharda Library: PYQs, Notes &amp; Syllabus | Sharda Social",
+      "description": "Browse the Sharda student library for PYQs, notes and syllabus PDFs. Find study material and official e-library access guidance; sign in to open documents.",
+      "canonical": "https://www.sharda.social/library",
+      "schemaTypes": [
+        "Organization",
+        "WebSite",
+        "CollectionPage",
+        "BreadcrumbList",
+        "FAQPage"
+      ]
+    },
+    {
+      "path": "/library/pyqs",
+      "status": 200,
+      "title": "Sharda University PYQs: Previous Year Question Papers",
+      "description": "Browse Sharda University previous year question papers by course code, semester and year. Find a matching PYQ, then sign in to read or download the PDF.",
+      "canonical": "https://www.sharda.social/library/pyqs",
+      "schemaTypes": [
+        "Organization",
+        "WebSite",
+        "CollectionPage",
+        "BreadcrumbList",
+        "FAQPage"
+      ]
+    },
+    {
+      "path": "/library/notes",
+      "status": 200,
+      "title": "Sharda University Notes by Semester | Sharda Social",
+      "description": "Find Sharda University B.Tech CS notes by semester, subject and course code. Pair unit-wise notes with your syllabus and PYQs; sign in to open a resource.",
+      "canonical": "https://www.sharda.social/library/notes",
+      "schemaTypes": [
+        "Organization",
+        "WebSite",
+        "CollectionPage",
+        "BreadcrumbList"
+      ]
+    },
+    {
+      "path": "/library/syllabus",
+      "status": 200,
+      "title": "Sharda Syllabus: B.Tech CSE PDFs | Sharda Social",
+      "description": "Find Sharda University syllabus PDFs for available B.Tech CS semesters. Search by course code, check your batch and units, then sign in to view a document.",
+      "canonical": "https://www.sharda.social/library/syllabus",
+      "schemaTypes": [
+        "Organization",
+        "WebSite",
+        "CollectionPage",
+        "BreadcrumbList",
+        "FAQPage"
+      ]
+    },
+    {
+      "path": "/about-us",
+      "status": 200,
+      "title": "About Sharda Social — Built by Sharda Students | Sharda Social",
+      "description": "Sharda Social is an independent, student-run social media community and online library for Sharda University, Greater Noida. Learn who builds it and how to contribute notes and past papers.",
+      "canonical": "https://www.sharda.social/about-us",
+      "schemaTypes": [
+        "Organization",
+        "WebSite",
+        "FAQPage"
+      ]
+    },
+    {
+      "path": "/blogs",
+      "status": 200,
+      "title": "Sharda Study Guides: Library, PYQs &amp; Syllabus",
+      "description": "Read practical Sharda library, e-library, PYQ and syllabus guides. Find official access links, choose the right PDFs and build a useful exam revision plan.",
+      "canonical": "https://www.sharda.social/blogs",
+      "schemaTypes": [
+        "Organization",
+        "WebSite",
+        "BreadcrumbList",
+        "CollectionPage"
+      ]
+    },
+    {
+      "path": "/blogs/sharda-library-student-guide",
+      "status": 200,
+      "title": "Sharda Library: Find Books, PYQs and Study Resources",
+      "description": "Looking for Sharda library resources? Choose the official catalogue, e-library or student PYQ collection, then follow a clear route to the material you need.",
+      "canonical": "https://www.sharda.social/blogs/sharda-library-student-guide",
+      "schemaTypes": [
+        "Organization",
+        "WebSite",
+        "BreadcrumbList",
+        "BlogPosting"
+      ]
+    },
+    {
+      "path": "/blogs/sharda-library-opac-book-search",
+      "status": 200,
+      "title": "Sharda Library OPAC: Find the Right Book and Edition",
+      "description": "Use the official Sharda library catalogue to identify books by title, author and edition. Learn what to record before asking staff or looking for a copy.",
+      "canonical": "https://www.sharda.social/blogs/sharda-library-opac-book-search",
+      "schemaTypes": [
+        "Organization",
+        "WebSite",
+        "BreadcrumbList",
+        "BlogPosting"
+      ]
+    },
+    {
+      "path": "/blogs/sharda-e-library-login",
+      "status": 200,
+      "title": "Sharda E Library Login: Official Access and Study PDFs",
+      "description": "Find the official Sharda e-library access route and understand how it differs from Sharda Social. Follow safe login steps and locate student study PDFs.",
+      "canonical": "https://www.sharda.social/blogs/sharda-e-library-login",
+      "schemaTypes": [
+        "Organization",
+        "WebSite",
+        "BreadcrumbList",
+        "BlogPosting"
+      ]
+    },
+    {
+      "path": "/blogs/sharda-e-library-access-problems",
+      "status": 200,
+      "title": "Sharda E Library Not Opening? A Troubleshooting Guide",
+      "description": "Troubleshoot Sharda e-library access by separating browser, account and subscription problems. Find the right support details without sharing private credentials.",
+      "canonical": "https://www.sharda.social/blogs/sharda-e-library-access-problems",
+      "schemaTypes": [
+        "Organization",
+        "WebSite",
+        "BreadcrumbList",
+        "BlogPosting"
+      ]
+    },
+    {
+      "path": "/blogs/sharda-library-study-session",
+      "status": 200,
+      "title": "Plan a Productive Sharda Library Study Session",
+      "description": "Plan a focused Sharda library session using a syllabus unit, a small reading task and matching PYQs. Leave with completed work and a clear next revision step.",
+      "canonical": "https://www.sharda.social/blogs/sharda-library-study-session",
+      "schemaTypes": [
+        "Organization",
+        "WebSite",
+        "BreadcrumbList",
+        "BlogPosting"
+      ]
+    },
+    {
+      "path": "/blogs/sharda-library-project-research",
+      "status": 200,
+      "title": "Use Sharda Library Resources for Project Research",
+      "description": "Find and evaluate project sources through Sharda library services. Build a search log, check evidence and connect a literature review to your actual project question.",
+      "canonical": "https://www.sharda.social/blogs/sharda-library-project-research",
+      "schemaTypes": [
+        "Organization",
+        "WebSite",
+        "BreadcrumbList",
+        "BlogPosting"
+      ]
+    },
+    {
+      "path": "/blogs/sharda-pyq-pdf-download",
+      "status": 200,
+      "title": "Sharda University PYQ PDF Download: Step-by-Step Guide",
+      "description": "Find Sharda University previous year question papers by course code, semester and year. Check a matching paper, sign in and use the PDF for focused practice.",
+      "canonical": "https://www.sharda.social/blogs/sharda-pyq-pdf-download",
+      "schemaTypes": [
+        "Organization",
+        "WebSite",
+        "BreadcrumbList",
+        "BlogPosting"
+      ]
+    },
+    {
+      "path": "/blogs/sharda-pyq-course-code-search",
+      "status": 200,
+      "title": "Find the Correct Sharda PYQ by Course Code and Semester",
+      "description": "Match Sharda PYQs to your course code, semester, programme and syllabus version. Learn how to handle renamed subjects and avoid practising the wrong paper.",
+      "canonical": "https://www.sharda.social/blogs/sharda-pyq-course-code-search",
+      "schemaTypes": [
+        "Organization",
+        "WebSite",
+        "BreadcrumbList",
+        "BlogPosting"
+      ]
+    },
+    {
+      "path": "/blogs/sharda-pyq-repeated-topics",
+      "status": 200,
+      "title": "Analyse Sharda PYQs Without Guessing the Next Exam",
+      "description": "Use Sharda previous year papers to map topics, question types and weak areas. Build a simple evidence sheet without treating repeated questions as predictions.",
+      "canonical": "https://www.sharda.social/blogs/sharda-pyq-repeated-topics",
+      "schemaTypes": [
+        "Organization",
+        "WebSite",
+        "BreadcrumbList",
+        "BlogPosting"
+      ]
+    },
+    {
+      "path": "/blogs/sharda-pyq-timed-practice",
+      "status": 200,
+      "title": "Practise Sharda PYQs Under Timed Exam Conditions",
+      "description": "Turn Sharda PYQs into timed practice sessions. Set a realistic task, review your answer quality and build an error log that guides the next revision session.",
+      "canonical": "https://www.sharda.social/blogs/sharda-pyq-timed-practice",
+      "schemaTypes": [
+        "Organization",
+        "WebSite",
+        "BreadcrumbList",
+        "BlogPosting"
+      ]
+    },
+    {
+      "path": "/blogs/sharda-pyq-seven-day-plan",
+      "status": 200,
+      "title": "A Seven-Day Sharda PYQ and Syllabus Revision Plan",
+      "description": "Use a practical seven-day revision plan combining Sharda PYQs, syllabus checks and focused repair sessions. Adapt the schedule to your subjects and exam dates.",
+      "canonical": "https://www.sharda.social/blogs/sharda-pyq-seven-day-plan",
+      "schemaTypes": [
+        "Organization",
+        "WebSite",
+        "BreadcrumbList",
+        "BlogPosting"
+      ]
+    },
+    {
+      "path": "/blogs/sharda-pyq-missing-paper",
+      "status": 200,
+      "title": "Cannot Find a Sharda PYQ? Search and Study Alternatives",
+      "description": "No matching Sharda PYQ in the library? Check filters, verify the course identity and use syllabus-matched alternatives while asking for the missing paper.",
+      "canonical": "https://www.sharda.social/blogs/sharda-pyq-missing-paper",
+      "schemaTypes": [
+        "Organization",
+        "WebSite",
+        "BreadcrumbList",
+        "BlogPosting"
+      ]
+    },
+    {
+      "path": "/blogs/sharda-pyq-assessment-types",
+      "status": 200,
+      "title": "Sharda PYQs: Check Mid-Term, End-Term and Other Papers",
+      "description": "Check the assessment type before using a Sharda PYQ. Compare paper instructions, topic scope and format without assuming old rules apply to your next exam.",
+      "canonical": "https://www.sharda.social/blogs/sharda-pyq-assessment-types",
+      "schemaTypes": [
+        "Organization",
+        "WebSite",
+        "BreadcrumbList",
+        "BlogPosting"
+      ]
+    },
+    {
+      "path": "/blogs/sharda-syllabus-correct-batch",
+      "status": 200,
+      "title": "Sharda Syllabus PDF: Find the Correct Course and Batch",
+      "description": "Find a Sharda University syllabus PDF that matches your programme, admission batch and course code. Check applicability before using it to plan exam revision.",
+      "canonical": "https://www.sharda.social/blogs/sharda-syllabus-correct-batch",
+      "schemaTypes": [
+        "Organization",
+        "WebSite",
+        "BreadcrumbList",
+        "BlogPosting"
+      ]
+    },
+    {
+      "path": "/blogs/sharda-btech-cse-syllabus-guide",
+      "status": 200,
+      "title": "How to Read the Sharda B.Tech CSE Syllabus",
+      "description": "Read the Sharda B.Tech CSE syllabus as a course plan: check batch, theory and lab components, prerequisites and outcomes before choosing notes or PYQs.",
+      "canonical": "https://www.sharda.social/blogs/sharda-btech-cse-syllabus-guide",
+      "schemaTypes": [
+        "Organization",
+        "WebSite",
+        "BreadcrumbList",
+        "BlogPosting"
+      ]
+    },
+    {
+      "path": "/blogs/sharda-syllabus-unit-checklist",
+      "status": 200,
+      "title": "Turn Your Sharda Syllabus into a Unit-Wise Study Checklist",
+      "description": "Build a unit-wise checklist from the correct Sharda syllabus. Track understanding, practice attempts and unresolved gaps instead of counting downloaded PDFs.",
+      "canonical": "https://www.sharda.social/blogs/sharda-syllabus-unit-checklist",
+      "schemaTypes": [
+        "Organization",
+        "WebSite",
+        "BreadcrumbList",
+        "BlogPosting"
+      ]
+    },
+    {
+      "path": "/blogs/sharda-syllabus-curriculum-changes",
+      "status": 200,
+      "title": "Compare Sharda Syllabus Versions Before Using Old PYQs",
+      "description": "Compare Sharda syllabus versions by batch, course code and unit scope. Identify useful old PYQs while keeping new, removed and changed topics visible.",
+      "canonical": "https://www.sharda.social/blogs/sharda-syllabus-curriculum-changes",
+      "schemaTypes": [
+        "Organization",
+        "WebSite",
+        "BreadcrumbList",
+        "BlogPosting"
+      ]
+    },
+    {
+      "path": "/blogs/sharda-notes-syllabus-gaps",
+      "status": 200,
+      "title": "Use Sharda Notes with Your Syllabus and PYQs",
+      "description": "Check Sharda University notes for syllabus coverage, missing explanations and practice gaps. Build a concise revision set that supports independent answers.",
+      "canonical": "https://www.sharda.social/blogs/sharda-notes-syllabus-gaps",
+      "schemaTypes": [
+        "Organization",
+        "WebSite",
+        "BreadcrumbList",
+        "BlogPosting"
+      ]
+    },
+    {
+      "path": "/blogs/sharda-offline-study-pdfs",
+      "status": 200,
+      "title": "Save Sharda PYQs and Syllabus PDFs for Offline Study",
+      "description": "Organise Sharda PYQ, notes and syllabus PDFs on your phone. Check downloads, label files clearly and build a reliable offline revision folder before travelling.",
+      "canonical": "https://www.sharda.social/blogs/sharda-offline-study-pdfs",
+      "schemaTypes": [
+        "Organization",
+        "WebSite",
+        "BreadcrumbList",
+        "BlogPosting"
+      ]
+    },
+    {
+      "path": "/blogs/sharda-first-year-study-toolkit",
+      "status": 200,
+      "title": "A Sharda First-Year Toolkit: Library, Syllabus and PYQs",
+      "description": "Build a practical first-year study toolkit for Sharda University. Find official library services, confirm your syllabus and use notes and PYQs with clear limits.",
+      "canonical": "https://www.sharda.social/blogs/sharda-first-year-study-toolkit",
+      "schemaTypes": [
+        "Organization",
+        "WebSite",
+        "BreadcrumbList",
+        "BlogPosting"
+      ]
+    }
+  ]
+}

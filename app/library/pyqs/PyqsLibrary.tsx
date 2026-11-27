@@ -7,8 +7,6 @@ import {
   type LibraryItem,
 } from "@/components/library/ResourceLibraryPage";
 import { browsePyqs, getPyqFilterOptions } from "@/lib/api/pyqs/pyqs.api";
-import { JsonLd } from "@/components/seo/JsonLd";
-import { breadcrumbSchema, collectionSchema } from "@/lib/seo/structuredData";
 
 /**
  * Previous-year question papers.
@@ -77,79 +75,19 @@ export default function PyqsPage() {
 
   return (
     <>
-      {/* Scoped to the listing, not the layout, so individual paper pages
-          describe themselves rather than inheriting this. */}
-      <JsonLd
-        data={[
-          collectionSchema({
-            name: "Sharda University Previous Year Question Papers",
-            description:
-              "A searchable collection of previous year question papers from Sharda University, Greater Noida, covering every school and academic year.",
-            path: "/library/pyqs",
-          }),
-          breadcrumbSchema([
-            { name: "Home", path: "/" },
-            { name: "Library", path: "/library" },
-            { name: "PYQs", path: "/library/pyqs" },
-          ]),
-        ]}
-      />
       <ResourceLibraryPage
+      hideIntro
       accent="coral"
       // The H1 is the strongest on-page signal for what this page is
       // about, so it names the university rather than just the section.
       heading={{ prefix: "Sharda University ", highlight: "PYQs" }}
-      description="Download past exam papers from every school at Sharda University, filter by programme, semester, academic year or course code."
+      description="Find available Sharda University past exam papers by programme, semester, academic year or course code. Sign in to read or download a paper."
       dataSource={dataSource}
       programLabel="PYQ"
       noun={{ singular: "Paper", plural: "Papers" }}
       viewLabel="View Paper"
       codePlaceholder="e.g. CSE252"
-      seoContent={{
-        heading: "Sharda University previous year question papers",
-        paragraphs: [
-          "Looking for Sharda University previous year question papers or a PYQ PDF download? This library keeps past exam papers organised by programme, semester, academic year and course code so you can find the right paper without searching through scattered links.",
-          "Open a paper to read it on sharda.social or download the PDF for offline revision. Use the subject search for a course name such as Computer Networks, or enter a code such as CSE252. Papers are shared for student revision and the collection grows as students contribute useful material.",
-        ],
-        links: [
-          {
-            href: "/library/syllabus",
-            label: "Sharda University syllabus",
-            description:
-              "Check the semester and course-unit syllabus before using a PYQ for revision.",
-          },
-          {
-            href: "/library/notes",
-            label: "Sharda University notes",
-            description:
-              "Review unit-wise notes alongside previous year questions.",
-          },
-          {
-            href: "/library",
-            label: "Sharda online library",
-            description:
-              "Browse the complete Sharda library for PYQs, notes and syllabus material.",
-          },
-        ],
-        faqs: [
-          {
-            question:
-              "Where can I download Sharda University previous year question papers?",
-            answer:
-              "Use the Sharda Social PYQ library to filter papers by programme, semester, year or course code. Select a paper and choose Download PDF to save it for offline exam preparation.",
-          },
-          {
-            question: "Are Sharda University PYQ PDFs free to download?",
-            answer:
-              "Yes. You can browse and search papers without signing in. Sign in with your Sharda account when you open a specific paper.",
-          },
-          {
-            question: "How do I find a specific Sharda University question paper?",
-            answer:
-              "Search by subject name or course code, then narrow the results using the programme, academic year and semester filters.",
-          },
-        ],
-      }}
+
       />
     </>
   );

@@ -1,0 +1,822 @@
+{
+  "date": "2026-11-27",
+  "note": "Raw live responses plus source inspection. Not a claim that client-only schema is absent.",
+  "pages": [
+    {
+      "capture": "www.sharda.social_library.txt",
+      "title": "Sharda Library & E-Library — Notes, PYQs & Syllabus | Sharda Social",
+      "description": "The free Sharda library and e-library: find Sharda University previous year question papers, semester notes and syllabus PDFs by course code, semester or programme.",
+      "robots": "noindex, nofollow",
+      "googlebot": "noindex, nofollow",
+      "canonical": "https://sharda.social/library",
+      "h1": [
+        "Ace your exams at Sharda Online Library"
+      ],
+      "serverRenderedJsonLd": [
+        [
+          {
+            "@context": "https://schema.org",
+            "@type": "EducationalOrganization",
+            "@id": "https://sharda.social/#organisation",
+            "name": "Sharda Social",
+            "alternateName": [
+              "Sharda Social",
+              "Sharda Online Library"
+            ],
+            "url": "https://sharda.social",
+            "logo": {
+              "@type": "ImageObject",
+              "url": "https://sharda.social/shardasocial.png"
+            },
+            "description": "Sharda Social is a student social media community and free online library for Sharda University — find previous year question papers, semester notes and syllabus PDFs, and follow campus announcements, events, opportunities and lost & found.",
+            "areaServed": {
+              "@type": "Place",
+              "name": "Sharda University, Greater Noida, Uttar Pradesh, India"
+            },
+            "parentOrganization": {
+              "@type": "CollegeOrUniversity",
+              "name": "Sharda University",
+              "address": {
+                "@type": "PostalAddress",
+                "addressLocality": "Greater Noida",
+                "addressRegion": "Uttar Pradesh",
+                "addressCountry": "IN"
+              }
+            }
+          },
+          {
+            "@context": "https://schema.org",
+            "@type": "WebSite",
+            "@id": "https://sharda.social/#website",
+            "url": "https://sharda.social",
+            "name": "Sharda Social",
+            "description": "Sharda Social is a student social media community and free online library for Sharda University — find previous year question papers, semester notes and syllabus PDFs, and follow campus announcements, events, opportunities and lost & found.",
+            "inLanguage": "en-IN",
+            "publisher": {
+              "@id": "https://sharda.social/#organisation"
+            },
+            "potentialAction": {
+              "@type": "SearchAction",
+              "target": {
+                "@type": "EntryPoint",
+                "urlTemplate": "https://sharda.social/library/explore?q={search_term_string}"
+              },
+              "query-input": "required name=search_term_string"
+            }
+          }
+        ],
+        [
+          {
+            "@context": "https://schema.org",
+            "@type": "CollectionPage",
+            "@id": "https://sharda.social/library#collection",
+            "url": "https://sharda.social/library",
+            "name": "Sharda Online Library",
+            "description": "Free study material for Sharda University students: previous year question papers, semester notes and syllabus documents.",
+            "isPartOf": {
+              "@id": "https://sharda.social/#website"
+            },
+            "inLanguage": "en-IN",
+            "about": {
+              "@type": "CollegeOrUniversity",
+              "name": "Sharda University"
+            }
+          },
+          {
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            "itemListElement": [
+              {
+                "@type": "ListItem",
+                "position": 1,
+                "name": "Home",
+                "item": "https://sharda.social/"
+              },
+              {
+                "@type": "ListItem",
+                "position": 2,
+                "name": "Library",
+                "item": "https://sharda.social/library"
+              }
+            ]
+          }
+        ],
+        {
+          "@context": "https://schema.org",
+          "@type": "FAQPage",
+          "mainEntity": [
+            {
+              "@type": "Question",
+              "name": "What is the Sharda online library?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "The Sharda online library on Sharda Social is a free student resource for finding Sharda University previous year question papers, semester notes and syllabus PDFs in one place."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Is the Sharda e-library free to use?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "You can browse and search the library without an account. Sign in when you open a specific paper, note or syllabus document."
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "capture": "www.sharda.social_library_pyqs.txt",
+      "title": "Sharda University Previous Year Question Papers (PYQs)",
+      "description": "Browse and search Sharda University previous year question papers by programme, semester, year or course code. Sign in to open a paper.",
+      "robots": "noindex, nofollow",
+      "googlebot": "noindex, nofollow",
+      "canonical": "https://sharda.social/library/pyqs",
+      "h1": [
+        "Sharda University PYQs"
+      ],
+      "serverRenderedJsonLd": [
+        [
+          {
+            "@context": "https://schema.org",
+            "@type": "EducationalOrganization",
+            "@id": "https://sharda.social/#organisation",
+            "name": "Sharda Social",
+            "alternateName": [
+              "Sharda Social",
+              "Sharda Online Library"
+            ],
+            "url": "https://sharda.social",
+            "logo": {
+              "@type": "ImageObject",
+              "url": "https://sharda.social/shardasocial.png"
+            },
+            "description": "Sharda Social is a student social media community and free online library for Sharda University — find previous year question papers, semester notes and syllabus PDFs, and follow campus announcements, events, opportunities and lost & found.",
+            "areaServed": {
+              "@type": "Place",
+              "name": "Sharda University, Greater Noida, Uttar Pradesh, India"
+            },
+            "parentOrganization": {
+              "@type": "CollegeOrUniversity",
+              "name": "Sharda University",
+              "address": {
+                "@type": "PostalAddress",
+                "addressLocality": "Greater Noida",
+                "addressRegion": "Uttar Pradesh",
+                "addressCountry": "IN"
+              }
+            }
+          },
+          {
+            "@context": "https://schema.org",
+            "@type": "WebSite",
+            "@id": "https://sharda.social/#website",
+            "url": "https://sharda.social",
+            "name": "Sharda Social",
+            "description": "Sharda Social is a student social media community and free online library for Sharda University — find previous year question papers, semester notes and syllabus PDFs, and follow campus announcements, events, opportunities and lost & found.",
+            "inLanguage": "en-IN",
+            "publisher": {
+              "@id": "https://sharda.social/#organisation"
+            },
+            "potentialAction": {
+              "@type": "SearchAction",
+              "target": {
+                "@type": "EntryPoint",
+                "urlTemplate": "https://sharda.social/library/explore?q={search_term_string}"
+              },
+              "query-input": "required name=search_term_string"
+            }
+          }
+        ],
+        [
+          {
+            "@context": "https://schema.org",
+            "@type": "CollectionPage",
+            "@id": "https://sharda.social/library/pyqs#collection",
+            "url": "https://sharda.social/library/pyqs",
+            "name": "Sharda University Previous Year Question Papers",
+            "description": "A searchable collection of previous year question papers from Sharda University, Greater Noida, covering every school and academic year.",
+            "isPartOf": {
+              "@id": "https://sharda.social/#website"
+            },
+            "inLanguage": "en-IN",
+            "about": {
+              "@type": "CollegeOrUniversity",
+              "name": "Sharda University"
+            }
+          },
+          {
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            "itemListElement": [
+              {
+                "@type": "ListItem",
+                "position": 1,
+                "name": "Home",
+                "item": "https://sharda.social/"
+              },
+              {
+                "@type": "ListItem",
+                "position": 2,
+                "name": "Library",
+                "item": "https://sharda.social/library"
+              },
+              {
+                "@type": "ListItem",
+                "position": 3,
+                "name": "PYQs",
+                "item": "https://sharda.social/library/pyqs"
+              }
+            ]
+          }
+        ],
+        {
+          "@context": "https://schema.org",
+          "@type": "FAQPage",
+          "mainEntity": [
+            {
+              "@type": "Question",
+              "name": "Where can I download Sharda University previous year question papers?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Use the Sharda Social PYQ library to filter papers by programme, semester, year or course code. Select a paper and choose Download PDF to save it for offline exam preparation."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Are Sharda University PYQ PDFs free to download?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Yes. You can browse and search papers without signing in. Sign in with your Sharda account when you open a specific paper."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "How do I find a specific Sharda University question paper?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Search by subject name or course code, then narrow the results using the programme, academic year and semester filters."
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "capture": "www.sharda.social_library_syllabus.txt",
+      "title": "Sharda University Syllabus PDF — B.Tech CSE Course Units",
+      "description": "Browse and search Sharda University syllabus PDFs by semester and course code. Sign in to open an individual syllabus.",
+      "robots": "noindex, nofollow",
+      "googlebot": "noindex, nofollow",
+      "canonical": "https://sharda.social/library/syllabus",
+      "h1": [
+        "Sharda University Syllabus"
+      ],
+      "serverRenderedJsonLd": [
+        [
+          {
+            "@context": "https://schema.org",
+            "@type": "EducationalOrganization",
+            "@id": "https://sharda.social/#organisation",
+            "name": "Sharda Social",
+            "alternateName": [
+              "Sharda Social",
+              "Sharda Online Library"
+            ],
+            "url": "https://sharda.social",
+            "logo": {
+              "@type": "ImageObject",
+              "url": "https://sharda.social/shardasocial.png"
+            },
+            "description": "Sharda Social is a student social media community and free online library for Sharda University — find previous year question papers, semester notes and syllabus PDFs, and follow campus announcements, events, opportunities and lost & found.",
+            "areaServed": {
+              "@type": "Place",
+              "name": "Sharda University, Greater Noida, Uttar Pradesh, India"
+            },
+            "parentOrganization": {
+              "@type": "CollegeOrUniversity",
+              "name": "Sharda University",
+              "address": {
+                "@type": "PostalAddress",
+                "addressLocality": "Greater Noida",
+                "addressRegion": "Uttar Pradesh",
+                "addressCountry": "IN"
+              }
+            }
+          },
+          {
+            "@context": "https://schema.org",
+            "@type": "WebSite",
+            "@id": "https://sharda.social/#website",
+            "url": "https://sharda.social",
+            "name": "Sharda Social",
+            "description": "Sharda Social is a student social media community and free online library for Sharda University — find previous year question papers, semester notes and syllabus PDFs, and follow campus announcements, events, opportunities and lost & found.",
+            "inLanguage": "en-IN",
+            "publisher": {
+              "@id": "https://sharda.social/#organisation"
+            },
+            "potentialAction": {
+              "@type": "SearchAction",
+              "target": {
+                "@type": "EntryPoint",
+                "urlTemplate": "https://sharda.social/library/explore?q={search_term_string}"
+              },
+              "query-input": "required name=search_term_string"
+            }
+          }
+        ],
+        [
+          {
+            "@context": "https://schema.org",
+            "@type": "CollectionPage",
+            "@id": "https://sharda.social/library/syllabus#collection",
+            "url": "https://sharda.social/library/syllabus",
+            "name": "Sharda University Syllabus",
+            "description": "Official unit-wise syllabus documents for Sharda University courses.",
+            "isPartOf": {
+              "@id": "https://sharda.social/#website"
+            },
+            "inLanguage": "en-IN",
+            "about": {
+              "@type": "CollegeOrUniversity",
+              "name": "Sharda University"
+            }
+          },
+          {
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            "itemListElement": [
+              {
+                "@type": "ListItem",
+                "position": 1,
+                "name": "Home",
+                "item": "https://sharda.social/"
+              },
+              {
+                "@type": "ListItem",
+                "position": 2,
+                "name": "Library",
+                "item": "https://sharda.social/library"
+              },
+              {
+                "@type": "ListItem",
+                "position": 3,
+                "name": "Syllabus",
+                "item": "https://sharda.social/library/syllabus"
+              }
+            ]
+          }
+        ],
+        {
+          "@context": "https://schema.org",
+          "@type": "FAQPage",
+          "mainEntity": [
+            {
+              "@type": "Question",
+              "name": "Where can I find the Sharda University syllabus PDF?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Browse the Sharda Social syllabus library and filter by semester or enter your course code. Open the matching syllabus resource to view the available document."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Does this page include the Sharda University B.Tech CSE syllabus?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Yes. The current collection includes B.Tech CS syllabus resources organised by semester and course code, including the available second, fourth, fifth and sixth semester material."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "How should I use the syllabus with previous year papers?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Start with the units listed in the syllabus, revise them using notes, and then solve the matching previous year question papers to identify recurring exam topics."
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "capture": "_.html",
+      "title": "Sharda Social — Sharda University Notes, PYQs, Syllabus & Student Community",
+      "description": "Sharda Social is a student social media community and free online library for Sharda University — find previous year question papers, semester notes and syllabus PDFs, and follow campus announcements, events, opportunities and lost & found.",
+      "robots": "index, follow",
+      "googlebot": "index, follow, max-video-preview:-1, max-image-preview:large, max-snippet:-1",
+      "canonical": "https://sharda.social",
+      "h1": [
+        "Sharda Social"
+      ],
+      "serverRenderedJsonLd": [
+        [
+          {
+            "@context": "https://schema.org",
+            "@type": "EducationalOrganization",
+            "@id": "https://sharda.social/#organisation",
+            "name": "Sharda Social",
+            "alternateName": [
+              "Sharda Social",
+              "Sharda Online Library"
+            ],
+            "url": "https://sharda.social",
+            "logo": {
+              "@type": "ImageObject",
+              "url": "https://sharda.social/shardasocial.png"
+            },
+            "description": "Sharda Social is a student social media community and free online library for Sharda University — find previous year question papers, semester notes and syllabus PDFs, and follow campus announcements, events, opportunities and lost & found.",
+            "areaServed": {
+              "@type": "Place",
+              "name": "Sharda University, Greater Noida, Uttar Pradesh, India"
+            },
+            "parentOrganization": {
+              "@type": "CollegeOrUniversity",
+              "name": "Sharda University",
+              "address": {
+                "@type": "PostalAddress",
+                "addressLocality": "Greater Noida",
+                "addressRegion": "Uttar Pradesh",
+                "addressCountry": "IN"
+              }
+            }
+          },
+          {
+            "@context": "https://schema.org",
+            "@type": "WebSite",
+            "@id": "https://sharda.social/#website",
+            "url": "https://sharda.social",
+            "name": "Sharda Social",
+            "description": "Sharda Social is a student social media community and free online library for Sharda University — find previous year question papers, semester notes and syllabus PDFs, and follow campus announcements, events, opportunities and lost & found.",
+            "inLanguage": "en-IN",
+            "publisher": {
+              "@id": "https://sharda.social/#organisation"
+            },
+            "potentialAction": {
+              "@type": "SearchAction",
+              "target": {
+                "@type": "EntryPoint",
+                "urlTemplate": "https://sharda.social/library/explore?q={search_term_string}"
+              },
+              "query-input": "required name=search_term_string"
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "capture": "_about-us.html",
+      "title": "About Sharda Social — Built by Sharda Students | Sharda Social",
+      "description": "Sharda Social is an independent, student-run social media community and online library for Sharda University, Greater Noida. Learn who builds it and how to contribute notes and past papers.",
+      "robots": "index, follow",
+      "googlebot": "index, follow, max-video-preview:-1, max-image-preview:large, max-snippet:-1",
+      "canonical": "https://sharda.social/about-us",
+      "h1": [
+        "Built For Students, By the Students."
+      ],
+      "serverRenderedJsonLd": [
+        [
+          {
+            "@context": "https://schema.org",
+            "@type": "EducationalOrganization",
+            "@id": "https://sharda.social/#organisation",
+            "name": "Sharda Social",
+            "alternateName": [
+              "Sharda Social",
+              "Sharda Online Library"
+            ],
+            "url": "https://sharda.social",
+            "logo": {
+              "@type": "ImageObject",
+              "url": "https://sharda.social/shardasocial.png"
+            },
+            "description": "Sharda Social is a student social media community and free online library for Sharda University — find previous year question papers, semester notes and syllabus PDFs, and follow campus announcements, events, opportunities and lost & found.",
+            "areaServed": {
+              "@type": "Place",
+              "name": "Sharda University, Greater Noida, Uttar Pradesh, India"
+            },
+            "parentOrganization": {
+              "@type": "CollegeOrUniversity",
+              "name": "Sharda University",
+              "address": {
+                "@type": "PostalAddress",
+                "addressLocality": "Greater Noida",
+                "addressRegion": "Uttar Pradesh",
+                "addressCountry": "IN"
+              }
+            }
+          },
+          {
+            "@context": "https://schema.org",
+            "@type": "WebSite",
+            "@id": "https://sharda.social/#website",
+            "url": "https://sharda.social",
+            "name": "Sharda Social",
+            "description": "Sharda Social is a student social media community and free online library for Sharda University — find previous year question papers, semester notes and syllabus PDFs, and follow campus announcements, events, opportunities and lost & found.",
+            "inLanguage": "en-IN",
+            "publisher": {
+              "@id": "https://sharda.social/#organisation"
+            },
+            "potentialAction": {
+              "@type": "SearchAction",
+              "target": {
+                "@type": "EntryPoint",
+                "urlTemplate": "https://sharda.social/library/explore?q={search_term_string}"
+              },
+              "query-input": "required name=search_term_string"
+            }
+          }
+        ],
+        {
+          "@context": "https://schema.org",
+          "@type": "FAQPage",
+          "mainEntity": [
+            {
+              "@type": "Question",
+              "name": "What is Sharda Social?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Sharda Social is a free, student-run platform for Sharda University, Greater Noida. It combines an online library of previous year question papers, semester notes and syllabus PDFs with a campus feed where students post announcements, events, opportunities and lost & found items. It is independent and not an official university website."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Where can I find Sharda University previous year question papers?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Every past paper is in the PYQs section of the library. You can filter by programme, semester, academic year or course code, or search by subject name — for example 'operating systems' or 'CSE252'. The collection covers all nine schools, including engineering, law, pharmacy, nursing, medical, dental, allied health, humanities and education."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Are Sharda University notes and syllabus available too?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Yes. The Notes section holds unit-wise study notes shared by students, and the Syllabus section holds the official unit breakdown for each course, so you can see exactly what is examinable before you start revising."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Do I need an account to use the Sharda online library?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Yes. Sign in with a free Sharda account using your @ug.sharda.ac.in email to browse, search and download the library's study material."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Is Sharda Social free to use?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Yes, completely. It is built and run by Sharda students, and there is no charge for browsing or downloading anything in the library."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Can I contribute my own notes or question papers?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Yes, and it is the main way the library grows. Sign in with your Sharda email and upload from your dashboard. Uploads are checked by a moderator before they go live, so the library stays accurate and relevant."
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "capture": "_library_explore.html",
+      "title": "Search the Sharda Online Library",
+      "description": "Search Sharda University past papers, notes and syllabus documents by subject, course code, semester or programme. Free access for students with a Sharda account.",
+      "robots": "noindex, nofollow",
+      "googlebot": "noindex, nofollow",
+      "canonical": "https://sharda.social/library/explore",
+      "h1": [],
+      "serverRenderedJsonLd": [
+        [
+          {
+            "@context": "https://schema.org",
+            "@type": "EducationalOrganization",
+            "@id": "https://sharda.social/#organisation",
+            "name": "Sharda Social",
+            "alternateName": [
+              "Sharda Social",
+              "Sharda Online Library"
+            ],
+            "url": "https://sharda.social",
+            "logo": {
+              "@type": "ImageObject",
+              "url": "https://sharda.social/shardasocial.png"
+            },
+            "description": "Sharda Social is a student social media community and free online library for Sharda University — find previous year question papers, semester notes and syllabus PDFs, and follow campus announcements, events, opportunities and lost & found.",
+            "areaServed": {
+              "@type": "Place",
+              "name": "Sharda University, Greater Noida, Uttar Pradesh, India"
+            },
+            "parentOrganization": {
+              "@type": "CollegeOrUniversity",
+              "name": "Sharda University",
+              "address": {
+                "@type": "PostalAddress",
+                "addressLocality": "Greater Noida",
+                "addressRegion": "Uttar Pradesh",
+                "addressCountry": "IN"
+              }
+            }
+          },
+          {
+            "@context": "https://schema.org",
+            "@type": "WebSite",
+            "@id": "https://sharda.social/#website",
+            "url": "https://sharda.social",
+            "name": "Sharda Social",
+            "description": "Sharda Social is a student social media community and free online library for Sharda University — find previous year question papers, semester notes and syllabus PDFs, and follow campus announcements, events, opportunities and lost & found.",
+            "inLanguage": "en-IN",
+            "publisher": {
+              "@id": "https://sharda.social/#organisation"
+            },
+            "potentialAction": {
+              "@type": "SearchAction",
+              "target": {
+                "@type": "EntryPoint",
+                "urlTemplate": "https://sharda.social/library/explore?q={search_term_string}"
+              },
+              "query-input": "required name=search_term_string"
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "capture": "_library_notes.html",
+      "title": "Sharda University Notes — Semester Study Notes",
+      "description": "Browse and search Sharda University notes by course code, semester and unit. Sign in when you open a specific note.",
+      "robots": "noindex, nofollow",
+      "googlebot": "noindex, nofollow",
+      "canonical": "https://sharda.social/library/notes",
+      "h1": [
+        "Sharda University Notes"
+      ],
+      "serverRenderedJsonLd": [
+        [
+          {
+            "@context": "https://schema.org",
+            "@type": "EducationalOrganization",
+            "@id": "https://sharda.social/#organisation",
+            "name": "Sharda Social",
+            "alternateName": [
+              "Sharda Social",
+              "Sharda Online Library"
+            ],
+            "url": "https://sharda.social",
+            "logo": {
+              "@type": "ImageObject",
+              "url": "https://sharda.social/shardasocial.png"
+            },
+            "description": "Sharda Social is a student social media community and free online library for Sharda University — find previous year question papers, semester notes and syllabus PDFs, and follow campus announcements, events, opportunities and lost & found.",
+            "areaServed": {
+              "@type": "Place",
+              "name": "Sharda University, Greater Noida, Uttar Pradesh, India"
+            },
+            "parentOrganization": {
+              "@type": "CollegeOrUniversity",
+              "name": "Sharda University",
+              "address": {
+                "@type": "PostalAddress",
+                "addressLocality": "Greater Noida",
+                "addressRegion": "Uttar Pradesh",
+                "addressCountry": "IN"
+              }
+            }
+          },
+          {
+            "@context": "https://schema.org",
+            "@type": "WebSite",
+            "@id": "https://sharda.social/#website",
+            "url": "https://sharda.social",
+            "name": "Sharda Social",
+            "description": "Sharda Social is a student social media community and free online library for Sharda University — find previous year question papers, semester notes and syllabus PDFs, and follow campus announcements, events, opportunities and lost & found.",
+            "inLanguage": "en-IN",
+            "publisher": {
+              "@id": "https://sharda.social/#organisation"
+            },
+            "potentialAction": {
+              "@type": "SearchAction",
+              "target": {
+                "@type": "EntryPoint",
+                "urlTemplate": "https://sharda.social/library/explore?q={search_term_string}"
+              },
+              "query-input": "required name=search_term_string"
+            }
+          }
+        ],
+        [
+          {
+            "@context": "https://schema.org",
+            "@type": "CollectionPage",
+            "@id": "https://sharda.social/library/notes#collection",
+            "url": "https://sharda.social/library/notes",
+            "name": "Sharda University Semester Notes",
+            "description": "Unit-wise study notes for Sharda University courses, shared by students and organised by course code and semester.",
+            "isPartOf": {
+              "@id": "https://sharda.social/#website"
+            },
+            "inLanguage": "en-IN",
+            "about": {
+              "@type": "CollegeOrUniversity",
+              "name": "Sharda University"
+            }
+          },
+          {
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            "itemListElement": [
+              {
+                "@type": "ListItem",
+                "position": 1,
+                "name": "Home",
+                "item": "https://sharda.social/"
+              },
+              {
+                "@type": "ListItem",
+                "position": 2,
+                "name": "Library",
+                "item": "https://sharda.social/library"
+              },
+              {
+                "@type": "ListItem",
+                "position": 3,
+                "name": "Notes",
+                "item": "https://sharda.social/library/notes"
+              }
+            ]
+          }
+        ]
+      ]
+    },
+    {
+      "capture": "_missing-seo-audit-page.html",
+      "title": "Sharda Social — Sharda University Notes, PYQs & Syllabus",
+      "description": "Sharda Social is a student social media community and free online library for Sharda University — find previous year question papers, semester notes and syllabus PDFs, and follow campus announcements, events, opportunities and lost & found.",
+      "robots": "index, follow",
+      "googlebot": "index, follow, max-video-preview:-1, max-image-preview:large, max-snippet:-1",
+      "canonical": null,
+      "h1": [
+        "404"
+      ],
+      "serverRenderedJsonLd": [
+        [
+          {
+            "@context": "https://schema.org",
+            "@type": "EducationalOrganization",
+            "@id": "https://sharda.social/#organisation",
+            "name": "Sharda Social",
+            "alternateName": [
+              "Sharda Social",
+              "Sharda Online Library"
+            ],
+            "url": "https://sharda.social",
+            "logo": {
+              "@type": "ImageObject",
+              "url": "https://sharda.social/shardasocial.png"
+            },
+            "description": "Sharda Social is a student social media community and free online library for Sharda University — find previous year question papers, semester notes and syllabus PDFs, and follow campus announcements, events, opportunities and lost & found.",
+            "areaServed": {
+              "@type": "Place",
+              "name": "Sharda University, Greater Noida, Uttar Pradesh, India"
+            },
+            "parentOrganization": {
+              "@type": "CollegeOrUniversity",
+              "name": "Sharda University",
+              "address": {
+                "@type": "PostalAddress",
+                "addressLocality": "Greater Noida",
+                "addressRegion": "Uttar Pradesh",
+                "addressCountry": "IN"
+              }
+            }
+          },
+          {
+            "@context": "https://schema.org",
+            "@type": "WebSite",
+            "@id": "https://sharda.social/#website",
+            "url": "https://sharda.social",
+            "name": "Sharda Social",
+            "description": "Sharda Social is a student social media community and free online library for Sharda University — find previous year question papers, semester notes and syllabus PDFs, and follow campus announcements, events, opportunities and lost & found.",
+            "inLanguage": "en-IN",
+            "publisher": {
+              "@id": "https://sharda.social/#organisation"
+            },
+            "potentialAction": {
+              "@type": "SearchAction",
+              "target": {
+                "@type": "EntryPoint",
+                "urlTemplate": "https://sharda.social/library/explore?q={search_term_string}"
+              },
+              "query-input": "required name=search_term_string"
+            }
+          }
+        ]
+      ]
+    }
+  ]
+}

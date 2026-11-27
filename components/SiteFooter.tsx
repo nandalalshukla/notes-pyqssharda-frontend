@@ -37,6 +37,7 @@ const LIBRARY_LINKS = [
 const COMMUNITY_LINKS = [
   { href: "/", label: "Campus Feed" },
   { href: "/library", label: "Online Library" },
+  { href: "/blogs", label: "Study Guides & Blogs" },
   { href: "/about-us", label: "About Sharda Social" },
 ];
 

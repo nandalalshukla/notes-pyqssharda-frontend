@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono, Playfair_Display } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 import Script from "next/script";
 import Navbar from "@/components/Navbar/navbar";
@@ -12,6 +12,7 @@ import { Analytics } from "@vercel/analytics/next";
 import SiteAnalyticsHeartbeat from "@/components/analytics/SiteAnalyticsHeartbeat";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { organisationSchema, webSiteSchema } from "@/lib/seo/structuredData";
+import { publicRobots } from "@/lib/seo/metadata";
 import {
   SITE_DESCRIPTION,
   SITE_KEYWORDS,
@@ -20,24 +21,29 @@ import {
   SITE_URL,
 } from "@/lib/seo/site";
 
-const geistSans = Geist({
+const geistSans = localFont({
+  src: "../assets/fonts/geist.woff2",
+  weight: "100 900",
   variable: "--font-geist-sans",
-  subsets: ["latin"],
   // Text stays visible in a fallback face while the web font loads, rather
   // than the page rendering invisible text. Directly improves Largest
   // Contentful Paint, which is a ranking signal.
   display: "swap",
 });
 
-const geistMono = Geist_Mono({
+const geistMono = localFont({
+  src: "../assets/fonts/geist-mono.woff2",
+  weight: "100 900",
+  preload: false,
   variable: "--font-geist-mono",
-  subsets: ["latin"],
   display: "swap",
 });
 
-const brandSerif = Playfair_Display({
+const brandSerif = localFont({
+  src: "../assets/fonts/playfair-display.woff2",
+  weight: "400 900",
+  preload: false,
   variable: "--font-brand-serif",
-  subsets: ["latin"],
   display: "swap",
 });
 
@@ -74,7 +80,7 @@ export const metadata: Metadata = {
     description: SITE_DESCRIPTION,
     images: [
       {
-        url: "/shardasocial.png",
+        url: "/opengraph-image",
         width: 1200,
         height: 630,
         alt: `${SITE_NAME} — Sharda University notes, past year questions and syllabus`,
@@ -86,23 +92,10 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: `${SITE_NAME} — ${SITE_TAGLINE}`,
     description: SITE_DESCRIPTION,
-    images: ["/shardasocial.png"],
+    images: ["/opengraph-image"],
   },
 
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: {
-      index: true,
-      follow: true,
-      // Let Google use full-length previews and large image thumbnails
-      // instead of the conservative defaults — a richer result gets more
-      // clicks for the same ranking.
-      "max-video-preview": -1,
-      "max-image-preview": "large",
-      "max-snippet": -1,
-    },
-  },
+  robots: publicRobots,
 
   icons: {
     icon: [

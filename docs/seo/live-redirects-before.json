@@ -1,0 +1,35 @@
+{
+  "checkedAt": "2026-11-27T15:06:13.156Z",
+  "rows": [
+    {
+      "url": "http://sharda.social/library/pyqs?q=networks",
+      "status": 308,
+      "location": "https://sharda.social/library/pyqs?q=networks",
+      "hsts": null
+    },
+    {
+      "url": "https://sharda.social/library/pyqs?q=networks",
+      "status": 307,
+      "location": "https://www.sharda.social/library/pyqs?q=networks",
+      "hsts": "max-age=63072000"
+    },
+    {
+      "url": "https://www.sharda.social/library/pyqs?q=networks",
+      "status": 200,
+      "location": null,
+      "hsts": "max-age=63072000"
+    },
+    {
+      "url": "https://www.sharda.social/library/pyqs/",
+      "status": 308,
+      "location": "/library/pyqs",
+      "hsts": "max-age=63072000"
+    },
+    {
+      "url": "https://notes-pyqssharda.vercel.app/library/pyqs",
+      "status": 200,
+      "location": null,
+      "hsts": "max-age=63072000; includeSubDomains; preload"
+    }
+  ]
+}

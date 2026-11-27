@@ -64,6 +64,7 @@ export default function NotesPage() {
 
   return (
     <ResourceLibraryPage
+      hideIntro
       accent="mint"
       heading={{ prefix: "Sharda University ", highlight: "Notes" }}
       description="Browse and search Sharda University notes for B.Tech CS courses, organised by semester, course code and unit. Sign in to open a note."

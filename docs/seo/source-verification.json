@@ -1,0 +1,56 @@
+[
+  {
+    "url": "https://sharda.ac.in/library",
+    "status": 200,
+    "finalUrl": "https://sharda.ac.in/library"
+  },
+  {
+    "url": "https://sharda.ac.in/library/e_sources",
+    "status": 200,
+    "finalUrl": "https://sharda.ac.in/library/e_sources"
+  },
+  {
+    "url": "https://sharda.ac.in/library/library_glance",
+    "status": 200,
+    "finalUrl": "https://sharda.ac.in/library/library_glance"
+  },
+  {
+    "url": "https://www.sharda.ac.in/library/library_policy/",
+    "status": 200,
+    "finalUrl": "https://www.sharda.ac.in/library/library_policy/"
+  },
+  {
+    "url": "https://idp.sharda.ac.in/",
+    "error": "fetch failed"
+  },
+  {
+    "url": "https://pubmed.ncbi.nlm.nih.gov/21707204/",
+    "status": 203,
+    "finalUrl": "https://pubmed.ncbi.nlm.nih.gov/21707204/"
+  },
+  {
+    "url": "https://ndl.iitkgp.ac.in/",
+    "status": 200,
+    "finalUrl": "https://ndl.iitkgp.ac.in/"
+  },
+  {
+    "url": "https://www.zotero.org/support/adding_items_to_zotero/",
+    "status": 200,
+    "finalUrl": "https://www.zotero.org/support/adding_items_to_zotero/"
+  },
+  {
+    "url": "https://www.sharda.ac.in/attachments/common_files/SET0101_B-Tech_CSE_2023_27.pdf",
+    "status": 200,
+    "finalUrl": "https://www.sharda.ac.in/attachments/common_files/SET0101_B-Tech_CSE_2023_27.pdf"
+  },
+  {
+    "url": "https://www.sharda.ac.in/attachments/course_programme_curricula/B-Tech_IT_2023-27.pdf",
+    "status": 200,
+    "finalUrl": "https://www.sharda.ac.in/attachments/course_programme_curricula/B-Tech_IT_2023-27.pdf"
+  },
+  {
+    "url": "https://nptel.ac.in/courses",
+    "status": 200,
+    "finalUrl": "https://nptel.ac.in/courses"
+  }
+]

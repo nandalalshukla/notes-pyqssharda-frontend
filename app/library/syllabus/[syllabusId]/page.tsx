@@ -1,3 +1,4 @@
+import { privateRobots } from "@/lib/seo/metadata";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { readLibraryFilters, withLibraryFilters, type PageSearchParams } from "@/components/library/libraryFilterUrl";
@@ -19,9 +20,14 @@ function titleFor(syllabus: Syllabus): string {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { syllabusId } = await params;
+  if (await getServerAuthStatus() !== "authenticated") {
+    return { title: "Sign in to view this resource", robots: privateRobots, alternates: { canonical: `/library/syllabus/${syllabusId}` } };
+  }
   const syllabus = await getSyllabusById(syllabusId);
-  if (!syllabus) return { title: "Syllabus not found", robots: { index: false } };
+  if (!syllabus) return { title: "Syllabus not found", robots: privateRobots };
   return {
+    robots: privateRobots,
+    alternates: { canonical: `/library/syllabus/${syllabusId}` },
     title: `${titleFor(syllabus)} — Sharda University Syllabus`,
     description: `Download the Sharda University syllabus for ${syllabus.courseName || syllabus.title}${syllabus.courseCode ? ` (${syllabus.courseCode})` : ""}, semester ${syllabus.semester}.`,
   };

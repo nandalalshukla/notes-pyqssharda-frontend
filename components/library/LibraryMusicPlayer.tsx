@@ -14,6 +14,7 @@ const DEFAULT_VOLUME = 0.35;
 export default function LibraryMusicPlayer() {
   const audioRef = useRef<HTMLAudioElement>(null);
   const [isMuted, setIsMuted] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
   const [volume, setVolume] = useState(DEFAULT_VOLUME);
   const [currentPart, setCurrentPart] = useState(0);
 
@@ -25,15 +26,8 @@ export default function LibraryMusicPlayer() {
 
     audio.volume = DEFAULT_VOLUME;
     audio.muted = false;
-    const playAttempt = audio.play();
-
-    playAttempt.catch((error: unknown) => {
-      if (error instanceof DOMException && error.name === "NotAllowedError") {
-        return;
-      }
-
-      console.error("Study music could not start.", error);
-    });
+    // Playback starts only after a student requests it. Downloading the MP3
+    // during navigation competes with the page's LCP on mobile connections.
   }, []);
 
   useEffect(() => {
@@ -105,18 +99,20 @@ export default function LibraryMusicPlayer() {
       <audio
         ref={audioRef}
         src={AUDIO_PARTS[currentPart]}
-        preload="auto"
+        preload="none"
+        onPlay={() => setIsPlaying(true)}
+        onPause={() => setIsPlaying(false)}
         onEnded={playNextPart}
         onVolumeChange={(event) => setIsMuted(event.currentTarget.muted)}
       />
       <button
         type="button"
         onClick={toggleMute}
-        aria-label={isMuted ? "Unmute study music" : "Mute study music"}
-        title={isMuted ? "Unmute study music" : "Mute study music"}
+        aria-label={!isPlaying ? "Play study music" : isMuted ? "Unmute study music" : "Mute study music"}
+        title={!isPlaying ? "Play study music" : isMuted ? "Unmute study music" : "Mute study music"}
         className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-border bg-card/95 text-foreground shadow-soft-md backdrop-blur transition hover:scale-105 hover:border-primary hover:text-primary focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
       >
-        {isMuted || volume === 0 ? (
+        {!isPlaying || isMuted || volume === 0 ? (
           <VolumeX className="h-5 w-5" aria-hidden="true" />
         ) : volume < 0.5 ? (
           <Volume1 className="h-5 w-5" aria-hidden="true" />

@@ -1,0 +1,1803 @@
+[
+  {
+    "slug": "sharda-library-student-guide",
+    "title": "Sharda Library: Find Books, PYQs and Study Resources",
+    "description": "Looking for Sharda library resources? Choose the official catalogue, e-library or student PYQ collection, then follow a clear route to the material you need.",
+    "category": "Library & e-library",
+    "target": "/library",
+    "targetLabel": "Browse the Sharda student library",
+    "published": "2026-11-27T12:00:00+05:30",
+    "updated": "2026-11-27T12:00:00+05:30",
+    "intro": "A search for Sharda library can mean a campus book, an online journal, a previous year question paper or a syllabus PDF. Start by choosing the service that holds that material. This guide explains those different routes and helps you avoid signing into the wrong website or searching a catalogue for something it does not contain.",
+    "sections": [
+      {
+        "heading": "Choose the resource before choosing the website",
+        "paragraphs": [
+          "For physical books and campus services, begin at Sharda University's official library page. For licensed journals and databases, follow the university's e-resources directory. For student revision material, use the independent Sharda Social library. These services have different collections, accounts and responsibilities; a login for one should not be assumed to work on another.",
+          "Write down the actual task before opening several tabs. \"Find the prescribed database textbook\" is a catalogue task. \"Read an article cited in my assignment\" is an e-resource task. \"Practise last year's semester paper\" is a PYQ task. That small distinction prevents a surprisingly common problem: finding a related resource that cannot answer the original question."
+        ],
+        "links": [
+          {
+            "href": "https://sharda.ac.in/library",
+            "label": "Visit the official Sharda University library"
+          },
+          {
+            "href": "/library/pyqs",
+            "label": "Find student revision papers in the PYQ library"
+          }
+        ]
+      },
+      {
+        "heading": "Gather identifiers that narrow the search",
+        "paragraphs": [
+          "Keep your programme, admission batch, semester and course code together in a note. For a book, add the author and edition from your reading list. For an article, save the title or DOI. For an exam paper, add the exam year and assessment type when known. A complete identifier usually helps more than repeatedly changing a broad keyword.",
+          "Treat course codes as useful evidence, not a guarantee. Different curriculum versions can have similar titles, and a subject may appear under a revised code. Compare the document itself with your department's current instructions before relying on it. If your search fails, remove one filter at a time so you can see which detail was excluding the result."
+        ]
+      },
+      {
+        "heading": "Use a short route through the student library",
+        "paragraphs": [
+          "Open the PYQ section for past papers, Notes for revision material and Syllabus for available course-unit documents. Search the subject name or course code and then narrow the results. Browsing and searching are public; opening an individual resource requires signing in with your Sharda account. Availability varies, so a missing result does not mean the university has never offered that subject.",
+          "Before downloading, check the course name, semester and year against your needs. Save one suitable paper first and inspect its first page before collecting more. For syllabus material, check the admission batch as well. Keep a short record of where a file came from so you can revisit the original listing if a document is later corrected."
+        ]
+      },
+      {
+        "heading": "Use official services for official decisions",
+        "paragraphs": [
+          "Campus opening hours, borrowing permissions, subscriptions and account recovery belong to the university. Follow the official links in the sources rather than treating this student guide as a policy notice. If two university pages disagree, contact library staff and mention the exact service you need. Avoid relying on an old screenshot of hours or a forwarded message without a date.",
+          "Sharda Social cannot reset an official library account or activate a publisher subscription. Likewise, university e-resource access does not replace a Sharda Social account for its document viewer. Knowing which organisation operates the page makes troubleshooting faster and reduces the chance of sending personal details to an unrelated support channel."
+        ]
+      },
+      {
+        "heading": "Build one useful study session",
+        "paragraphs": [
+          "Choose a narrow outcome such as understanding one syllabus unit and attempting two relevant questions. Open the syllabus first, use notes or a book to fill gaps, then practise from a matching paper. Write down the mistakes you need to revisit. A folder full of downloads is less useful than one completed exercise with a clear next step.",
+          "Keep a small resource index with four fields: subject, document type, source link and next action. For example, a syllabus may lead to \"confirm batch,\" a paper to \"attempt question three,\" and a textbook to \"read the worked example.\" This turns library searching into progress you can measure without assuming that any particular resource guarantees an exam result."
+        ],
+        "links": [
+          {
+            "href": "/library/syllabus",
+            "label": "Check available Sharda syllabus PDFs"
+          },
+          {
+            "href": "/library/pyqs",
+            "label": "Practise with Sharda University PYQs"
+          }
+        ]
+      },
+      {
+        "heading": "Leave with a verified next step",
+        "paragraphs": [
+          "If you are new to the site, start with one subject rather than an entire semester. Confirm the current course requirements, locate a useful document and test whether it opens on your device. Save the official university library link separately from the student library bookmark. You will then know which service to return to for books, licensed research or exam preparation.",
+          "Use the student library below when your next task is finding a PYQ, a note or an available syllabus document. For book accounts, institutional subscriptions and campus rules, use the university sources listed after this guide."
+        ],
+        "links": [
+          {
+            "href": "/library",
+            "label": "Browse the Sharda student library"
+          }
+        ]
+      }
+    ],
+    "sources": [
+      {
+        "title": "Sharda University: Learning Resource Centre",
+        "url": "https://sharda.ac.in/library",
+        "note": "Official starting point for campus library information and current service notices."
+      },
+      {
+        "title": "Sharda University: Library e-resources",
+        "url": "https://sharda.ac.in/library/e_sources",
+        "note": "University-maintained resource directory and remote-access instructions. Subscriptions and eligibility may change."
+      }
+    ],
+    "related": [
+      "sharda-e-library-login",
+      "sharda-library-opac-book-search",
+      "sharda-pyq-pdf-download"
+    ]
+  },
+  {
+    "slug": "sharda-library-opac-book-search",
+    "title": "Sharda Library OPAC: Find the Right Book and Edition",
+    "description": "Use the official Sharda library catalogue to identify books by title, author and edition. Learn what to record before asking staff or looking for a copy.",
+    "category": "Library & e-library",
+    "target": "/library",
+    "targetLabel": "Browse the Sharda student library",
+    "published": "2026-11-27T12:00:00+05:30",
+    "updated": "2026-11-27T12:00:00+05:30",
+    "intro": "Use the official Sharda library catalogue when you need a physical book or want to identify a title in the university collection. A catalogue record describes a resource; it does not automatically provide an ebook download or guarantee that a copy is available. Here is a practical search workflow to use before visiting a shelf or asking library staff.",
+    "sections": [
+      {
+        "heading": "Start from a trusted catalogue link",
+        "paragraphs": [
+          "The university's Library at a Glance page links to its OPAC. Follow that route rather than trusting a similarly named search result. Check that the destination is the catalogue linked by the university, especially before signing in. The public search and personal account functions can have different requirements; consult the current interface for the exact options available.",
+          "For revision PDFs on Sharda Social, the catalogue is usually the wrong starting point. Its student library sections organise papers, notes and syllabus resources separately. Decide whether you need a book record or a study document first, then keep the relevant page open. This avoids confusing a missing catalogue result with a missing PYQ."
+        ],
+        "links": [
+          {
+            "href": "https://sharda.ac.in/library/library_glance",
+            "label": "Find the official OPAC link on the university website"
+          }
+        ]
+      },
+      {
+        "heading": "Copy the reading-list details accurately",
+        "paragraphs": [
+          "Begin with the title and author listed by your lecturer. Add an edition or ISBN if one is supplied. Searching only a broad subject such as \"networks\" may return many books that cover different levels or use different notation. A named author and edition make it easier to identify the text actually recommended for your course.",
+          "If a title has punctuation, a subtitle or a long name, try a distinctive phrase before the entire string. Remove an edition constraint if it returns nothing, then inspect the alternatives manually. Do not silently substitute a different book because the cover looks familiar. Record the difference and ask whether that alternative is suitable for the assigned chapter or exercise."
+        ]
+      },
+      {
+        "heading": "Inspect the record before planning a visit",
+        "paragraphs": [
+          "Look for the fields the catalogue actually provides, such as bibliographic details, location or copy status. Record a call number if shown, along with the title and author. A catalogue can describe several editions or copies; make sure the note you take belongs to the correct record rather than the first result in the list.",
+          "Availability can change after you search. Treat the catalogue as a starting point for locating a book, and confirm uncertain status with library staff. Do not infer a lending period, reservation entitlement or renewal rule from this guide. The current official policy and your account conditions determine those details, which may differ by resource or membership category."
+        ]
+      },
+      {
+        "heading": "Ask a question staff can resolve quickly",
+        "paragraphs": [
+          "If you cannot locate the book, send or show the exact title, author, edition and catalogue record. Explain whether you need a particular chapter, an accessible copy or a substitute reference. \"I need a book for tomorrow\" is harder to act on than a precise record and a clearly stated academic purpose.",
+          "Keep personal account details out of public posts. If a catalogue account does not work, follow the official recovery or support process. Never reuse credentials copied from an old student group message. An account problem and a collection problem are separate issues: staff may help you identify a resource even while account access is being resolved."
+        ]
+      },
+      {
+        "heading": "Turn the book into a targeted reading task",
+        "paragraphs": [
+          "Before reading, note the syllabus topic you want to understand. Scan the relevant chapter headings and compare notation with your lecture notes. Work through one example on paper, then attempt a similar question without looking at the solution. If the explanation does not fit your course level, record what is missing and try a more suitable reference.",
+          "An edition change can alter chapter numbering or exercises. Refer to the chapter title and topic as well as the page number when discussing a source with classmates. A shared note such as \"normalisation examples, chapter on relational design\" is more useful across editions than an unexplained page reference. Confirm the prescribed edition for assessed work."
+        ],
+        "links": [
+          {
+            "href": "/library/syllabus",
+            "label": "Check available Sharda syllabus PDFs"
+          },
+          {
+            "href": "/library/pyqs",
+            "label": "Practise with Sharda University PYQs"
+          }
+        ]
+      },
+      {
+        "heading": "Connect book reading with exam preparation",
+        "paragraphs": [
+          "After studying, return to your course syllabus and mark the topic you can now explain. Find a matching question in the PYQ section and attempt it using the methods taught in your course. The purpose is to test understanding, not to assume that a textbook exercise predicts the exam. Keep any unresolved question ready for a tutorial or library enquiry.",
+          "Use Sharda Social for the revision material around that reading task. Keep the official OPAC bookmark for book discovery and the university policy page for service rules. Separating those bookmarks gives you a repeatable route the next time a lecturer recommends a new title."
+        ],
+        "links": [
+          {
+            "href": "/library",
+            "label": "Browse the Sharda student library"
+          }
+        ]
+      }
+    ],
+    "sources": [
+      {
+        "title": "Sharda University: Library at a Glance",
+        "url": "https://sharda.ac.in/library/library_glance",
+        "note": "Official description of the library catalogue and its linked OPAC. Verify live account and borrowing details with library staff."
+      },
+      {
+        "title": "Sharda University: Library policy",
+        "url": "https://www.sharda.ac.in/library/library_policy/",
+        "note": "Official policy directory; consult the currently linked policy for lending and service rules."
+      }
+    ],
+    "related": [
+      "sharda-library-student-guide",
+      "sharda-library-study-session",
+      "sharda-syllabus-unit-checklist"
+    ]
+  },
+  {
+    "slug": "sharda-e-library-login",
+    "title": "Sharda E Library Login: Official Access and Study PDFs",
+    "description": "Find the official Sharda e-library access route and understand how it differs from Sharda Social. Follow safe login steps and locate student study PDFs.",
+    "category": "Library & e-library",
+    "target": "/library",
+    "targetLabel": "Browse the Sharda student library",
+    "published": "2026-11-27T12:00:00+05:30",
+    "updated": "2026-11-27T12:00:00+05:30",
+    "intro": "For official Sharda e library access, start with the university's e-resources page and follow its current remote-login link. Sharda Social is a separate student library for PYQs, notes and syllabus documents. This distinction matters because institutional databases, university sign-in and the Sharda Social document viewer do not share one universal account.",
+    "sections": [
+      {
+        "heading": "Find the current official access route",
+        "paragraphs": [
+          "Open the university e-resources directory from the source link below. It currently points readers to the university's Knimbus remote-access service and describes institutional Google sign-in. Follow the directory's live instructions rather than a saved third-party login page. Access arrangements can change, so the university directory is the place to recheck a bookmark that stops working.",
+          "A general web search can also surface older portals and cached guidance. Do not assume a page is current because its title includes \"Sharda eLibrary.\" Confirm that the university still links to it. Never enter your institutional credentials into Sharda Social as if it were the university's publisher gateway; use the sign-in flow offered by the service you actually intend to access."
+        ],
+        "links": [
+          {
+            "href": "https://sharda.ac.in/library/e_sources",
+            "label": "Open Sharda University's official e-resources directory"
+          }
+        ]
+      },
+      {
+        "heading": "Prepare your browser and account",
+        "paragraphs": [
+          "If several Google accounts are open, choose the institutional account required by the official gateway. Confirm the account shown in the chooser before continuing. A personal email account may sign into Google successfully yet lack institutional access to the requested database. That is different from an incorrect password and calls for checking eligibility rather than repeatedly resetting credentials.",
+          "Allow the normal redirect back to the library service after authentication. If you use an in-app browser from a messaging app, try opening the official page in your main browser. Keep security protections enabled and use the service's ordinary support route if the flow fails. Record the destination and visible error without copying authentication tokens or private account information."
+        ]
+      },
+      {
+        "heading": "Choose a resource that fits your task",
+        "paragraphs": [
+          "Once you reach the gateway, search for a specific journal, database, article title or book rather than treating every resource as a general exam-paper collection. Licensed research platforms are designed for different subjects. A database useful for a literature review may not contain a semester question paper, and a search result may provide an abstract rather than full text.",
+          "For a project, begin with one clear research question and a few precise terms. For exam revision, begin with your syllabus and course code. This helps you decide whether to stay in the official e-resource service or switch to the student PYQ and notes collection. Finding the right type of material is more useful than opening many unrelated results."
+        ]
+      },
+      {
+        "heading": "Know what a successful login does not promise",
+        "paragraphs": [
+          "Authentication proves that the service recognised an account. It does not establish that every publisher, title, year or full-text file is included in that account's access. If a page offers only a citation or abstract, inspect the official access options before assuming the system is broken. Record the exact title and access message if you need help.",
+          "Do not share credentials with classmates to solve a subscription problem. Send the official library team a concise description of the resource and the error, using the contact route shown on its current website. Avoid bulk downloads or automated collection of licensed resources. Access conditions are set by the university and providers, and should be read where they apply."
+        ]
+      },
+      {
+        "heading": "Use Sharda Social for revision documents",
+        "paragraphs": [
+          "For previous year question papers, open the PYQ collection and search by subject or course code. For available course-unit PDFs, open Syllabus. Notes can help with revision after you have checked the applicable units. Browsing is public on Sharda Social; sign in with your Sharda account when opening an individual resource. This login is separate from official e-resource authentication.",
+          "Check the file's programme, semester and year before practising. A familiar subject title can still belong to a different curriculum. If you are looking for a prescribed textbook or a journal article, return to the official catalogue or e-resources directory rather than expecting the student collection to contain every type of university material."
+        ],
+        "links": [
+          {
+            "href": "/library/syllabus",
+            "label": "Check available Sharda syllabus PDFs"
+          },
+          {
+            "href": "/library/pyqs",
+            "label": "Practise with Sharda University PYQs"
+          }
+        ]
+      },
+      {
+        "heading": "Keep a safe bookmark set",
+        "paragraphs": [
+          "Save three clearly named bookmarks: official library, official e-resources and Sharda Social study material. Write a short note beside each one describing its purpose. If a link later fails, return to the university directory rather than searching for shared passwords or following an unverified login link. That approach keeps both access and troubleshooting tied to the service responsible for the resource."
+        ],
+        "links": [
+          {
+            "href": "/library",
+            "label": "Browse the Sharda student library"
+          }
+        ]
+      }
+    ],
+    "sources": [
+      {
+        "title": "Sharda University: Library e-resources",
+        "url": "https://sharda.ac.in/library/e_sources",
+        "note": "University-maintained resource directory and remote-access instructions. Subscriptions and eligibility may change."
+      },
+      {
+        "title": "Sharda University: Off-campus e-resources directory",
+        "url": "https://idp.sharda.ac.in/",
+        "note": "Official institutional access directory. Use the university's linked service and follow its access rules."
+      }
+    ],
+    "related": [
+      "sharda-e-library-access-problems",
+      "sharda-library-student-guide",
+      "sharda-library-project-research"
+    ]
+  },
+  {
+    "slug": "sharda-e-library-access-problems",
+    "title": "Sharda E Library Not Opening? A Troubleshooting Guide",
+    "description": "Troubleshoot Sharda e-library access by separating browser, account and subscription problems. Find the right support details without sharing private credentials.",
+    "category": "Library & e-library",
+    "target": "/library",
+    "targetLabel": "Browse the Sharda student library",
+    "published": "2026-11-27T12:00:00+05:30",
+    "updated": "2026-11-27T12:00:00+05:30",
+    "intro": "When the Sharda e library does not open, first identify where the failure occurs: the official directory, the sign-in screen, the gateway or a particular article. Each points to a different problem. This guide helps you collect useful evidence and try ordinary browser checks before contacting the team that manages that service.",
+    "sections": [
+      {
+        "heading": "Check the starting link and the exact failure",
+        "paragraphs": [
+          "Return to the university's official e-resources page and follow its current link. A bookmark copied during a previous academic year may point to a retired or changed service. Write down whether the directory itself loads, whether sign-in begins and whether the failure affects all resources or only one title. Those distinctions narrow the problem without guessing about your account.",
+          "Also confirm which library you meant to use. A Sharda Social document-viewer problem belongs to the student site; a publisher access problem after institutional login belongs to the official service. Record the page URL without private query parameters when asking for help. \"Library not opening\" can otherwise refer to several unrelated systems."
+        ],
+        "links": [
+          {
+            "href": "https://sharda.ac.in/library/e_sources",
+            "label": "Open Sharda University's official e-resources directory"
+          }
+        ]
+      },
+      {
+        "heading": "If the page does not load at all",
+        "paragraphs": [
+          "Try a normal browser tab using the official link, then refresh once. If you opened the page inside a social or messaging app, use the main browser instead. Check that another ordinary website loads on the same connection. If the problem persists, try a different trusted connection when available and note whether the behaviour changes.",
+          "Do not disable certificate checks or ignore security warnings to reach a login page. A loading error does not justify submitting credentials to a substitute portal. Keep the visible error text and the approximate time of the attempt. A temporary outage can look similar to a local connection problem, so describe observations rather than asserting that your account has been blocked."
+        ]
+      },
+      {
+        "heading": "If sign-in repeats or returns to the same screen",
+        "paragraphs": [
+          "Check which institutional account is selected in the authentication flow. Several signed-in Google accounts can make this less obvious than expected. Try signing out of the unwanted account in that service's normal flow or use a separate browser profile for university work. Keep the official directory open so you can restart from a trusted URL.",
+          "If the service reports an account or eligibility problem, use its stated recovery process. Avoid repeated password attempts based on guesses. Capture the error wording, the chosen account type and whether sign-in ever completes, while masking the personal address in anything you post publicly. Never send a password, one-time code, cookie or token to a student group."
+        ]
+      },
+      {
+        "heading": "If login works but the article stays locked",
+        "paragraphs": [
+          "A successful sign-in and full-text permission are different checks. Note the article title, publisher, year and DOI if shown. Try reaching the same item through the gateway's search rather than a publisher bookmark. If an abstract opens but the PDF does not, record that difference; it gives support staff a clearer starting point than a screenshot of a generic paywall.",
+          "The university's institutional directory warns users against systematic downloading and credential sharing. Work with the access you are entitled to use. If a title is unavailable, ask the library about an appropriate alternative or locate a lawful open-access version. Do not treat a search snippet or an unofficial mirror as proof that a file is authorised or complete."
+        ]
+      },
+      {
+        "heading": "Write an enquiry with useful evidence",
+        "paragraphs": [
+          "Keep the message short and specific. Include the service name, resource title, time of failure, device and browser, and the exact non-sensitive error. Explain whether the issue appears on one connection or several and whether other resources open. Use the official contact shown in the current directory rather than an old forwarded address."
+        ],
+        "bullets": [
+          "State the task: accessing a named article, book or database.",
+          "State the stage that fails: page load, account selection, gateway entry or full text.",
+          "Mention the ordinary checks already tried, without attaching passwords or authentication data.",
+          "Ask for the correct access route or an available alternative, rather than requesting another person's credentials."
+        ],
+        "links": [
+          {
+            "href": "/library/syllabus",
+            "label": "Check available Sharda syllabus PDFs"
+          },
+          {
+            "href": "/library/pyqs",
+            "label": "Practise with Sharda University PYQs"
+          }
+        ]
+      },
+      {
+        "heading": "Keep studying while access is checked",
+        "paragraphs": [
+          "If your immediate task is exam preparation, use the available student syllabus, notes and PYQs while the official access issue is investigated. Choose material that fits your current units and keep a list of the gaps that still require a textbook or journal. This preserves progress without pretending that student revision files replace a licensed research collection or an official support response."
+        ],
+        "links": [
+          {
+            "href": "/library",
+            "label": "Browse the Sharda student library"
+          }
+        ]
+      }
+    ],
+    "sources": [
+      {
+        "title": "Sharda University: Library e-resources",
+        "url": "https://sharda.ac.in/library/e_sources",
+        "note": "University-maintained resource directory and remote-access instructions. Subscriptions and eligibility may change."
+      },
+      {
+        "title": "Sharda University: Off-campus e-resources directory",
+        "url": "https://idp.sharda.ac.in/",
+        "note": "Official institutional access directory. Use the university's linked service and follow its access rules."
+      }
+    ],
+    "related": [
+      "sharda-e-library-login",
+      "sharda-pyq-missing-paper",
+      "sharda-offline-study-pdfs"
+    ]
+  },
+  {
+    "slug": "sharda-library-study-session",
+    "title": "Plan a Productive Sharda Library Study Session",
+    "description": "Plan a focused Sharda library session using a syllabus unit, a small reading task and matching PYQs. Leave with completed work and a clear next revision step.",
+    "category": "Library & e-library",
+    "target": "/library",
+    "targetLabel": "Browse the Sharda student library",
+    "published": "2026-11-27T12:00:00+05:30",
+    "updated": "2026-11-27T12:00:00+05:30",
+    "intro": "A useful Sharda library session starts with an output you can finish, such as explaining one concept or solving two syllabus-matched questions. Collect only the resources needed for that task. This guide gives a practical session plan for campus or online study; the timings are suggestions you can adjust around your timetable and energy.",
+    "sections": [
+      {
+        "heading": "Set one outcome before gathering material",
+        "paragraphs": [
+          "Write a sentence that begins \"By the end, I will be able to...\" and finish it with an observable action. \"Explain the steps of a method and solve one example\" is more useful than \"study chapter four.\" Choose a syllabus unit and note the exact boundary of the task so that reading does not expand indefinitely into unrelated topics.",
+          "Check current campus opening information on the official library page before travelling, particularly around holidays or examinations. This guide does not provide a fixed timetable or reserve a seat. If you are studying online, check that your chosen files open before the session begins. Keep the official library bookmark separate from your student revision links."
+        ]
+      },
+      {
+        "heading": "Assemble a small resource set",
+        "paragraphs": [
+          "Use one current syllabus, one suitable explanatory source and one relevant paper. The syllabus gives the topic boundary, the notes or book provide an explanation, and the PYQ gives a task to attempt. Several nearly identical note sets can create more comparison work than learning. Add another source only when you can state what the first one fails to explain.",
+          "Before starting, confirm the course code and curriculum version. If a paper belongs to a different batch, identify the overlapping topic rather than assuming the full paper is relevant. Keep uncertain material in a separate folder and ask your lecturer about it later. The session should not quietly depend on a document whose applicability you have never checked."
+        ]
+      },
+      {
+        "heading": "Use the first block to find the gap",
+        "paragraphs": [
+          "Spend a short opening block trying the task without rereading everything. Write the definition, draw the diagram or attempt the first steps of the problem from memory. Mark where you stop. This gives the next reading block a purpose and makes it easier to distinguish an unfamiliar idea from a small recall or calculation error.",
+          "Then read the relevant explanation with that gap in mind. Work through one example carefully, including assumptions and units where appropriate. If a note skips a reasoning step, supply it yourself or consult a fuller source. Highlighting a page can help you locate information later, but it does not show whether you can use it without looking."
+        ]
+      },
+      {
+        "heading": "Attempt, check and explain",
+        "paragraphs": [
+          "Close the explanation and attempt a related question. Research on retrieval practice supports testing memory as part of learning; it does not specify a guaranteed mark increase for your course. The practical suggestion here is to make an honest attempt, check it against a reliable source and write down why any correction was needed.",
+          "Keep your review concrete. \"I forgot a boundary condition\" is actionable. \"I am bad at this subject\" is not. If no authoritative worked solution is available, compare methods with a classmate and take the unresolved step to a tutorial. Agreement between two students is useful discussion, but it should not be presented as an official marking scheme."
+        ]
+      },
+      {
+        "heading": "Finish with a short revision record",
+        "paragraphs": [
+          "Reserve the last part of the session for a record of what changed. Note the topic, attempted question, main error and next action. Keep the record brief enough that you will actually read it before the next session. If you only downloaded files, identify one specific task to attempt next rather than counting the download itself as completed revision."
+        ],
+        "bullets": [
+          "Record one concept you can now explain without the source open.",
+          "Keep one corrected example with the reason for the correction.",
+          "List one unresolved question for a lecturer, tutor or library enquiry.",
+          "Schedule a later attempt from memory, adjusting the interval to your own progress."
+        ],
+        "links": [
+          {
+            "href": "/library/syllabus",
+            "label": "Check available Sharda syllabus PDFs"
+          },
+          {
+            "href": "/library/pyqs",
+            "label": "Practise with Sharda University PYQs"
+          }
+        ]
+      },
+      {
+        "heading": "Repeat the method across the semester",
+        "paragraphs": [
+          "Use the same session structure for a new unit, but vary the task to fit the subject. A programming unit may need a trace or implementation; a theory unit may need an explanation and comparison; a numerical unit may need a worked calculation. Bring the completed output back to the syllabus checklist so you can see coverage as well as confidence.",
+          "Start with the Sharda student library when you need available revision documents. Use university services for prescribed books, official research access and current campus rules. A clear task and a small verified resource set make either setting easier to use."
+        ],
+        "links": [
+          {
+            "href": "/library",
+            "label": "Browse the Sharda student library"
+          }
+        ]
+      }
+    ],
+    "sources": [
+      {
+        "title": "Sharda University: Learning Resource Centre",
+        "url": "https://sharda.ac.in/library",
+        "note": "Official starting point for campus library information and current service notices."
+      },
+      {
+        "title": "Rawson and Dunlosky: schedules of retrieval practice (2011)",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/21707204/",
+        "note": "Primary learning research supporting retrieval and spaced practice. The schedules in this guide are editorial examples, not a tested Sharda exam intervention."
+      }
+    ],
+    "related": [
+      "sharda-syllabus-unit-checklist",
+      "sharda-pyq-timed-practice",
+      "sharda-library-project-research"
+    ]
+  },
+  {
+    "slug": "sharda-library-project-research",
+    "title": "Use Sharda Library Resources for Project Research",
+    "description": "Find and evaluate project sources through Sharda library services. Build a search log, check evidence and connect a literature review to your actual project question.",
+    "category": "Library & e-library",
+    "target": "/library",
+    "targetLabel": "Browse the Sharda student library",
+    "published": "2026-11-27T12:00:00+05:30",
+    "updated": "2026-11-27T12:00:00+05:30",
+    "intro": "Use Sharda library services for project research by starting with a question, then searching for sources that can support or challenge an answer. Downloading many papers before defining the question usually creates a sorting problem. This guide explains a manageable research workflow and shows where official e-resources and the student library fit.",
+    "sections": [
+      {
+        "heading": "Turn your topic into a searchable question",
+        "paragraphs": [
+          "A project topic is often too broad to search effectively. \"Student attendance system\" names an area, while \"how can duplicate attendance entries be detected in a small classroom prototype?\" gives you a task to investigate. Write the intended users, setting, constraints and outcome before choosing search terms. Discuss the scope with your supervisor before treating it as settled.",
+          "Create two or three groups of terms: the problem, the method and the context. Search different combinations and note useful alternative vocabulary found in relevant papers. Do not keep changing terms without recording why. A small search log makes it easier to explain how you found your sources and to repeat a search when the project scope changes."
+        ]
+      },
+      {
+        "heading": "Choose the right discovery service",
+        "paragraphs": [
+          "Use the university's official e-resources directory when looking for subscribed academic databases. Additional discovery can begin through services such as NDLI, but inspect the destination and its access conditions. A search result, abstract and accessible full text are different things. Record which version you actually read rather than citing a paper solely because its title sounds relevant.",
+          "Sharda Social can help you locate available course notes and syllabus context, especially when you need to revisit prerequisite concepts. It should not be treated as a complete scholarly database. For an academic claim about a method or result, look for the original research or another appropriate authoritative source and read enough of it to understand its limitations."
+        ]
+      },
+      {
+        "heading": "Read for a decision, not for a collection",
+        "paragraphs": [
+          "For each promising paper, ask what problem it addresses, what method it uses, what evidence supports the result and which conditions limit the conclusion. Then write one sentence about how it affects your project. A paper that changes a design choice is more valuable than several loosely related introductions copied into a literature-review folder.",
+          "Use a compact evidence table with columns for citation, question, method, finding, limitation and project relevance. Separate the authors' claims from your interpretation. If a study uses a much larger dataset or different users, write that down before borrowing its conclusions. An impressive result does not automatically transfer to your own prototype or evaluation setting."
+        ]
+      },
+      {
+        "heading": "Keep source details while you read",
+        "paragraphs": [
+          "Save the title, authors, year and stable identifier when available. A reference manager can help, but verify imported fields rather than assuming they are correct. Zotero's own documentation recommends saving from the source page when possible because metadata quality can differ. Check the record against the publication before using it in the final bibliography.",
+          "Keep a note of the exact section or page supporting an important claim. Put copied text in quotation marks in your private notes so it cannot later be mistaken for your own wording. Draft explanations in your own words after understanding the source, and cite the evidence where it is used. Follow the referencing style required by your department."
+        ]
+      },
+      {
+        "heading": "Make the literature review serve the project",
+        "paragraphs": [
+          "Organise the review around questions or approaches rather than writing one disconnected paragraph per paper. For example, compare how different approaches handle the same constraint and identify what remains unresolved for your setting. Explain why you chose a method and what trade-off that choice creates. This is a reasoned design argument, not a competition to accumulate citations.",
+          "A useful paragraph connects a claim, supporting evidence, a limitation and the implication for your project. If a source contributes nothing to a decision, background explanation or evaluation criterion, consider whether it belongs in the review. Ask your supervisor about expected breadth and recency rather than inventing a fixed number of references for every project."
+        ],
+        "links": [
+          {
+            "href": "/library/syllabus",
+            "label": "Check available Sharda syllabus PDFs"
+          },
+          {
+            "href": "/library/pyqs",
+            "label": "Practise with Sharda University PYQs"
+          }
+        ]
+      },
+      {
+        "heading": "End with a reproducible next step",
+        "paragraphs": [
+          "Before leaving a research session, update the search log and list the next experiment, design change or question. Keep source files named clearly and store lawful copies within the access terms that apply. If an important item is unavailable, ask the official library about access or a suitable alternative instead of using an unverified download site.",
+          "Return to the student library when you need a course refresher alongside that research. Keep official database access, project evidence and revision material clearly labelled so that a helpful class note does not accidentally become the sole authority for a research claim."
+        ],
+        "links": [
+          {
+            "href": "/library",
+            "label": "Browse the Sharda student library"
+          }
+        ]
+      }
+    ],
+    "sources": [
+      {
+        "title": "Sharda University: Library e-resources",
+        "url": "https://sharda.ac.in/library/e_sources",
+        "note": "University-maintained resource directory and remote-access instructions. Subscriptions and eligibility may change."
+      },
+      {
+        "title": "National Digital Library of India",
+        "url": "https://ndl.iitkgp.ac.in/",
+        "note": "An additional discovery service. Access conditions depend on the individual resource."
+      },
+      {
+        "title": "Zotero documentation: adding items",
+        "url": "https://www.zotero.org/support/adding_items_to_zotero/",
+        "note": "Official guidance on saving reference metadata. Verify imported author, title and publication fields."
+      }
+    ],
+    "related": [
+      "sharda-e-library-login",
+      "sharda-library-opac-book-search",
+      "sharda-notes-syllabus-gaps"
+    ]
+  },
+  {
+    "slug": "sharda-pyq-pdf-download",
+    "title": "Sharda University PYQ PDF Download: Step-by-Step Guide",
+    "description": "Find Sharda University previous year question papers by course code, semester and year. Check a matching paper, sign in and use the PDF for focused practice.",
+    "category": "PYQs & exam preparation",
+    "target": "/library/pyqs",
+    "targetLabel": "Find Sharda University PYQs",
+    "published": "2026-11-27T12:00:00+05:30",
+    "updated": "2026-11-27T12:00:00+05:30",
+    "intro": "To find a Sharda University previous year question paper PDF, open the Sharda Social PYQ library and search by subject or course code. Narrow the results to the programme, semester and year you need. You can browse without signing in; opening a specific paper to read or download requires your Sharda account.",
+    "sections": [
+      {
+        "heading": "Collect the details that identify your paper",
+        "paragraphs": [
+          "Before searching, copy the course code and course title from your current syllabus or department information. Add the semester, programme and assessment type when known. The examination year is useful for selecting a paper, while your admission batch helps establish whether the curriculum matches. Those dates answer different questions and should not be treated as interchangeable.",
+          "If you only know a subject name, begin with a distinctive part of that name and inspect the results. Avoid assuming that every paper with a familiar title belongs to your course. A revised curriculum can change the syllabus, code or assessment format. Confirm uncertain matches with your lecturer rather than building a revision plan around the first PDF you find."
+        ]
+      },
+      {
+        "heading": "Search the collection and narrow gradually",
+        "paragraphs": [
+          "Open the PYQ page linked below. Use the subject or course-code search, then apply programme, semester and year filters as needed. Change one filter at a time when a search returns nothing. This makes it easier to tell whether a spelling difference, missing year or overly narrow selection is hiding an otherwise relevant paper.",
+          "The collection contains available papers, not a promise that every course and examination session is represented. If the exact paper is absent, try the course name without the code or remove the year filter. Keep any nearby match separate until you have checked the document. A broad search result is a candidate, not evidence that the content is suitable."
+        ]
+      },
+      {
+        "heading": "Open one paper before downloading many",
+        "paragraphs": [
+          "Select the matching paper and sign in when prompted. After sign-in, check that you return to the intended resource. Inspect the first page for the course name, code, year, duration and instructions where present. Verify that the pages are readable and complete enough for the task you plan to attempt. Report a wrong or damaged file with its page link.",
+          "Use the available Download PDF or open-file action to save a copy through the site's viewer. Browser behaviour varies, especially on phones: a file may open in a separate viewer before you can save it. Keep the original resource URL as well as the local copy so you can return for context or a corrected file later."
+        ]
+      },
+      {
+        "heading": "Label the PDF so it remains useful",
+        "paragraphs": [
+          "Name the file with the course code, subject, exam year and assessment type if those details are known. Keep unknown information labelled as unknown rather than guessing. Put the paper beside the syllabus version you used to check it, or maintain a short index linking the two. This prevents an old download from being mistaken for a current course document.",
+          "Before relying on offline access, open the saved file from your device's file manager and check several pages. A browser tab showing a preview does not prove that the whole PDF was saved. If you plan to study away from a stable connection, test access before leaving and keep a backup of your own revision notes."
+        ]
+      },
+      {
+        "heading": "Convert the download into a practice task",
+        "paragraphs": [
+          "Choose a question that fits a current syllabus unit. Attempt it without looking at notes, then compare your reasoning with a reliable explanation or seek feedback. Research on retrieval practice supports using recall during study; the exact number of papers or sessions you need depends on the subject and your progress. There is no guaranteed question-repetition formula.",
+          "Keep an error log with the question reference, the reason for the mistake and a planned retry. Separate conceptual errors from arithmetic, interpretation and timing problems. A corrected answer is more useful when you can explain the correction. If no official solution is available, mark your answer as unverified rather than sharing it as a university marking scheme."
+        ],
+        "links": [
+          {
+            "href": "/library/syllabus",
+            "label": "Check available Sharda syllabus PDFs"
+          },
+          {
+            "href": "/library/notes",
+            "label": "Review Sharda University notes"
+          }
+        ]
+      },
+      {
+        "heading": "If you cannot find the exact PDF",
+        "paragraphs": [
+          "Record the missing course code, title and exam session so you can ask a precise question. Check with your department or official library for additional sources. Meanwhile, practise syllabus-matched exercises and clearly labelled older questions. Do not buy an alleged leaked paper or assume an unverified file is authentic because its filename contains the university name.",
+          "Start with one verified download and one completed practice attempt. That creates a useful result immediately while giving you a clear reason to collect the next paper."
+        ],
+        "links": [
+          {
+            "href": "/library/pyqs",
+            "label": "Find Sharda University PYQs"
+          }
+        ]
+      }
+    ],
+    "sources": [
+      {
+        "title": "Rawson and Dunlosky: schedules of retrieval practice (2011)",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/21707204/",
+        "note": "Primary learning research supporting retrieval and spaced practice. The schedules in this guide are editorial examples, not a tested Sharda exam intervention."
+      },
+      {
+        "title": "Sharda University: Learning Resource Centre",
+        "url": "https://sharda.ac.in/library",
+        "note": "Official starting point for campus library information and current service notices."
+      }
+    ],
+    "related": [
+      "sharda-pyq-course-code-search",
+      "sharda-pyq-missing-paper",
+      "sharda-offline-study-pdfs"
+    ]
+  },
+  {
+    "slug": "sharda-pyq-course-code-search",
+    "title": "Find the Correct Sharda PYQ by Course Code and Semester",
+    "description": "Match Sharda PYQs to your course code, semester, programme and syllabus version. Learn how to handle renamed subjects and avoid practising the wrong paper.",
+    "category": "PYQs & exam preparation",
+    "target": "/library/pyqs",
+    "targetLabel": "Find Sharda University PYQs",
+    "published": "2026-11-27T12:00:00+05:30",
+    "updated": "2026-11-27T12:00:00+05:30",
+    "intro": "A course-code search is a useful starting point for Sharda PYQs, but a matching code is only one check. Confirm the subject, programme, semester and applicable syllabus before treating a paper as revision material. This guide helps you resolve partial matches and renamed subjects without assuming that every similar result is equivalent.",
+    "sections": [
+      {
+        "heading": "Make a course identity note",
+        "paragraphs": [
+          "Write down the course title and code exactly as shown in your current academic information. Add your programme, specialisation, admission batch and semester. Keep this note beside the paper search. It is easier to compare results accurately when the reference details stay visible rather than relying on memory or a shortened name used in a class group.",
+          "Use the current syllabus or department guidance as the authority for your course. An older official programme document can help explain how a curriculum was structured, but it does not establish the requirements for every later batch. The official CSE curriculum linked in the sources is explicitly labelled for 2023-27, which illustrates why batch matching matters."
+        ]
+      },
+      {
+        "heading": "Search broadly enough to find spelling variants",
+        "paragraphs": [
+          "Try the code first, then the distinctive subject name if the result is empty. A title may use a longer form, a different abbreviation or a slightly different spacing convention. Remove a year or programme filter one at a time if needed. Record which change revealed the result so you can distinguish a search mismatch from an absent paper.",
+          "Do not try endless guessed codes. If you suspect a code changed, ask your department for the previous course mapping or compare the two actual syllabus documents. Similar names can hide different topic coverage, and different names can still share some material. The useful question is which topics overlap, not whether two filenames look close enough."
+        ]
+      },
+      {
+        "heading": "Check the paper itself",
+        "paragraphs": [
+          "Open the candidate and inspect the header. Look for the course name, code, academic session, examination type and semester where provided. Compare those details with the listing and your course identity note. If a field is missing, record the uncertainty rather than filling it in from a nearby search result. A label mismatch deserves investigation before practice.",
+          "Then scan the questions against the units you study. A paper can be useful in part even if it belongs to an earlier curriculum, but only after you identify which questions fit. Keep a separate list of out-of-scope topics. This avoids wasting time learning a removed unit while also preventing you from assuming that an unrepresented current topic is unimportant."
+        ]
+      },
+      {
+        "heading": "Distinguish programme and assessment differences",
+        "paragraphs": [
+          "A similar subject can appear in several programmes with different depth or emphasis. Likewise, a mid-term, end-term, practical or supplementary assessment can serve a different purpose. Use the instructions actually shown on the paper and the current assessment guidance for your course. Do not carry over duration, choice patterns or marks distribution without checking.",
+          "If you find several plausible papers, compare them in a small table: identity match, syllabus overlap, assessment type and unresolved differences. This lets you choose a useful practice document without declaring it the exact historical paper you originally wanted. Keep the original filenames and source links so another student can inspect your comparison."
+        ]
+      },
+      {
+        "heading": "Decide how to use an imperfect match",
+        "paragraphs": [
+          "Classify each candidate as confirmed for the course, useful for selected topics, or not suitable. A topic-only match can still support practice if clearly labelled. For example, an older question may test a method still taught this semester, even though the rest of that paper belongs to a different unit structure. Use it for that method rather than as a model of the whole exam.",
+          "Take unresolved mapping questions to your lecturer with the two course codes and a brief list of differences. This is easier to answer than asking whether \"old papers are enough.\" Your goal is to establish relevance and limits, not obtain a prediction. Past papers can show historical question styles; current academic instructions determine your actual course requirements."
+        ],
+        "links": [
+          {
+            "href": "/library/syllabus",
+            "label": "Check available Sharda syllabus PDFs"
+          },
+          {
+            "href": "/library/notes",
+            "label": "Review Sharda University notes"
+          }
+        ]
+      },
+      {
+        "heading": "Save the comparison for later revision",
+        "paragraphs": [
+          "Keep your course identity note with the downloaded paper and write one line explaining why you selected it. If you later discover a mismatch, correct that note and tell classmates who used your copy. A transparent record makes the resource more useful than an unsupported claim that it is \"the right paper.\"",
+          "Use the PYQ library to locate candidates, then use the syllabus section to check the units. Return to the broad library if you need notes for a topic that appears in a suitable question."
+        ],
+        "links": [
+          {
+            "href": "/library/pyqs",
+            "label": "Find Sharda University PYQs"
+          }
+        ]
+      }
+    ],
+    "sources": [
+      {
+        "title": "Sharda University: B.Tech CSE programme structure, batch 2023-27",
+        "url": "https://www.sharda.ac.in/attachments/common_files/SET0101_B-Tech_CSE_2023_27.pdf",
+        "note": "An example of a batch-labelled official curriculum. It is not proof that this curriculum applies to a different admission batch."
+      },
+      {
+        "title": "Sharda University: B.Tech IT programme structure, batch 2023-27",
+        "url": "https://www.sharda.ac.in/attachments/course_programme_curricula/B-Tech_IT_2023-27.pdf",
+        "note": "A separate programme document illustrating why branch and batch must be matched before using a syllabus."
+      }
+    ],
+    "related": [
+      "sharda-pyq-pdf-download",
+      "sharda-syllabus-correct-batch",
+      "sharda-syllabus-curriculum-changes"
+    ]
+  },
+  {
+    "slug": "sharda-pyq-repeated-topics",
+    "title": "Analyse Sharda PYQs Without Guessing the Next Exam",
+    "description": "Use Sharda previous year papers to map topics, question types and weak areas. Build a simple evidence sheet without treating repeated questions as predictions.",
+    "category": "PYQs & exam preparation",
+    "target": "/library/pyqs",
+    "targetLabel": "Find Sharda University PYQs",
+    "published": "2026-11-27T12:00:00+05:30",
+    "updated": "2026-11-27T12:00:00+05:30",
+    "intro": "Use Sharda previous year question papers to identify what has been assessed and where your understanding needs work. Repeated topics can guide practice, but they cannot guarantee the next exam. A useful analysis records syllabus coverage, question type and errors rather than turning a few old papers into a prediction list.",
+    "sections": [
+      {
+        "heading": "Start with a current syllabus map",
+        "paragraphs": [
+          "List the current units and the main topics within each one before counting anything in old papers. This keeps your analysis tied to the course you are actually taking. Mark any syllabus item that you cannot confidently interpret and ask your lecturer about it. Otherwise, you may assign a question to the wrong unit and draw an inaccurate conclusion about coverage.",
+          "Select papers that match the course as closely as possible and note the years represented. If the collection is small or uneven, state that limitation at the top of your sheet. A missing year can change the apparent pattern. Do not describe a topic as \"never asked\" when you have only inspected a few available papers."
+        ]
+      },
+      {
+        "heading": "Use one row per question or meaningful subpart",
+        "paragraphs": [
+          "Create columns for paper reference, question number, unit, topic, task type, marks shown and your attempt status. Split a multi-part question when its parts test different skills. Use a second topic tag when needed, but keep your rule consistent across papers. The aim is a comparable record rather than a table that merely looks precise.",
+          "Question types might include explanation, comparison, diagram, numerical calculation, proof, code trace or design. Choose labels that fit your subject. Preserve the original wording separately so you can revisit ambiguous classifications. If the paper does not show marks for a subpart, leave that value blank instead of assigning a guessed share of the parent question's total."
+        ]
+      },
+      {
+        "heading": "Separate appearance from weight",
+        "paragraphs": [
+          "Count topic appearances and recorded marks separately. A short definition and a long application problem may both mention the same idea while requiring very different preparation. If a question covers several topics and you cannot split its marks reliably, record it as combined. Avoid adding the full marks to every tag, which would inflate the apparent weight.",
+          "Look at the date of each appearance as well. A cluster in older papers may reflect a previous curriculum. Compare with the current unit list before making a study decision. Keep the interpretation modest: \"appeared in these three available papers\" is supportable; \"will carry ten marks this year\" is not established by that evidence."
+        ]
+      },
+      {
+        "heading": "Add your own difficulty and error information",
+        "paragraphs": [
+          "Attempt representative questions before deciding which topics deserve more time. A frequently seen topic that you already handle well may need maintenance, while a less common current unit may expose a major gap. Record why an attempt failed: missing concept, poor recall, unfamiliar format, calculation error or time management. That gives the analysis a practical purpose.",
+          "Use the result to choose a repair task. A concept gap may need a fuller explanation or tutorial; a recall gap may need another attempt after a delay; a timing issue may need shorter timed sets. The paper count alone cannot choose the right intervention. Your performance on a question adds information that a frequency table cannot provide."
+        ]
+      },
+      {
+        "heading": "Build a balanced revision order",
+        "paragraphs": [
+          "Prepare every current unit while giving additional attention to demonstrated weaknesses and common task types. Reserve time for topics that have no match in the papers you found. Lack of historical evidence is not evidence that a current unit is optional. Confirm any officially communicated assessment scope with the department rather than treating a classmate's analysis as a notice.",
+          "A simple planning rule is to list high-need tasks first and retain a coverage checklist beside them. Explain why each task is scheduled. \"I could not apply this method without notes\" is a useful reason; \"this must repeat\" is a prediction. Adjust the order after new attempts instead of following the first analysis mechanically."
+        ],
+        "links": [
+          {
+            "href": "/library/syllabus",
+            "label": "Check available Sharda syllabus PDFs"
+          },
+          {
+            "href": "/library/notes",
+            "label": "Review Sharda University notes"
+          }
+        ]
+      },
+      {
+        "heading": "Keep the sheet honest and reusable",
+        "paragraphs": [
+          "Date the analysis and identify the papers included. Mark student-created solutions and interpretations clearly. When sharing the sheet, include the limits and a link to the current syllabus so it cannot be mistaken for an official question bank. Correct a classification when evidence improves rather than preserving a neat but misleading chart.",
+          "Use the Sharda PYQ collection below to gather suitable practice papers. Start with a small set you can inspect carefully, then expand only when another paper answers a useful coverage or practice question."
+        ],
+        "links": [
+          {
+            "href": "/library/pyqs",
+            "label": "Find Sharda University PYQs"
+          }
+        ]
+      }
+    ],
+    "sources": [
+      {
+        "title": "Rawson and Dunlosky: schedules of retrieval practice (2011)",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/21707204/",
+        "note": "Primary learning research supporting retrieval and spaced practice. The schedules in this guide are editorial examples, not a tested Sharda exam intervention."
+      },
+      {
+        "title": "Sharda University: B.Tech CSE programme structure, batch 2023-27",
+        "url": "https://www.sharda.ac.in/attachments/common_files/SET0101_B-Tech_CSE_2023_27.pdf",
+        "note": "An example of a batch-labelled official curriculum. It is not proof that this curriculum applies to a different admission batch."
+      }
+    ],
+    "related": [
+      "sharda-pyq-course-code-search",
+      "sharda-pyq-timed-practice",
+      "sharda-syllabus-unit-checklist"
+    ]
+  },
+  {
+    "slug": "sharda-pyq-timed-practice",
+    "title": "Practise Sharda PYQs Under Timed Exam Conditions",
+    "description": "Turn Sharda PYQs into timed practice sessions. Set a realistic task, review your answer quality and build an error log that guides the next revision session.",
+    "category": "PYQs & exam preparation",
+    "target": "/library/pyqs",
+    "targetLabel": "Find Sharda University PYQs",
+    "published": "2026-11-27T12:00:00+05:30",
+    "updated": "2026-11-27T12:00:00+05:30",
+    "intro": "Timed practice with Sharda PYQs helps you check whether you can produce a clear answer within a constraint. Start with a syllabus-matched question or short set, then review both the reasoning and the time used. The purpose is to find what to improve, not to reproduce an old paper's rules without checking your current assessment instructions.",
+    "sections": [
+      {
+        "heading": "Confirm the task and conditions",
+        "paragraphs": [
+          "Choose a paper that fits your course and current units. Read its instructions and identify which details are historical rather than current. Your department's present assessment guidance determines allowed materials, duration and choice rules. For a practice session, write down the conditions you are simulating so you know what the result does and does not show.",
+          "If you are new to a topic, start with an untimed learning attempt before measuring speed. Timing an unfamiliar method mainly tells you that you need to learn it. Move to a short timed set once you can explain the basic process. A full paper can be useful later, but it is not the only meaningful way to practise."
+        ]
+      },
+      {
+        "heading": "Set a time budget you can explain",
+        "paragraphs": [
+          "For a practice paper with stated marks and duration, you can calculate an illustrative minutes-per-mark budget after reserving time to read and review. Adapt it to the task: a diagram, proof and calculation may not require identical pacing. Treat the number as a planning aid rather than an official allocation or a rule that overrides examination instructions.",
+          "For a shorter session, choose a fixed set of questions and record the start and finish times. Do not quietly pause the clock to consult notes. If you need a hint, mark where you used it and continue if the exercise is still useful. That preserves the difference between an independent answer and an assisted learning attempt."
+        ]
+      },
+      {
+        "heading": "Write an answer someone else could follow",
+        "paragraphs": [
+          "Make the method visible. State assumptions, define notation, label diagrams and include units where relevant. For an explanation, answer the task verb directly before adding detail. For a calculation, show enough working to locate an error. Your final line may be correct by coincidence; a reviewable method gives better feedback about understanding.",
+          "If a question is unclear, write the interpretation you used rather than guessing silently. After the attempt, compare that interpretation with a lecturer or reliable source. Do not invent an official marking scheme. A peer can help assess clarity and identify a missing step, but their opinion should remain labelled as feedback rather than university grading guidance."
+        ]
+      },
+      {
+        "heading": "Review before starting another paper",
+        "paragraphs": [
+          "Keep the attempted answer beside a different-colour correction or a separate review note. Identify the earliest point where the reasoning went wrong. Fixing only the final value can hide the same conceptual error for the next attempt. Record what you would do differently if the question appeared with changed numbers or a slightly different context."
+        ],
+        "bullets": [
+          "Concept: which idea or prerequisite was missing?",
+          "Interpretation: did you answer the question actually asked?",
+          "Execution: were the method, arithmetic, labels and units consistent?",
+          "Pacing: where did time run out, and what work was left unfinished?"
+        ]
+      },
+      {
+        "heading": "Schedule a useful retry",
+        "paragraphs": [
+          "After correcting the answer, attempt a similar problem later without the worked solution open. Retrieval and spaced practice are supported by learning research, but no single interval is prescribed here for all subjects. Choose a retry time that fits your timetable and adjust it when the material is still too easy or too difficult.",
+          "Change the example enough to test the method rather than memorising a page layout. If you can only repeat the exact solution you just read, your understanding may not transfer. Explain each step aloud or write a short justification. Take persistent errors to a tutorial with your attempted work so the discussion can focus on the point of confusion."
+        ],
+        "links": [
+          {
+            "href": "/library/syllabus",
+            "label": "Check available Sharda syllabus PDFs"
+          },
+          {
+            "href": "/library/notes",
+            "label": "Review Sharda University notes"
+          }
+        ]
+      },
+      {
+        "heading": "Judge progress with several observations",
+        "paragraphs": [
+          "A single timed attempt can be affected by fatigue, question familiarity or interruptions. Compare a few reasonably similar tasks and look for specific changes, such as fewer interpretation errors or more complete working. Avoid claiming a predicted examination mark from a self-scored old paper. The real assessment may differ in content, conditions and marking.",
+          "Use the PYQ library to select the next appropriate task, then return to notes or the syllabus when the review identifies a gap. A practice cycle is complete when it produces a correction and a plan, not merely when the timer stops."
+        ],
+        "links": [
+          {
+            "href": "/library/pyqs",
+            "label": "Find Sharda University PYQs"
+          }
+        ]
+      }
+    ],
+    "sources": [
+      {
+        "title": "Rawson and Dunlosky: schedules of retrieval practice (2011)",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/21707204/",
+        "note": "Primary learning research supporting retrieval and spaced practice. The schedules in this guide are editorial examples, not a tested Sharda exam intervention."
+      }
+    ],
+    "related": [
+      "sharda-pyq-repeated-topics",
+      "sharda-pyq-seven-day-plan",
+      "sharda-notes-syllabus-gaps"
+    ]
+  },
+  {
+    "slug": "sharda-pyq-seven-day-plan",
+    "title": "A Seven-Day Sharda PYQ and Syllabus Revision Plan",
+    "description": "Use a practical seven-day revision plan combining Sharda PYQs, syllabus checks and focused repair sessions. Adapt the schedule to your subjects and exam dates.",
+    "category": "PYQs & exam preparation",
+    "target": "/library/pyqs",
+    "targetLabel": "Find Sharda University PYQs",
+    "published": "2026-11-27T12:00:00+05:30",
+    "updated": "2026-11-27T12:00:00+05:30",
+    "intro": "A seven-day Sharda revision plan should combine current syllabus coverage, practice from suitable PYQs and time to repair mistakes. The example below is a flexible study plan, not a university timetable or a guarantee of preparation in one week. Scale the workload to your starting knowledge, exam order and other commitments.",
+    "sections": [
+      {
+        "heading": "Before day one: define the available time",
+        "paragraphs": [
+          "Write down the actual examination dates and the hours you can realistically study. Include travel, classes, meals and sleep rather than treating every waking hour as available revision time. If several subjects compete for the week, give each one a minimum coverage block before assigning extra time to the most difficult topics. Keep some unscheduled space for delays.",
+          "Collect the applicable syllabus and a small set of matching papers. Check the course code, batch and assessment type before building the plan. Mark missing resources now so you can ask a specific question early. Do not postpone all studying until you have found every possible PDF; use verified material already available while resolving the gaps."
+        ]
+      },
+      {
+        "heading": "Days one and two: map coverage and diagnose gaps",
+        "paragraphs": [
+          "On day one, turn the syllabus into a checklist and make a short attempt from each major topic you already know. Record where you need help rather than spending the whole session rewriting notes. Use a paper question when it fits the current unit; use an appropriate textbook exercise when the available papers do not cover that topic.",
+          "On day two, repair the biggest prerequisite gaps. Read or discuss the relevant explanation, then attempt a fresh example without the source open. Keep the task small enough to finish and check. If a topic remains unclear, write the exact step or definition you cannot explain and take that to a lecturer or tutor instead of repeatedly rereading the same paragraph."
+        ]
+      },
+      {
+        "heading": "Days three and four: practise and revisit",
+        "paragraphs": [
+          "Use day three for focused question sets across different units. Group by the skill you need to improve, such as interpreting a diagram, explaining a comparison or applying a method. Review after each set while the reasoning is still fresh. Mark assisted attempts clearly so you do not later mistake them for independent performance.",
+          "On day four, revisit earlier mistakes before opening another paper. Research on retrieval practice supports returning to material and recalling it again; this particular seven-day schedule is an editorial example. Try a question with a changed context or numbers when possible. If you remember only the exact worked answer, return to the method and explain why each step is needed."
+        ]
+      },
+      {
+        "heading": "Day five: test pacing on a suitable set",
+        "paragraphs": [
+          "Choose a timed set based on your current assessment guidance. Write down the conditions and avoid quietly adding hints or extra time. The goal is to see whether you can interpret, select and complete tasks under a constraint. A partial paper can be enough to reveal a pacing problem; a full simulation is useful only if you can also review it.",
+          "After the timer stops, separate unfinished work from incorrect work. Decide whether the issue was knowledge, answer structure, question selection or time allocation. Do not simply assign yourself a predicted exam score. Without the actual marking guidance, self-scoring can be misleading, and the next assessment may differ from the historical paper you used."
+        ]
+      },
+      {
+        "heading": "Day six: close coverage gaps and confirm essentials",
+        "paragraphs": [
+          "Compare your work with the entire current syllabus. Look especially for units absent from the papers you collected. A topic that did not appear in that small sample may still be examinable. Use a reliable exercise or an explanation task to check it, and confirm any formally announced exclusions with your department rather than relying on a prediction list.",
+          "Prepare a short review sheet containing definitions, conditions, common mistakes and unresolved questions. Keep it compact enough to use. For numerical or practical subjects, retain a few representative examples showing method, not just final answers. Check examination logistics through official channels so an administrative uncertainty does not consume the final study session."
+        ],
+        "links": [
+          {
+            "href": "/library/syllabus",
+            "label": "Check available Sharda syllabus PDFs"
+          },
+          {
+            "href": "/library/notes",
+            "label": "Review Sharda University notes"
+          }
+        ]
+      },
+      {
+        "heading": "Day seven: review selectively and finish prepared",
+        "paragraphs": [
+          "Use shorter recall sessions and review the error log. Avoid replacing a checked resource set with an unfamiliar collection at the last moment. If you discover a genuine gap, address a manageable part and record the limit honestly. Protect time for rest and preparation for the next day. This schedule should support your work rather than encourage an unrealistic all-night target.",
+          "After the exam, keep the checklist and corrected attempts for future courses, and note what the schedule helped you see. Start with the PYQ collection below if you still need practice material, then use the syllabus and notes sections to complete the resource set."
+        ],
+        "links": [
+          {
+            "href": "/library/pyqs",
+            "label": "Find Sharda University PYQs"
+          }
+        ]
+      }
+    ],
+    "sources": [
+      {
+        "title": "Rawson and Dunlosky: schedules of retrieval practice (2011)",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/21707204/",
+        "note": "Primary learning research supporting retrieval and spaced practice. The schedules in this guide are editorial examples, not a tested Sharda exam intervention."
+      },
+      {
+        "title": "Sharda University: B.Tech CSE programme structure, batch 2023-27",
+        "url": "https://www.sharda.ac.in/attachments/common_files/SET0101_B-Tech_CSE_2023_27.pdf",
+        "note": "An example of a batch-labelled official curriculum. It is not proof that this curriculum applies to a different admission batch."
+      }
+    ],
+    "related": [
+      "sharda-syllabus-unit-checklist",
+      "sharda-pyq-timed-practice",
+      "sharda-pyq-repeated-topics"
+    ]
+  },
+  {
+    "slug": "sharda-pyq-missing-paper",
+    "title": "Cannot Find a Sharda PYQ? Search and Study Alternatives",
+    "description": "No matching Sharda PYQ in the library? Check filters, verify the course identity and use syllabus-matched alternatives while asking for the missing paper.",
+    "category": "PYQs & exam preparation",
+    "target": "/library/pyqs",
+    "targetLabel": "Find Sharda University PYQs",
+    "published": "2026-11-27T12:00:00+05:30",
+    "updated": "2026-11-27T12:00:00+05:30",
+    "intro": "If a Sharda PYQ search returns no match, first check the course identity and remove filters gradually. The available collection may not include your exact subject, year or assessment. You can still prepare using the current syllabus and appropriate exercises while asking your department or library for a specific missing paper.",
+    "sections": [
+      {
+        "heading": "Rule out a search mismatch",
+        "paragraphs": [
+          "Try the course code, then a distinctive part of the subject name. Remove the year, programme or semester filter one at a time and note which change affects the result. A title may be abbreviated differently, or the available record may not use the same wording as your class group. A systematic check is quicker than many unrelated keyword guesses.",
+          "Keep your current course details visible while searching. If you discover a similar title under a different code, treat it as a candidate for comparison rather than an automatic substitute. A code change, specialisation difference or older curriculum may alter the scope. Confirm the mapping from department guidance or the actual curriculum documents before relying on it."
+        ]
+      },
+      {
+        "heading": "Separate missing data from a technical failure",
+        "paragraphs": [
+          "An empty result after a successful search is different from a page reporting that it could not load results. For a loading error, use the page's retry action and check your connection. If the issue persists, record the page and visible message. Do not keep widening filters to solve an API or connection problem that prevents any results from loading.",
+          "If other searches work but your exact subject remains absent, record the missing course code, title and session. The library grows through available resources and contributions; it cannot promise complete coverage. Avoid telling classmates that a paper does not exist merely because it was not found in this collection. That conclusion goes beyond what the search establishes."
+        ]
+      },
+      {
+        "heading": "Ask for a paper with precise details",
+        "paragraphs": [
+          "Contact the department or official library through its current channels. State whether you need a semester examination paper, sample question, practical assessment or another resource. Include the programme, course code, title, semester and desired year if known. If a lecturer suggests an alternative, keep that guidance alongside the file so you know why it was selected.",
+          "Keep the request about legitimate revision material. Do not buy supposed leaks or share a file whose origin you cannot establish. A convincing filename or university logo is not enough to prove authenticity. If someone provides a paper, compare its header and content with your course and note any uncertainty before using or forwarding it."
+        ]
+      },
+      {
+        "heading": "Use older or related questions selectively",
+        "paragraphs": [
+          "An older paper may still contain useful questions if the underlying topic remains in your current syllabus. Map each selected question to a current unit and mark out-of-scope material. Use the overlap as practice rather than treating the old paper as a model of the coming exam. Current instructions determine assessment format and coverage.",
+          "A related programme's question can also be useful for a particular concept, but its depth and expected method may differ. Ask whether the task is suitable if the difference is material. The honest label is \"practice for this topic,\" not \"confirmed paper for this course.\" That distinction helps both your planning and anyone who later receives your notes."
+        ]
+      },
+      {
+        "heading": "Build practice from the syllabus",
+        "paragraphs": [
+          "Choose a topic and turn it into an observable task: define and compare, draw and explain, calculate and check, implement and test, or evaluate a small scenario. Use the prescribed text or lecture material to verify the answer. NPTEL can provide supplementary explanations, but compare its course outline with your own units instead of assuming the entire course is required.",
+          "Keep a list of what your self-made set does not test. A set assembled from exercises may help with methods while missing the pacing or integration of an exam. Use feedback from your lecturer to refine it. Label the questions as practice you selected, and avoid presenting a student-created set as an official sample or a prediction."
+        ],
+        "links": [
+          {
+            "href": "/library/syllabus",
+            "label": "Check available Sharda syllabus PDFs"
+          },
+          {
+            "href": "/library/notes",
+            "label": "Review Sharda University notes"
+          }
+        ]
+      },
+      {
+        "heading": "Contribute responsibly when a resource becomes available",
+        "paragraphs": [
+          "If you later obtain a paper you are permitted to share, use the site's contribution flow and provide accurate details. Check that the scan is readable, complete and free of unnecessary personal information. Moderator review helps the collection, but accurate titles, codes and dates still matter at upload time. Do not fill unknown fields with guesses simply to complete the form.",
+          "Keep studying from verified resources while the missing-paper request is open. A clear syllabus map, a suitable explanation and a checked practice task can move your preparation forward even when the exact historical PDF is unavailable."
+        ],
+        "links": [
+          {
+            "href": "/library/pyqs",
+            "label": "Find Sharda University PYQs"
+          }
+        ]
+      }
+    ],
+    "sources": [
+      {
+        "title": "Sharda University: Learning Resource Centre",
+        "url": "https://sharda.ac.in/library",
+        "note": "Official starting point for campus library information and current service notices."
+      },
+      {
+        "title": "NPTEL: course directory",
+        "url": "https://nptel.ac.in/courses",
+        "note": "Primary directory for supplementary lectures. Match each course's scope to your own syllabus."
+      }
+    ],
+    "related": [
+      "sharda-pyq-course-code-search",
+      "sharda-syllabus-unit-checklist",
+      "sharda-first-year-study-toolkit"
+    ]
+  },
+  {
+    "slug": "sharda-pyq-assessment-types",
+    "title": "Sharda PYQs: Check Mid-Term, End-Term and Other Papers",
+    "description": "Check the assessment type before using a Sharda PYQ. Compare paper instructions, topic scope and format without assuming old rules apply to your next exam.",
+    "category": "PYQs & exam preparation",
+    "target": "/library/pyqs",
+    "targetLabel": "Find Sharda University PYQs",
+    "published": "2026-11-27T12:00:00+05:30",
+    "updated": "2026-11-27T12:00:00+05:30",
+    "intro": "Before practising a Sharda PYQ, identify which assessment it came from and what it was intended to test. A mid-term, end-term, supplementary or practical paper may have different scope and instructions. The names alone do not establish the current rules for your course, so use department guidance alongside the historical document.",
+    "sections": [
+      {
+        "heading": "Read the paper header before the questions",
+        "paragraphs": [
+          "Look for the assessment name, course code, subject, semester, session, duration and marks where provided. Compare those details with the library listing and your course. If the assessment label is absent or unclear, record it as unknown. Do not infer the type from a short paper length or a filename supplied by another student.",
+          "This check also helps distinguish semester material from entrance-test resources. A university name shared by two documents does not make them interchangeable. Look at the academic purpose, course identity and audience. When asking for help, state the exact assessment you mean so that someone does not send an unrelated sample paper that happens to mention the same subject."
+        ]
+      },
+      {
+        "heading": "Use current instructions to establish scope",
+        "paragraphs": [
+          "The course syllabus identifies topics, while current academic communication establishes which requirements apply to your assessment. Keep formal instructions from the department available when planning practice. If there is a conflict between an old paper and a current notice, ask for clarification rather than assuming the historical document overrides the notice.",
+          "Do not invent a universal rule about which units belong to a mid-term or end-term examination. Coverage can depend on the course and session. An earlier paper may be useful for learning but still be unsuitable as a complete mock. Write down the scope you are actually practising so a short focused set is not mistaken for full syllabus coverage."
+        ]
+      },
+      {
+        "heading": "Separate content practice from format practice",
+        "paragraphs": [
+          "For content practice, select questions that match the current units and methods, even if they come from different historical assessments. Label the set as a study exercise. For format practice, choose a paper whose structure is relevant to the current guidance and preserve its instructions during the attempt. These two tasks answer different preparation questions.",
+          "A student might understand the topic but struggle with a long integrated answer, or handle short questions quickly while missing the reasoning needed for a deeper task. Record the type of work each question demands. That is more useful than assuming that all papers of one assessment category have the same difficulty or answer length."
+        ]
+      },
+      {
+        "heading": "Inspect choice rules and linked subparts",
+        "paragraphs": [
+          "Read whether a question is compulsory, whether subparts depend on earlier answers and whether a choice applies to a whole section or individual items. For practice, mark the rule you followed. If you select only comfortable questions from a paper, you are testing a narrower skill set than someone attempting it under its original conditions.",
+          "Do not transfer the old choice pattern to the next assessment without confirmation. Treat it as historical information. When analysing topics across papers, note that optional questions and compulsory questions can play different roles. Counting appearances without recording the choice structure may overstate how much of a topic every student was required to answer."
+        ]
+      },
+      {
+        "heading": "Review practical and applied work appropriately",
+        "paragraphs": [
+          "A written paper cannot fully replace the preparation needed for a lab, viva or other practical task. If your current assessment includes demonstration or explanation of a procedure, practise that activity using the department's guidance and the resources you are authorised to use. A list of memorised answers may leave important execution and reasoning gaps.",
+          "For written applied questions, show assumptions and intermediate steps, then check the outcome against a reliable source. If you do not have an official marking guide, label self-assessment accordingly. Ask for feedback on the method and completeness rather than claiming an exact mark from a peer-created answer key. Keep the question reference so feedback can be checked."
+        ],
+        "links": [
+          {
+            "href": "/library/syllabus",
+            "label": "Check available Sharda syllabus PDFs"
+          },
+          {
+            "href": "/library/notes",
+            "label": "Review Sharda University notes"
+          }
+        ]
+      },
+      {
+        "heading": "Organise files by purpose",
+        "paragraphs": [
+          "Save the assessment type only when it is known and keep uncertain material clearly marked. Add a short note describing whether a paper is useful for topic drills, pacing practice or curriculum comparison. This prevents a mixed download folder from quietly becoming the basis for an inaccurate exam plan.",
+          "Use the Sharda PYQ library to locate available papers and the syllabus section to check topic relevance. If a specific assessment is missing, ask your department for a suitable alternative and continue practising the verified parts of the course while waiting for guidance."
+        ],
+        "links": [
+          {
+            "href": "/library/pyqs",
+            "label": "Find Sharda University PYQs"
+          }
+        ]
+      }
+    ],
+    "sources": [
+      {
+        "title": "Sharda University: B.Tech CSE programme structure, batch 2023-27",
+        "url": "https://www.sharda.ac.in/attachments/common_files/SET0101_B-Tech_CSE_2023_27.pdf",
+        "note": "An example of a batch-labelled official curriculum. It is not proof that this curriculum applies to a different admission batch."
+      },
+      {
+        "title": "Sharda University: B.Tech IT programme structure, batch 2023-27",
+        "url": "https://www.sharda.ac.in/attachments/course_programme_curricula/B-Tech_IT_2023-27.pdf",
+        "note": "A separate programme document illustrating why branch and batch must be matched before using a syllabus."
+      }
+    ],
+    "related": [
+      "sharda-pyq-course-code-search",
+      "sharda-pyq-timed-practice",
+      "sharda-pyq-missing-paper"
+    ]
+  },
+  {
+    "slug": "sharda-syllabus-correct-batch",
+    "title": "Sharda Syllabus PDF: Find the Correct Course and Batch",
+    "description": "Find a Sharda University syllabus PDF that matches your programme, admission batch and course code. Check applicability before using it to plan exam revision.",
+    "category": "Syllabus & course planning",
+    "target": "/library/syllabus",
+    "targetLabel": "Find Sharda syllabus PDFs",
+    "published": "2026-11-27T12:00:00+05:30",
+    "updated": "2026-11-27T12:00:00+05:30",
+    "intro": "The right Sharda syllabus PDF is the one that applies to your programme, branch, admission batch and course. A document can be genuine and still belong to a different cohort. Start with those identifiers, then compare the PDF with your department's current guidance before using its units or assessment details for revision.",
+    "sections": [
+      {
+        "heading": "Distinguish the dates on a syllabus",
+        "paragraphs": [
+          "An admission batch, an academic session and an examination year describe different things. A programme document labelled for a four-year admission cohort may contain several semesters, while a paper year describes when an exam was held. Write each date with its meaning rather than using an unexplained \"2026\" label in your folder.",
+          "The official CSE document linked below is explicitly for the 2023-27 batch. It is a useful example of how university curricula identify their scope, but it is not a statement that all students should follow that edition. If your batch differs, ask your department which curriculum applies. Keep that answer with the downloaded file."
+        ]
+      },
+      {
+        "heading": "Match programme, branch and specialisation",
+        "paragraphs": [
+          "Begin with the full programme name and branch rather than only the degree label. A B.Tech CSE curriculum and a B.Tech IT curriculum can share some topics yet still have different structures. The separate official documents in the sources illustrate why a familiar subject title is insufficient to establish equivalence.",
+          "If you take an elective, minor or specialisation, record that too. A general programme list may not settle which optional course you registered for. Use your current registration and department guidance to confirm the course identity. Do not choose a document solely because it contains the same semester number or looks more recent than another search result."
+        ]
+      },
+      {
+        "heading": "Use the student collection as a discovery route",
+        "paragraphs": [
+          "The Sharda Social syllabus page currently provides available B.Tech CS resources for second, fourth, fifth and sixth semesters. Search by course code and use the semester filter to locate candidates. Browsing is public; sign in when you open an individual document. Availability in this collection should not be treated as complete curriculum coverage for the university.",
+          "Inspect the document after opening it. Compare the title, code, programme and batch information where shown. If a standalone unit sheet does not identify its batch, record that limitation and verify it against an applicable programme document or lecturer guidance. A helpful filename is not a substitute for information in the source itself."
+        ]
+      },
+      {
+        "heading": "Read past the unit titles",
+        "paragraphs": [
+          "A course document can include outcomes, prerequisites, teaching load, credits, topic detail and recommended reading in addition to unit headings. Read the relevant fields before deciding what preparation is required. Do not assume that a brief unit label captures every skill the course expects, especially where a practical component or application task is involved.",
+          "Create a short applicability note with the source link, date accessed and reason you believe the document applies. If the department supplies an updated instruction, attach it to the note and identify what changed. This record is useful when classmates compare files and discover that they have been revising from different versions."
+        ]
+      },
+      {
+        "heading": "Resolve conflicts before rewriting your plan",
+        "paragraphs": [
+          "If two PDFs disagree, compare programme, branch, batch, course code and version information first. Highlight the exact unit, prerequisite or assessment detail that differs. Ask the department which version applies to you and whether a formal amendment exists. A precise question is easier to answer than forwarding two long documents without context.",
+          "Do not silently merge both versions into a new \"official\" syllabus. You can create a personal comparison for study, but label it as your own working note. Keep the original documents available so another person can inspect the evidence. When the answer is confirmed, update your checklist and tell anyone who used the wrong version."
+        ],
+        "links": [
+          {
+            "href": "/library/pyqs",
+            "label": "Practise with Sharda University PYQs"
+          }
+        ]
+      },
+      {
+        "heading": "Build revision on the confirmed units",
+        "paragraphs": [
+          "Once applicability is clear, turn each current topic into a task you can attempt. Find matching notes and selected PYQs, and mark any unit that has no suitable practice material. An old paper can help with an overlapping topic, but it cannot redefine the current syllabus or prove that an unrepresented unit will be excluded.",
+          "Use the syllabus collection below to locate available course documents, then cross-check the batch and official guidance before committing your study time. The goal is a verified course map that remains understandable when you reopen it later."
+        ],
+        "links": [
+          {
+            "href": "/library/syllabus",
+            "label": "Find Sharda syllabus PDFs"
+          }
+        ]
+      }
+    ],
+    "sources": [
+      {
+        "title": "Sharda University: B.Tech CSE programme structure, batch 2023-27",
+        "url": "https://www.sharda.ac.in/attachments/common_files/SET0101_B-Tech_CSE_2023_27.pdf",
+        "note": "An example of a batch-labelled official curriculum. It is not proof that this curriculum applies to a different admission batch."
+      },
+      {
+        "title": "Sharda University: B.Tech IT programme structure, batch 2023-27",
+        "url": "https://www.sharda.ac.in/attachments/course_programme_curricula/B-Tech_IT_2023-27.pdf",
+        "note": "A separate programme document illustrating why branch and batch must be matched before using a syllabus."
+      }
+    ],
+    "related": [
+      "sharda-btech-cse-syllabus-guide",
+      "sharda-syllabus-curriculum-changes",
+      "sharda-syllabus-unit-checklist"
+    ]
+  },
+  {
+    "slug": "sharda-btech-cse-syllabus-guide",
+    "title": "How to Read the Sharda B.Tech CSE Syllabus",
+    "description": "Read the Sharda B.Tech CSE syllabus as a course plan: check batch, theory and lab components, prerequisites and outcomes before choosing notes or PYQs.",
+    "category": "Syllabus & course planning",
+    "target": "/library/syllabus",
+    "targetLabel": "Find Sharda syllabus PDFs",
+    "published": "2026-11-27T12:00:00+05:30",
+    "updated": "2026-11-27T12:00:00+05:30",
+    "intro": "Read a Sharda B.Tech CSE syllabus by checking its applicable batch first, then separating the programme structure from each course's detailed units. The structure helps you see how courses fit together; the course sheet helps you plan specific learning tasks. This guide explains how to use both without publishing a generic subject list that may not apply to your cohort.",
+    "sections": [
+      {
+        "heading": "Confirm which curriculum you are reading",
+        "paragraphs": [
+          "Check the document's programme, branch and admission-batch label before reading semester tables. The official CSE PDF in the sources is for 2023-27, and is used here only as an example of a labelled curriculum. Your own department should confirm the version applicable to your cohort and any later amendments.",
+          "Keep the full file title and source URL in your study index. If a classmate sends an extracted page, ask for the original programme document or course information it came from. Extracts can be convenient, but the missing cover and surrounding context may contain the details needed to establish whether you are using the right material."
+        ]
+      },
+      {
+        "heading": "Read the programme structure as a map",
+        "paragraphs": [
+          "A programme table can show courses alongside teaching-load and credit fields. Use it to identify which components belong to a semester and where theory, tutorial or practical work is represented. Read the document's own labels and explanations rather than assuming every curriculum uses a shorthand identically. Confirm registration questions with your department.",
+          "Do not use credits as a shortcut for examination importance. A credit value and a marks distribution serve different purposes. Likewise, a course appearing in a semester table does not tell you which historical PYQ is relevant. You still need the course code and detailed unit scope before selecting a paper or a set of notes."
+        ]
+      },
+      {
+        "heading": "Connect theory and practical components carefully",
+        "paragraphs": [
+          "A theory topic and a related lab can support each other while requiring different outputs. A written explanation may test understanding, whereas a practical task may require implementation, observation or interpretation. Check the actual course sheets and instructions to decide what to practise. Do not assume a written paper prepares you for every assessed component.",
+          "For each course, make two lists if needed: concepts to explain and tasks to perform. In a computing subject, the second list might include tracing a method, testing a small program or interpreting output, depending on the applicable syllabus. These are planning examples, not a claim that every listed task is required in your semester."
+        ]
+      },
+      {
+        "heading": "Use prerequisites and outcomes to choose a starting point",
+        "paragraphs": [
+          "If a topic feels difficult, check whether an earlier concept is missing. A prerequisite or outcome statement can help you identify what the course expects you to build on and what you should be able to demonstrate. Turn broad wording into a small question you can attempt, then ask for clarification when the expected depth remains unclear.",
+          "Avoid skipping foundational work simply because it appears less often in the papers you found. Later questions may depend on it without naming it directly. Keep a short prerequisite repair list and address the first blocking gap. This is usually easier to manage than restarting an entire subject because one integrated question feels unfamiliar."
+        ]
+      },
+      {
+        "heading": "Match notes and PYQs at the unit level",
+        "paragraphs": [
+          "Use the course code to locate candidate documents, then compare their content with current units. Notes from another batch may explain a shared concept well while omitting new material. A PYQ may test only part of a unit or use an older format. Label those limitations instead of calling the whole resource current or irrelevant.",
+          "For each unit, record one explanatory source and one attemptable task. If a unit has no available PYQ, use an appropriate exercise or explanation prompt and ask your lecturer for feedback. Do not leave it blank because it did not appear in a small historical sample. Coverage should follow your confirmed curriculum, with past papers serving as practice evidence."
+        ],
+        "links": [
+          {
+            "href": "/library/pyqs",
+            "label": "Practise with Sharda University PYQs"
+          }
+        ]
+      },
+      {
+        "heading": "Keep a plan you can update",
+        "paragraphs": [
+          "Create a course index containing the applicable syllabus link, unit checklist, notes links, paper references and unresolved questions. Update it when you receive formal changes or discover an error. Preserve the original source and date of any correction so that you can explain why your plan differs from an older shared checklist.",
+          "Start with the available Sharda syllabus collection below, then verify the admission batch. Use the PYQ and notes collections for supporting practice. A carefully matched resource set is more useful than a long unsourced list of \"CSE subjects\" that ignores programme and cohort differences."
+        ],
+        "links": [
+          {
+            "href": "/library/syllabus",
+            "label": "Find Sharda syllabus PDFs"
+          }
+        ]
+      }
+    ],
+    "sources": [
+      {
+        "title": "Sharda University: B.Tech CSE programme structure, batch 2023-27",
+        "url": "https://www.sharda.ac.in/attachments/common_files/SET0101_B-Tech_CSE_2023_27.pdf",
+        "note": "An example of a batch-labelled official curriculum. It is not proof that this curriculum applies to a different admission batch."
+      }
+    ],
+    "related": [
+      "sharda-syllabus-correct-batch",
+      "sharda-notes-syllabus-gaps",
+      "sharda-first-year-study-toolkit"
+    ]
+  },
+  {
+    "slug": "sharda-syllabus-unit-checklist",
+    "title": "Turn Your Sharda Syllabus into a Unit-Wise Study Checklist",
+    "description": "Build a unit-wise checklist from the correct Sharda syllabus. Track understanding, practice attempts and unresolved gaps instead of counting downloaded PDFs.",
+    "category": "Syllabus & course planning",
+    "target": "/library/syllabus",
+    "targetLabel": "Find Sharda syllabus PDFs",
+    "published": "2026-11-27T12:00:00+05:30",
+    "updated": "2026-11-27T12:00:00+05:30",
+    "intro": "Turn your Sharda syllabus into a checklist by giving each current topic an observable task, a source and a practice result. A simple \"read\" tick cannot show whether you can explain or apply an idea. This guide helps you build a small working checklist that connects the syllabus to notes and suitable PYQs.",
+    "sections": [
+      {
+        "heading": "Establish the version before making the list",
+        "paragraphs": [
+          "Confirm the programme, branch, admission batch and course code first. Keep the original syllabus link at the top of the checklist, with a note about any department clarification. If the source is a standalone course sheet without a clear batch, resolve that uncertainty before treating the checklist as complete. A carefully formatted list can still be based on the wrong document.",
+          "Use the university's applicable curriculum and current instructions as the authority. The official CSE document linked below is a batch-labelled example, not a universal syllabus for all current students. Your checklist is a personal study aid derived from the confirmed source, so label it accordingly when sharing it with classmates."
+        ]
+      },
+      {
+        "heading": "Break units into tasks that can be checked",
+        "paragraphs": [
+          "Copy the unit headings, then divide the topics into manageable tasks. Replace vague labels such as \"understand method\" with actions: explain the assumptions, draw the process, solve a representative example or compare two approaches. Keep the wording close enough to the source that you can trace every task back to a current topic.",
+          "Do not split a concept into so many tiny rows that managing the checklist becomes the main activity. A useful row should fit a focused session or a coherent part of one. If several items depend on the same prerequisite, note that relationship. This helps you identify the first gap to repair rather than randomly moving between unfinished rows."
+        ]
+      },
+      {
+        "heading": "Use statuses that describe evidence",
+        "paragraphs": [
+          "Choose a small set of statuses such as not started, studied with help, attempted independently, checked and needs review. Write what each status means before using it. \"Checked\" should refer to a review against a reliable source or feedback, not simply to the fact that you filled a page with an answer."
+        ],
+        "bullets": [
+          "Source: the note, chapter or explanation used for the topic.",
+          "Task: a question reference or a clear self-test prompt.",
+          "Result: what you could do without the source open.",
+          "Gap: the earliest point of confusion or error.",
+          "Next action: a specific repair, question or later attempt."
+        ]
+      },
+      {
+        "heading": "Link resources without confusing their roles",
+        "paragraphs": [
+          "Attach a note link for explanation, a paper reference for practice and the syllabus topic for scope. One resource can serve several rows, so avoid downloading duplicates just to fill every cell. If the only available PYQ comes from an older curriculum, record which part overlaps and which part should be ignored.",
+          "A missing paper should produce an alternative practice task, not a blank unit that disappears from revision. Use a suitable textbook exercise or ask your lecturer for a representative problem. Keep self-created prompts clearly labelled. They can test understanding without pretending to be an official sample paper or a prediction of the assessment."
+        ]
+      },
+      {
+        "heading": "Use the checklist to choose the next session",
+        "paragraphs": [
+          "At the start of a session, select a task whose result will reduce a real gap. Read only the explanation needed, attempt the task and review it. At the end, update the status and next action. Research on retrieval practice supports recalling material during learning; this checklist is an editorial way to organise that work, not a prescribed study intervention.",
+          "Revisit some checked topics after a delay. A confident answer immediately after reading is a different observation from an independent answer later. Record the later attempt rather than protecting an old tick. If you repeatedly miss a prerequisite, move the repair earlier in the plan and ask for help with the specific step you cannot explain."
+        ],
+        "links": [
+          {
+            "href": "/library/pyqs",
+            "label": "Practise with Sharda University PYQs"
+          }
+        ]
+      },
+      {
+        "heading": "Review coverage as well as confidence",
+        "paragraphs": [
+          "Before an assessment, compare the full checklist with the confirmed syllabus. Look for topics with no attempt, tasks checked only with heavy assistance and units represented by just one narrow question. These gaps tell you more than a percentage completed that treats every row as equal. Keep the limits visible rather than converting the checklist into a predicted exam mark.",
+          "Use the syllabus page below to locate available documents, then attach notes and papers as supporting resources. Save a dated copy when the course ends so you can see what you actually studied and what future courses may require you to revisit."
+        ],
+        "links": [
+          {
+            "href": "/library/syllabus",
+            "label": "Find Sharda syllabus PDFs"
+          }
+        ]
+      }
+    ],
+    "sources": [
+      {
+        "title": "Sharda University: B.Tech CSE programme structure, batch 2023-27",
+        "url": "https://www.sharda.ac.in/attachments/common_files/SET0101_B-Tech_CSE_2023_27.pdf",
+        "note": "An example of a batch-labelled official curriculum. It is not proof that this curriculum applies to a different admission batch."
+      },
+      {
+        "title": "Rawson and Dunlosky: schedules of retrieval practice (2011)",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/21707204/",
+        "note": "Primary learning research supporting retrieval and spaced practice. The schedules in this guide are editorial examples, not a tested Sharda exam intervention."
+      }
+    ],
+    "related": [
+      "sharda-syllabus-correct-batch",
+      "sharda-pyq-seven-day-plan",
+      "sharda-notes-syllabus-gaps"
+    ]
+  },
+  {
+    "slug": "sharda-syllabus-curriculum-changes",
+    "title": "Compare Sharda Syllabus Versions Before Using Old PYQs",
+    "description": "Compare Sharda syllabus versions by batch, course code and unit scope. Identify useful old PYQs while keeping new, removed and changed topics visible.",
+    "category": "Syllabus & course planning",
+    "target": "/library/syllabus",
+    "targetLabel": "Find Sharda syllabus PDFs",
+    "published": "2026-11-27T12:00:00+05:30",
+    "updated": "2026-11-27T12:00:00+05:30",
+    "intro": "Compare Sharda syllabus versions before using older notes or papers, especially when a course has been renamed or moved between semesters. A topic overlap can make an old question useful without making the entire old paper applicable. This guide gives a practical comparison method and shows which questions to take to your department.",
+    "sections": [
+      {
+        "heading": "Identify both documents completely",
+        "paragraphs": [
+          "For each version, record the programme, branch, specialisation, admission batch, course code and source URL. Add the document's stated version or issue date where available. Do not identify a curriculum only by the year you downloaded it. A recently downloaded PDF may still describe an older batch, while a course sheet may omit context present in the full programme document.",
+          "The official CSE and IT documents in the sources are separate batch-labelled programmes. Their existence illustrates the need to compare like with like; it does not establish an official equivalence between their courses. Use your applicable department guidance to choose the reference version before deciding whether another document is older, related or simply different."
+        ]
+      },
+      {
+        "heading": "Build a side-by-side topic map",
+        "paragraphs": [
+          "Create columns for the old topic, current topic, match status and evidence. Start with the course identity, then compare unit content rather than only headings. Similar unit titles can conceal a changed method, depth or application. A topic moved to another unit may still be required, so distinguish reordering from removal.",
+          "Use simple match statuses: unchanged in scope, partly overlapping, new, removed from this version, or unclear. Write a short reason for each non-obvious decision. If you cannot establish the depth from the documents, keep the row unclear and ask for guidance. Do not convert an uncertain comparison into a definite exclusion merely to shorten the revision list."
+        ]
+      },
+      {
+        "heading": "Compare outcomes and practical expectations",
+        "paragraphs": [
+          "Look beyond the topic names to the kind of work expected. A course may require explanation, application, implementation or evaluation at different points. Check whether the relevant practical or tutorial component is also covered by the resource you plan to use. A useful theoretical note can still leave an execution task unprepared.",
+          "Keep registration, credits and assessment questions separate from your topic comparison when necessary. Those details can affect course planning, but you should not infer current administrative rules from an old question paper. If a difference changes what you believe you must submit or attend, get a current departmental answer before acting on it."
+        ]
+      },
+      {
+        "heading": "Classify older PYQs by usable scope",
+        "paragraphs": [
+          "Tag an old question with the current unit it supports. If only one subpart overlaps, select that subpart for a topic drill and label the rest out of scope or uncertain. Do not discard every older question because the curriculum changed, but do not use the full paper as a mock simply because a few questions still look familiar.",
+          "A question may also use terminology or assumptions no longer used in your current teaching. Note that difference and practise with the method your course expects. When a solution depends on an older convention, ask whether it remains appropriate. This produces a more accurate practice set than silently mixing incompatible answer styles."
+        ]
+      },
+      {
+        "heading": "Repair the gaps created by a change",
+        "paragraphs": [
+          "List current topics with no supporting old question or note. Find another explanatory source and an appropriate practice task for each one. NPTEL may help with a concept, but its course scope is independent of your curriculum, so select relevant material rather than adding an entire external course to the revision plan.",
+          "Removed topics should remain documented in the comparison but should not consume time needed for confirmed current requirements. If a topic is a prerequisite for something still taught, you may still need a short refresher. State that reason explicitly. The distinction between background knowledge and a current assessed unit helps you use time without making unsupported exam predictions."
+        ],
+        "links": [
+          {
+            "href": "/library/pyqs",
+            "label": "Practise with Sharda University PYQs"
+          }
+        ]
+      },
+      {
+        "heading": "Ask a precise question and preserve the answer",
+        "paragraphs": [
+          "Send the department the two document identities and the small set of differences you cannot resolve. Include the exact unit, course code or requirement, rather than asking whether an entire long PDF is \"correct.\" Keep the response with your comparison and update the study plan when clarification arrives.",
+          "When sharing the comparison, label it as a student working document and include the source links. Never merge versions into an unofficial PDF presented as the current official syllabus. Use the available syllabus collection below as a discovery route, then confirm applicability before selecting the papers and notes that support your course."
+        ],
+        "links": [
+          {
+            "href": "/library/syllabus",
+            "label": "Find Sharda syllabus PDFs"
+          }
+        ]
+      }
+    ],
+    "sources": [
+      {
+        "title": "Sharda University: B.Tech CSE programme structure, batch 2023-27",
+        "url": "https://www.sharda.ac.in/attachments/common_files/SET0101_B-Tech_CSE_2023_27.pdf",
+        "note": "An example of a batch-labelled official curriculum. It is not proof that this curriculum applies to a different admission batch."
+      },
+      {
+        "title": "Sharda University: B.Tech IT programme structure, batch 2023-27",
+        "url": "https://www.sharda.ac.in/attachments/course_programme_curricula/B-Tech_IT_2023-27.pdf",
+        "note": "A separate programme document illustrating why branch and batch must be matched before using a syllabus."
+      },
+      {
+        "title": "NPTEL: course directory",
+        "url": "https://nptel.ac.in/courses",
+        "note": "Primary directory for supplementary lectures. Match each course's scope to your own syllabus."
+      }
+    ],
+    "related": [
+      "sharda-syllabus-correct-batch",
+      "sharda-pyq-course-code-search",
+      "sharda-btech-cse-syllabus-guide"
+    ]
+  },
+  {
+    "slug": "sharda-notes-syllabus-gaps",
+    "title": "Use Sharda Notes with Your Syllabus and PYQs",
+    "description": "Check Sharda University notes for syllabus coverage, missing explanations and practice gaps. Build a concise revision set that supports independent answers.",
+    "category": "Notes & study skills",
+    "target": "/library/notes",
+    "targetLabel": "Browse Sharda University notes",
+    "published": "2026-11-27T12:00:00+05:30",
+    "updated": "2026-11-27T12:00:00+05:30",
+    "intro": "Use Sharda University notes as a revision aid after checking the current syllabus. A neat set of notes may still omit a unit, a reasoning step or a practical requirement. Pair one suitable explanation with a matching practice task so you can judge understanding rather than the number of pages collected.",
+    "sections": [
+      {
+        "heading": "Match the note set to the course",
+        "paragraphs": [
+          "Start with the course code, title, semester and applicable curriculum. Student notes may use shortened names or come from another batch, so compare the content rather than relying on the folder label. If the material covers only part of the course, record that boundary clearly. A partial set can be helpful when its limits are visible.",
+          "The Sharda Social notes collection includes available B.Tech CS revision resources and student-shared material. Browse by subject or code, then sign in to open an individual note. Availability varies. Do not assume every semester, course or unit has a complete set, and do not treat student uploads as official assessment instructions or a substitute for department guidance."
+        ]
+      },
+      {
+        "heading": "Make a quick coverage comparison",
+        "paragraphs": [
+          "Place the confirmed syllabus beside the note headings. Mark topics as covered, partly covered or not found. Inspect a few pages for actual explanation, worked examples and legibility rather than judging only the contents list. A heading can be present while the method or assumptions needed for a question are absent.",
+          "Record missing diagrams, derivations, definitions, examples or practical tasks when they matter for the course. Use the checklist to decide where another source is needed. You do not need several full note sets for every unit: a textbook section or a specific supplementary explanation may resolve the exact gap with less comparison work."
+        ]
+      },
+      {
+        "heading": "Check explanations before memorising them",
+        "paragraphs": [
+          "Choose an important statement or worked example and verify it against a reliable course source. Look for defined terms, consistent notation and enough intermediate reasoning to follow the method. If a result appears without explanation, try to reconstruct the steps. When you cannot, ask for help rather than copying it into a shorter revision sheet as if it were understood.",
+          "Be cautious with student-created solutions to PYQs. Keep the question reference and mark whether the answer has been checked. An answer repeated across several shared files may still contain the same error copied between them. Agreement is useful evidence to investigate, but it is not the same as an official solution or lecturer feedback."
+        ]
+      },
+      {
+        "heading": "Turn reading into an independent task",
+        "paragraphs": [
+          "After studying a short section, close the source and explain the concept, draw the diagram or solve a representative question. Use your own words and show the method. Retrieval-practice research supports recalling material during learning, but no fixed number of attempts is promised to be sufficient for every course. Judge the next step from the errors you actually observe.",
+          "If the attempt fails, locate the first missing idea and repair it. Avoid rereading the entire note set when one prerequisite is the problem. Try a fresh example after the correction so you can see whether the method transfers. Keep assisted attempts separate from independent ones in your progress record."
+        ]
+      },
+      {
+        "heading": "Write a shorter sheet that preserves reasoning",
+        "paragraphs": [
+          "A useful revision sheet contains prompts, assumptions, conditions and common mistakes, with links or page references to fuller explanations. It should help you retrieve the method, not replace understanding with a compressed wall of text. For a formula, note when it applies; for a process, note the order and why the steps are needed.",
+          "Keep one representative worked example if it exposes a mistake you often make. Do not copy every example merely to feel that the unit is complete. Add a question you still cannot answer so the next session begins with a clear task. This makes the shorter sheet an evolving study tool rather than another document to collect."
+        ],
+        "links": [
+          {
+            "href": "/library/syllabus",
+            "label": "Check available Sharda syllabus PDFs"
+          },
+          {
+            "href": "/library/pyqs",
+            "label": "Practise with Sharda University PYQs"
+          }
+        ]
+      },
+      {
+        "heading": "Fill gaps and share responsibly",
+        "paragraphs": [
+          "Use the syllabus to identify what remains and the PYQ library to find appropriate practice. If no paper matches a current topic, use a suitable exercise or ask the lecturer for guidance. When sharing your own notes, label the course, scope and uncertainties accurately, and share only material you have permission to distribute.",
+          "Start with the notes collection below and select one course. Check coverage before expanding your download folder. A small verified set with completed practice and visible gaps is easier to improve than many overlapping PDFs with no record of which version you used."
+        ],
+        "links": [
+          {
+            "href": "/library/notes",
+            "label": "Browse Sharda University notes"
+          }
+        ]
+      }
+    ],
+    "sources": [
+      {
+        "title": "Sharda University: B.Tech CSE programme structure, batch 2023-27",
+        "url": "https://www.sharda.ac.in/attachments/common_files/SET0101_B-Tech_CSE_2023_27.pdf",
+        "note": "An example of a batch-labelled official curriculum. It is not proof that this curriculum applies to a different admission batch."
+      },
+      {
+        "title": "Rawson and Dunlosky: schedules of retrieval practice (2011)",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/21707204/",
+        "note": "Primary learning research supporting retrieval and spaced practice. The schedules in this guide are editorial examples, not a tested Sharda exam intervention."
+      },
+      {
+        "title": "NPTEL: course directory",
+        "url": "https://nptel.ac.in/courses",
+        "note": "Primary directory for supplementary lectures. Match each course's scope to your own syllabus."
+      }
+    ],
+    "related": [
+      "sharda-syllabus-unit-checklist",
+      "sharda-pyq-timed-practice",
+      "sharda-offline-study-pdfs"
+    ]
+  },
+  {
+    "slug": "sharda-offline-study-pdfs",
+    "title": "Save Sharda PYQs and Syllabus PDFs for Offline Study",
+    "description": "Organise Sharda PYQ, notes and syllabus PDFs on your phone. Check downloads, label files clearly and build a reliable offline revision folder before travelling.",
+    "category": "Notes & study skills",
+    "target": "/library",
+    "targetLabel": "Browse the Sharda student library",
+    "published": "2026-11-27T12:00:00+05:30",
+    "updated": "2026-11-27T12:00:00+05:30",
+    "intro": "For offline Sharda study, save a small set of matching syllabus, notes and PYQ PDFs and test them from your device's file manager. A browser preview is not proof that a complete file is stored locally. This guide helps you organise documents on a phone without losing the course context or relying on an active connection.",
+    "sections": [
+      {
+        "heading": "Choose a small verified download set",
+        "paragraphs": [
+          "Start with one subject and the current syllabus. Add one suitable note set and a few questions you intend to attempt. Check the programme, batch, course code and paper year before saving. Keeping everything \"just in case\" makes a phone folder harder to search and increases the chance of revising from the wrong version.",
+          "Use the Sharda Social collection for available student revision material. Browse publicly and sign in when opening an individual resource. For licensed university e-resources, follow the provider's access and download conditions; do not assume that an article discovered online can be copied or redistributed without restriction. Keep official research material separate from shareable personal revision notes."
+        ]
+      },
+      {
+        "heading": "Confirm what the browser actually saved",
+        "paragraphs": [
+          "Open the document through the available viewer or download action. On a phone, the operating system may hand the file to another app or show a preview before saving. Note the chosen destination and file name. If the download appears to finish instantly but the file is unexpectedly small, inspect it rather than assuming it contains the whole document.",
+          "After saving, open the file from the file manager and check the beginning, a middle page and the end. Confirm that text, diagrams and question numbers are readable. If it is a scan, zoom enough to inspect small labels. A file that opens but has missing or blurred pages can interrupt revision just as effectively as a failed download."
+        ]
+      },
+      {
+        "heading": "Use names that preserve the important details",
+        "paragraphs": [
+          "Choose a consistent pattern such as course code, short subject name, document type and known year or batch. Keep the exam year distinct from a syllabus batch. Add \"unverified batch\" or another plain note when the source does not establish a detail. Do not invent metadata just to make every filename follow the same pattern.",
+          "Create one course folder with subfolders only if they make finding material easier. A small index note can hold the original page links and a sentence about each file's role. That index is helpful when a document is corrected or you later need to ask where it came from. Keep original source copies separate from your annotated versions."
+        ]
+      },
+      {
+        "heading": "Test the plan before leaving a connection",
+        "paragraphs": [
+          "Check that the files you need remain accessible when the browser is closed and the device is offline. Do this before travel or a session with unreliable connectivity. Confirm that your annotation app can open the files locally and that a newly created note is saved where you expect. Avoid assuming that cloud-only bookmarks behave like downloaded files.",
+          "Keep a backup of your own work using a service or storage method you trust. Follow any access restrictions on the source material. If you annotate a shared PDF, save a personal copy so your corrections do not become confused with the original document. A clear filename such as \"my-attempt\" or \"reviewed-notes\" makes that distinction visible."
+        ]
+      },
+      {
+        "heading": "Make a phone session manageable",
+        "paragraphs": [
+          "Select a small task before opening the folder: read one explanation, attempt one question on paper and record one correction. Use the phone for reference when the screen is too small for a long worked answer. Keep the question page easy to revisit and write down the paper reference so an interrupted session can resume without another search.",
+          "If a PDF is image-based, text search may not work. Use visible page or question numbers and a separate index rather than assuming that a failed search means the topic is absent. For a difficult-to-read scan, find a clearer legitimate copy or ask for a replacement. Do not spend the whole study block fighting an unsuitable file."
+        ],
+        "links": [
+          {
+            "href": "/library/syllabus",
+            "label": "Check available Sharda syllabus PDFs"
+          },
+          {
+            "href": "/library/pyqs",
+            "label": "Practise with Sharda University PYQs"
+          }
+        ]
+      },
+      {
+        "heading": "Review and clean up after the session",
+        "paragraphs": [
+          "Record which task you completed and what needs another attempt. Move superseded or mismatched files into a clearly labelled archive instead of leaving them beside the current syllabus. Keep enough source information to explain why a file was replaced. This prevents yesterday's convenient download from becoming tomorrow's unexplained \"official\" document.",
+          "Return to the library below for the next resource only when you know what gap it should fill. A tested offline set, a readable question and a short error log are more useful than an unverified folder containing an entire semester's downloads."
+        ],
+        "links": [
+          {
+            "href": "/library",
+            "label": "Browse the Sharda student library"
+          }
+        ]
+      }
+    ],
+    "sources": [
+      {
+        "title": "Sharda University: Library e-resources",
+        "url": "https://sharda.ac.in/library/e_sources",
+        "note": "University-maintained resource directory and remote-access instructions. Subscriptions and eligibility may change."
+      },
+      {
+        "title": "Sharda University: Off-campus e-resources directory",
+        "url": "https://idp.sharda.ac.in/",
+        "note": "Official institutional access directory. Use the university's linked service and follow its access rules."
+      }
+    ],
+    "related": [
+      "sharda-pyq-pdf-download",
+      "sharda-notes-syllabus-gaps",
+      "sharda-library-study-session"
+    ]
+  },
+  {
+    "slug": "sharda-first-year-study-toolkit",
+    "title": "A Sharda First-Year Toolkit: Library, Syllabus and PYQs",
+    "description": "Build a practical first-year study toolkit for Sharda University. Find official library services, confirm your syllabus and use notes and PYQs with clear limits.",
+    "category": "Notes & study skills",
+    "target": "/library",
+    "targetLabel": "Browse the Sharda student library",
+    "published": "2026-11-27T12:00:00+05:30",
+    "updated": "2026-11-27T12:00:00+05:30",
+    "intro": "A useful first-year Sharda study toolkit is a small set of trusted links, a confirmed syllabus and a repeatable way to practise. You do not need to download every resource before classes begin. This guide helps you organise official university services and student revision material without confusing their accounts or authority.",
+    "sections": [
+      {
+        "heading": "Keep official services and student resources distinct",
+        "paragraphs": [
+          "Bookmark the university's official library page for campus services, the catalogue and current access information. Keep the official e-resources directory for licensed research services. Add Sharda Social separately for available PYQs, notes and syllabus documents. These links serve different purposes, and a problem with one account should be taken to the service responsible for it.",
+          "Label the bookmarks with their purpose, not just \"Sharda.\" When a classmate shares a login or resource link, compare it with the official directory before submitting credentials. An old screenshot can remain in a group long after access instructions change. Start from the university website when you need the current official route."
+        ]
+      },
+      {
+        "heading": "Confirm your course map early",
+        "paragraphs": [
+          "Write down your programme, branch, specialisation if applicable, admission batch and current semester. Use department guidance to identify the applicable syllabus. A curriculum for a different batch can be genuine while still being wrong for you. Keep the document link and any formal clarification together so the basis of your plan stays visible.",
+          "Read the semester structure and the relevant course sheets before collecting notes. Identify concepts to learn, practical tasks to perform and questions you need to ask. The official CSE document in the sources is an example of a batch-labelled curriculum, not a universal first-year subject list. Your own programme and registration determine the details."
+        ]
+      },
+      {
+        "heading": "Build one resource set for one subject",
+        "paragraphs": [
+          "Choose a subject you are currently studying. Find the applicable syllabus, one clear explanatory source and a suitable practice task. In Sharda Social, browse by course code or subject and inspect the available resources. Sign in when opening an individual document. Keep availability limits visible instead of assuming that every course has a complete collection.",
+          "Check a note set against the unit list before committing to it. If a topic is missing, identify a precise supplementary source rather than downloading several whole sets at random. A prescribed book, lecture explanation or relevant external lecture may fill a gap. Ask your lecturer what depth is expected when the source and syllabus use different wording."
+        ]
+      },
+      {
+        "heading": "Use PYQs to understand tasks, not predict results",
+        "paragraphs": [
+          "A previous year paper can show examples of how a topic has been assessed. Match the code, syllabus overlap and assessment type before practising. Write down when the paper belongs to another batch or only supports selected topics. Historical questions do not establish which topics will appear next or replace current examination instructions.",
+          "Start with one question you can reasonably attempt. Show your method, review the answer and record the first error or gap. If you do not have an authoritative solution, ask for feedback and keep your answer labelled as unverified. Avoid sharing a student solution as an official key simply because it looks complete or has been widely forwarded."
+        ]
+      },
+      {
+        "heading": "Create a weekly routine with visible outputs",
+        "paragraphs": [
+          "Set a few manageable sessions around your classes and other commitments. Give each session an output: explain a concept, solve a problem, complete an allowed practical task or clarify a syllabus question. Begin the next session by recalling some earlier material before opening the notes. Learning research supports retrieval practice, but the exact schedule should fit your progress and workload.",
+          "Keep a short log with the task, source, result and next action. This makes it easier to ask for help because you can show what you tried. \"I cannot explain this step after these attempts\" is more actionable than \"I do not understand the subject.\" Use office hours, tutorials or other support offered by your department when gaps persist."
+        ],
+        "links": [
+          {
+            "href": "/library/syllabus",
+            "label": "Check available Sharda syllabus PDFs"
+          },
+          {
+            "href": "/library/pyqs",
+            "label": "Practise with Sharda University PYQs"
+          }
+        ]
+      },
+      {
+        "heading": "Keep the toolkit small and maintain it",
+        "paragraphs": [
+          "Review bookmarks and files periodically. Replace an outdated syllabus only after confirming the correct version, and keep the reason for the change. Test important downloads before offline study. Share resources accurately and only when you have permission, without exposing personal information or account credentials in a public group.",
+          "Begin with the student library below if you need revision material, and use the official university sources for services and policy. A toolkit works when it helps you complete and check tasks; its value is not the number of PDFs, apps or links you have collected."
+        ],
+        "links": [
+          {
+            "href": "/library",
+            "label": "Browse the Sharda student library"
+          }
+        ]
+      }
+    ],
+    "sources": [
+      {
+        "title": "Sharda University: Learning Resource Centre",
+        "url": "https://sharda.ac.in/library",
+        "note": "Official starting point for campus library information and current service notices."
+      },
+      {
+        "title": "Sharda University: B.Tech CSE programme structure, batch 2023-27",
+        "url": "https://www.sharda.ac.in/attachments/common_files/SET0101_B-Tech_CSE_2023_27.pdf",
+        "note": "An example of a batch-labelled official curriculum. It is not proof that this curriculum applies to a different admission batch."
+      },
+      {
+        "title": "Rawson and Dunlosky: schedules of retrieval practice (2011)",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/21707204/",
+        "note": "Primary learning research supporting retrieval and spaced practice. The schedules in this guide are editorial examples, not a tested Sharda exam intervention."
+      }
+    ],
+    "related": [
+      "sharda-library-student-guide",
+      "sharda-syllabus-correct-batch",
+      "sharda-pyq-pdf-download"
+    ]
+  }
+]

@@ -31,6 +31,29 @@ const nextConfig: NextConfig = {
   outputFileTracingIncludes: {
     "/library/resource/file": ["./private-resources/**/*"],
   },
+  async redirects() {
+    return [
+      {
+        source: "/:path*",
+        has: [{ type: "host", value: "notes-pyqssharda.vercel.app" }],
+        destination: "https://www.sharda.social/:path*",
+        permanent: true,
+      },
+      {
+        source: "/:path*",
+        has: [{ type: "host", value: "sharda.social" }],
+        destination: "https://www.sharda.social/:path*",
+        permanent: true,
+      },
+    ];
+  },
+  async headers() {
+    const preview = process.env.VERCEL_ENV === "preview" || process.env.NEXT_PUBLIC_VERCEL_ENV === "preview";
+    return [
+      { source: "/api/:path*", headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow" }] },
+      ...(preview ? [{ source: "/:path*", headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow" }] }] : []),
+    ];
+  },
   async rewrites() {
     return [
       {
